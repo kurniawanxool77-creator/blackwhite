@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import { QrCodeIcon } from "@/components/ui/icons";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -132,7 +131,6 @@ export default async function AdminRundownPage() {
         })
       )}
 
-      <AutoRefresh seconds={30} />
     </div>
   );
 }

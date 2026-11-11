@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import { SearchIcon } from "@/components/ui/icons";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { requireAdmin } from "@/lib/auth";
@@ -215,7 +214,6 @@ export default async function AdminPesertaPage({ searchParams }: PageProps<"/adm
         </table>
       </div>
 
-      <AutoRefresh seconds={20} />
     </div>
   );
 }

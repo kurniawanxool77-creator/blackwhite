@@ -106,7 +106,7 @@ export function AttendancePreviewModal({ report, open, onClose }: Props) {
             <div className="border-b-2 border-gray-800 pb-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div>
-                  <span className="text-xs font-bold tracking-wider text-brand uppercase">L-Event Management System</span>
+                  <span className="text-xs font-bold tracking-wider text-brand uppercase">BlackWhite Management System</span>
                   <h1 className="text-xl font-bold tracking-tight text-gray-900">REKAPITULASI PRESENSI TIM</h1>
                 </div>
                 <div className="text-right text-xs text-gray-500">

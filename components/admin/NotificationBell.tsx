@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BellIcon } from "@/components/ui/icons";
+import { LIVE_EVENT } from "@/components/ui/LiveSync";
 import type { Notice } from "@/lib/notifications";
 
 const REFRESH_MS = 60_000;
 
-// Lonceng notifikasi: jumlah hal yang perlu ditindaklanjuti + daftar singkat. Diperbarui tiap menit.
+// Lonceng notifikasi: jumlah hal yang perlu ditindaklanjuti + daftar singkat. Diperbarui saat ada perubahan data (LiveSync).
 export function NotificationBell() {
   const [data, setData] = useState<{ total: number; items: Notice[] } | null>(null);
   const [open, setOpen] = useState(false);
@@ -25,9 +26,11 @@ export function NotificationBell() {
   useEffect(() => {
     const first = setTimeout(load, 0);
     const id = setInterval(load, REFRESH_MS);
+    window.addEventListener(LIVE_EVENT, load);
     return () => {
       clearTimeout(first);
       clearInterval(id);
+      window.removeEventListener(LIVE_EVENT, load);
     };
   }, [load]);
 

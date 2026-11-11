@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import { MapPinIcon, QrCodeIcon } from "@/components/ui/icons";
 import { AppMenu } from "@/components/admin/AppMenu";
 import { AttendancePanel } from "@/components/admin/AttendancePanel";
@@ -202,7 +201,6 @@ export default async function AdminDashboardPage() {
         </section>
       </div>
 
-      <AutoRefresh seconds={30} />
     </div>
   );
 }

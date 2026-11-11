@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryFilter, categoryFilterItems } from "@/components/ui/CategoryFilter";
 import { SearchIcon } from "@/components/ui/icons";
 import { PRICE_FILTERS, SORTS, type EventFilters, type ReadyEvent } from "@/lib/event-search";
 import { EVENT_MODE } from "@/lib/format";
@@ -13,11 +14,6 @@ type Props = {
   showFilters?: boolean; // halaman Pelatihan: lokasi, mode, harga, urutan
   limit?: number; // batasi jumlah kartu (beranda); tanpa batas di halaman Pelatihan
 };
-
-const chip = (active: boolean) =>
-  `shrink-0 whitespace-nowrap rounded border px-3 py-1.5 text-sm transition-colors ${
-    active ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 bg-white text-gray-700 hover:border-gray-900"
-  }`;
 
 // Cari + filter (kategori, lokasi, offline/online, harga, urutan) + kartu pelatihan. Semua filter dikirim (GET) ke /event.
 export function EventBrowser({ results, categories, locations, total, filters = {}, showFilters, limit }: Props) {
@@ -76,14 +72,10 @@ export function EventBrowser({ results, categories, locations, total, filters = 
         )}
       </form>
 
-      {categories.length > 0 && (
-        <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-          <Link href={href({ kategori: undefined })} className={chip(!kategori)}>Semua</Link>
-          {categories.map((c) => (
-            <Link key={c} href={href({ kategori: c })} className={chip(kategori === c)}>{c}</Link>
-          ))}
-        </div>
-      )}
+      <CategoryFilter
+        items={categoryFilterItems(categories, kategori, (c) => href({ kategori: c || undefined }))}
+        className="-mx-4 mt-3 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
+      />
 
       <p className="mt-4 text-sm text-gray-600" aria-live="polite">
         {active.length > 0 ? `${results.length} dari ${total} pelatihan · ${active.join(" · ")}` : `${total} pelatihan sedang dibuka.`}

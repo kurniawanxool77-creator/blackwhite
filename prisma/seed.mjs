@@ -94,7 +94,7 @@ const posterScene = (title, sub, bg, v) =>
 async function ensureSite() {
   if (await db.setting.findUnique({ where: { key: "site" } })) return;
   const site = {
-    name: "L-Event",
+    name: "BlackWhite",
     tagline: "Pelatihan bersertifikat dengan pendaftaran online dan absensi QR",
     about: "Kami membantu penyelenggara event mengelola peserta secara tertib: pendaftaran, persetujuan, hingga pemindaian QR di setiap titik acara seperti bandara, hotel, konsumsi, dan pengambilan barang.\n\nSetiap peserta mendapat satu QR. Panitia memindainya di setiap checkpoint, dan peserta dapat memantau progresnya langsung dari ponsel.",
     heroImage: await store(heroScene()),

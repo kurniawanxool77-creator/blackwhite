@@ -25,7 +25,7 @@ export const parseBanks = (lines: string[]): BankAccount[] =>
 
 // Nilai awal company profile. Superadmin mengubahnya di /superadmin/site (disimpan di tabel Setting).
 export const DEFAULT_SITE: Site = {
-  name: "L-Event",
+  name: "BlackWhite",
   tagline: "Pelatihan bersertifikat dengan pendaftaran online dan absensi QR",
   about:
     "Kami membantu penyelenggara event mengelola peserta secara tertib: pendaftaran, persetujuan, hingga pemindaian QR di setiap titik acara seperti bandara, hotel, konsumsi, dan pengambilan barang.",
@@ -48,6 +48,12 @@ export const DEFAULT_SITE: Site = {
 };
 
 export const getSite = cache(async (): Promise<Site> => {
-  const row = await db.setting.findUnique({ where: { key: "site" } });
-  return row ? { ...DEFAULT_SITE, ...JSON.parse(row.value) } : DEFAULT_SITE;
+  try {
+    const row = await db.setting.findUnique({ where: { key: "site" } });
+    return row ? { ...DEFAULT_SITE, ...JSON.parse(row.value) } : DEFAULT_SITE;
+  } catch (err) {
+    // Saat build tanpa DB aktif atau DB baru belum di-push, pakai nilai bawaan agar prerender tidak gagal.
+    console.error("[getSite] fallback ke DEFAULT_SITE:", err instanceof Error ? err.message : err);
+    return DEFAULT_SITE;
+  }
 });

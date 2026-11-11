@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import { CheckpointPanel } from "@/components/admin/CheckpointPanel";
 import { RegistrationTable } from "@/components/admin/RegistrationTable";
 import { QrCodeIcon } from "@/components/ui/icons";
@@ -75,7 +74,6 @@ export default async function AdminEventDetailPage({ params, searchParams }: Pag
         detailBase={`/admin/events/${event.id}/peserta`}
         readOnly
       />
-      <AutoRefresh seconds={20} />
     </div>
   );
 }

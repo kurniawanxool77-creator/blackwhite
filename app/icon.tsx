@@ -18,11 +18,11 @@ export default async function Icon({ id }: { id: Promise<string | number> }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: size * 0.4,
+          fontSize: size * 0.36,
           fontWeight: 700,
         }}
       >
-        L
+        BW
       </div>
     ),
     { width: size, height: size },

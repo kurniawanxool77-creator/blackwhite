@@ -9,7 +9,9 @@ import { str } from "@/lib/form";
 const refresh = () => {
   revalidatePath("/superadmin/kategori");
   revalidatePath("/superadmin/events");
+  revalidatePath("/");
   revalidatePath("/event");
+  revalidatePath("/dashboard");
 };
 
 export async function createCategory(_prev: string | null, f: FormData) {

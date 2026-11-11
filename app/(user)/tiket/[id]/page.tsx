@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { cancelRegistration } from "@/app/(user)/actions";
-import { AutoRefresh } from "@/components/ui/AutoRefresh";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { FormAnswers } from "@/components/ui/FormAnswers";
 import { LearningPanel } from "@/components/user/LearningPanel";
@@ -314,7 +313,6 @@ export default async function TicketPage({ params }: PageProps<"/tiket/[id]">) {
         </p>
       </section>
 
-      {reg.status === "approved" && <AutoRefresh seconds={15} />}
     </div>
   );
 }

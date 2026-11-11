@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { CategoryFilter, categoryFilterItems } from "@/components/ui/CategoryFilter";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { CalendarIcon, ClockIcon, MapPinIcon, QrCodeIcon, TicketIcon } from "@/components/ui/icons";
 import QRCode from "qrcode";
 import { MyQrCard } from "@/components/user/MyQrCard";
 import { requireUser } from "@/lib/auth";
 import { greetingJakarta } from "@/lib/checkin";
+import { getCategories } from "@/lib/event-detail";
 import { ensureUserQr } from "@/lib/qr";
 import { db } from "@/lib/db";
 import { readDetails } from "@/lib/registration-form";
@@ -12,36 +14,52 @@ import { appliesTo } from "@/lib/rundown";
 import { durationDays, fmtDate, REG_STATUS } from "@/lib/format";
 
 type PageProps = {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; kategori?: string }>;
 };
 
 export default async function DashboardPage({ searchParams }: PageProps) {
-  const { status: filterStatus } = await searchParams;
-  const user = await requireUser();
+  const [{ status: filterStatus, kategori: filterCategory }, user] = await Promise.all([
+    searchParams,
+    requireUser(),
+  ]);
 
-  const registrations = await db.registration.findMany({
-    where: { userId: user.id },
-    include: {
-      event: {
-        include: {
-          checkpoints: { where: { scan: true }, orderBy: { order: "asc" }, select: { id: true, name: true, kind: true, audience: true } },
+  const [registrations, categories, me] = await Promise.all([
+    db.registration.findMany({
+      where: { userId: user.id },
+      include: {
+        event: {
+          include: {
+            checkpoints: { where: { scan: true }, orderBy: { order: "asc" }, select: { id: true, name: true, kind: true, audience: true } },
+          },
         },
+        scans: { select: { checkpointId: true, createdAt: true } },
       },
-      scans: { select: { checkpointId: true, createdAt: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    }),
+    getCategories(),
+    db.user.findUnique({ where: { id: user.id }, select: { name: true, image: true } }),
+  ]);
 
-  const total = registrations.length;
-  const approvedCount = registrations.filter((r) => r.status === "approved").length;
+  const byCategory = filterCategory
+    ? registrations.filter((r) => r.event.category === filterCategory)
+    : registrations;
+  const total = byCategory.length;
+  const approvedCount = byCategory.filter((r) => r.status === "approved").length;
   const needsQr = registrations.some((r) => r.status === "approved" && r.event.useQr); // ada pelatihan disetujui yang memakai QR
-  const me = await db.user.findUnique({ where: { id: user.id }, select: { name: true, image: true } });
   const myQr = needsQr ? await QRCode.toDataURL(await ensureUserQr(user.id), { width: 360, margin: 1 }) : null;
-  const pendingCount = registrations.filter((r) => r.status === "pending").length;
+  const pendingCount = byCategory.filter((r) => r.status === "pending").length;
 
   const filteredRegistrations = filterStatus
-    ? registrations.filter((r) => r.status === filterStatus)
-    : registrations;
+    ? byCategory.filter((r) => r.status === filterStatus)
+    : byCategory;
+
+  const dashboardHref = (status?: string, kategori?: string) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (kategori) params.set("kategori", kategori);
+    const qs = params.toString();
+    return qs ? `/dashboard?${qs}` : "/dashboard";
+  };
 
   const firstName = (user.name ?? "").split(" ")[0] || "Peserta";
 
@@ -60,33 +78,42 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
       {myQr && <MyQrCard qr={myQr} name={me?.name ?? ""} photo={me?.image ?? null} />}
 
-      {/* 3. Filter Tab Tiket */}
-      {total > 0 && (
-        <div className="flex items-center gap-1.5 border-b border-gray-200 pb-3 text-xs font-medium">
-          <Link
-            href="/dashboard"
-            className={`rounded px-3 py-1.5 transition-colors ${
-              !filterStatus ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            Semua ({total})
-          </Link>
-          <Link
-            href="/dashboard?status=approved"
-            className={`rounded px-3 py-1.5 transition-colors ${
-              filterStatus === "approved" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            Disetujui ({approvedCount})
-          </Link>
-          <Link
-            href="/dashboard?status=pending"
-            className={`rounded px-3 py-1.5 transition-colors ${
-              filterStatus === "pending" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            Menunggu ({pendingCount})
-          </Link>
+      {/* 3. Filter Kategori & Status Tiket */}
+      {(categories.length > 0 || registrations.length > 0) && (
+        <div className="space-y-3">
+          <CategoryFilter
+            items={categoryFilterItems(categories, filterCategory, (c) =>
+              dashboardHref(filterStatus, c || undefined),
+            )}
+          />
+          {registrations.length > 0 && (
+            <div className="flex items-center gap-1.5 border-b border-gray-200 pb-3 text-xs font-medium">
+              <Link
+                href={dashboardHref(undefined, filterCategory)}
+                className={`rounded px-3 py-1.5 transition-colors ${
+                  !filterStatus ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Semua ({total})
+              </Link>
+              <Link
+                href={dashboardHref("approved", filterCategory)}
+                className={`rounded px-3 py-1.5 transition-colors ${
+                  filterStatus === "approved" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Disetujui ({approvedCount})
+              </Link>
+              <Link
+                href={dashboardHref("pending", filterCategory)}
+                className={`rounded px-3 py-1.5 transition-colors ${
+                  filterStatus === "pending" ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Menunggu ({pendingCount})
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -96,11 +123,24 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           <div className="flex h-12 w-12 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-400">
             <TicketIcon className="h-6 w-6" />
           </div>
-          <h2 className="mt-3 text-sm font-semibold text-gray-900">{total === 0 ? "Belum ada tiket" : "Tidak ada tiket"}</h2>
-          {total === 0 && (
+          <h2 className="mt-3 text-sm font-semibold text-gray-900">
+            {registrations.length === 0 ? "Belum ada tiket" : "Tidak ada tiket"}
+          </h2>
+          {registrations.length === 0 ? (
             <Link href="/event" className="btn btn-primary btn-sm mt-4">
               Cari pelatihan
             </Link>
+          ) : (
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {(filterCategory || filterStatus) && (
+                <Link href="/dashboard" className="btn btn-secondary btn-sm">
+                  Reset filter
+                </Link>
+              )}
+              <Link href="/event" className="btn btn-primary btn-sm">
+                Cari pelatihan
+              </Link>
+            </div>
           )}
         </div>
       ) : (

@@ -1,6 +1,14 @@
 // Alamat publik situs untuk tautan absolut (sitemap, canonical, Open Graph, data terstruktur).
-// Isi SITE_URL di .env saat online (mis. https://levent.co.id); bila kosong memakai NEXTAUTH_URL.
-export const siteUrl = () => (process.env.SITE_URL || process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "");
+// Isi SITE_URL di .env saat online; bila kosong memakai NEXTAUTH_URL atau domain Vercel otomatis.
+export const siteUrl = () => {
+  const url =
+    process.env.SITE_URL ||
+    process.env.NEXTAUTH_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "http://localhost:3000";
+  return url.replace(/\/$/, "");
+};
 
 export const absoluteUrl = (path: string) => (/^https?:\/\//.test(path) ? path : `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`);
 

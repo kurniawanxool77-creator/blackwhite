@@ -1,5 +1,6 @@
 import type { Event } from "@prisma/client";
 import { db } from "./db";
+import { getCategories } from "./event-detail";
 import { finalPrice } from "./format";
 
 export const queryParam = (v: string | string[] | undefined) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
@@ -22,9 +23,10 @@ export async function seatsLeftOf(event: { id: string; quota: number | null }) {
 // Pelatihan yang sedang membuka pendaftaran beserta pilihan filter (kategori, lokasi) dari data yang ada.
 // Disaring di aplikasi agar pencarian tidak peka huruf besar/kecil di SQLite maupun PostgreSQL; jumlah event terbuka kecil.
 export async function findReadyEvents({ q, kategori, lokasi, mode, harga, urut }: EventFilters) {
-  const [all, approved] = await Promise.all([
+  const [all, approved, categories] = await Promise.all([
     db.event.findMany({ where: { status: "open" }, orderBy: { startDate: "asc" } }),
     db.registration.groupBy({ by: ["eventId"], where: { status: "approved", event: { status: "open" } }, _count: true }),
+    getCategories(),
   ]);
   const approvedOf = (id: string) => approved.find((a) => a.eventId === id)?._count ?? 0;
   const needle = q?.toLowerCase();
@@ -39,6 +41,6 @@ export async function findReadyEvents({ q, kategori, lokasi, mode, harga, urut }
     )
     .map((e) => ({ ...e, seatsLeft: e.quota ? Math.max(0, e.quota - approvedOf(e.id)) : null }));
   if (urut === "harga") results.sort((a, b) => finalPrice(a) - finalPrice(b) || +a.startDate - +b.startDate);
-  const distinct = (pick: (e: Event) => string) => [...new Set(all.map(pick).filter(Boolean))].sort();
-  return { results, categories: distinct((e) => e.category), locations: distinct((e) => e.location), total: all.length };
+  const locations = [...new Set(all.map((e) => e.location).filter(Boolean))].sort();
+  return { results, categories, locations, total: all.length };
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryFilter, categoryFilterItems } from "@/components/ui/CategoryFilter";
 import { PriceTag } from "@/components/ui/PriceTag";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { requireAdmin } from "@/lib/auth";
@@ -42,19 +43,11 @@ export default async function EventsPage({ searchParams }: PageProps<"/superadmi
         </Drawer>
       </PageHeader>
       <section>
-        {categories.length > 0 && (
-          <nav aria-label="Filter kategori" className="no-scrollbar flex gap-1.5 overflow-x-auto text-sm">
-            {["", ...categories].map((c) => (
-              <Link
-                key={c || "semua"}
-                href={c ? `/superadmin/events?kategori=${encodeURIComponent(c)}` : "/superadmin/events"}
-                className={`shrink-0 rounded px-3 py-1.5 whitespace-nowrap ${(kategori ?? "") === c ? "bg-brand text-white font-semibold" : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"}`}
-              >
-                {c || "Semua"}
-              </Link>
-            ))}
-          </nav>
-        )}
+        <CategoryFilter
+          items={categoryFilterItems(categories, kategori, (c) =>
+            c ? `/superadmin/events?kategori=${encodeURIComponent(c)}` : "/superadmin/events",
+          )}
+        />
         <div className="card mt-4 overflow-x-auto">
           <table className="table">
             <thead>

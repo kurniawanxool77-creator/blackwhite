@@ -14,7 +14,14 @@ import { ACTIVITIES, isActivity, isEventType, type ActivityKey } from "@/lib/eve
 import { cleanPrefix } from "@/lib/participant-code";
 import { isImageUrl } from "@/lib/url";
 
-const refresh = (eventId: string) => revalidatePath(`/superadmin/events/${eventId}`);
+const refresh = (eventId?: string) => {
+  if (eventId) revalidatePath(`/superadmin/events/${eventId}`);
+  revalidatePath("/superadmin/events");
+  revalidatePath("/superadmin/kategori");
+  revalidatePath("/");
+  revalidatePath("/event");
+  revalidatePath("/dashboard");
+};
 
 // Field yang sama untuk buat dan ubah event/pelatihan. Mengembalikan pesan error atau data.
 function readEvent(f: FormData) {
@@ -99,6 +106,7 @@ export async function createEvent(_prev: string | null, f: FormData) {
     },
   });
   await audit(admin, "Buat event", `${event.name} · ${fmtRp(event.price)} · diskon ${event.discount}%`);
+  refresh();
   redirect(`/superadmin/events/${event.id}`);
 }
 
@@ -140,6 +148,6 @@ export async function deleteEvent(eventId: string) {
   if (!event) return;
   await db.event.delete({ where: { id: eventId } });
   await audit(admin, "Hapus event", `${event.name} · ${event._count.registrations} pendaftaran ikut terhapus`);
-  revalidatePath("/superadmin/events");
+  refresh();
   redirect("/superadmin/events");
 }

@@ -160,7 +160,7 @@ export const groupOf = (a: Answer): FieldGroup => a.group ?? GUESS.find(([, re])
 export const answersIn = (d: RegDetails, group: FieldGroup) => d.answers.filter((a) => groupOf(a) === group);
 
 // Jawaban kesehatan yang benar-benar berisi kondisi (bukan "tidak ada", "-", "normal").
-const NONE = /^(-+|tidak( ada)?|tdk ada|normal|sehat|nihil|aman)/i;
+const NONE = /^(-+|tidak( ada)?|tdk ada|normal|sehat|nihil|aman)$/i;
 export const healthAlerts = (d: RegDetails) => answersIn(d, "kesehatan").filter((a) => a.type !== "checkbox" && (a.type === "file" || !NONE.test(a.value)));
 export const itemAnswers = (d: RegDetails) => answersIn(d, "barang").filter((a) => a.type === "file" || !NONE.test(a.value));
 

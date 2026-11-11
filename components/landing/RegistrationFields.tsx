@@ -42,7 +42,6 @@ export function FileField({ name, required, label = "Pilih foto" }: { name: stri
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
       <div className="flex items-center gap-3">
         {url && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt="" className="h-14 w-14 rounded-md border border-gray-200 object-cover" />
         )}
         <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => input.current?.click()}>

@@ -31,4 +31,5 @@ const globalForPrisma = globalThis as unknown as { prisma?: ReturnType<typeof cr
 
 export const db = globalForPrisma.prisma ?? createClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+// Simpan instance tunggal di dev HMR maupun warm container produksi agar pool koneksi tidak bocor.
+globalForPrisma.prisma = db;

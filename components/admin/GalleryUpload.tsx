@@ -34,7 +34,6 @@ export function GalleryUpload({ defaultValue = [] }: { defaultValue?: string[] }
       <div className="grid grid-cols-4 gap-2">
         {urls.map((u) => (
           <div key={u} className="group relative aspect-video overflow-hidden rounded-md border border-gray-200 bg-gray-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={u} alt="" className="h-full w-full object-cover" />
             <button
               type="button"

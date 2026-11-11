@@ -1,6 +1,6 @@
 import type { Registration, User } from "@prisma/client";
 import Link from "next/link";
-import { approveRegistrations, deleteRegistration, rejectRegistration } from "@/app/superadmin/(panel)/events/registration-actions";
+import { approveRegistrations, deleteRegistration, rejectRegistration } from "@/src/lib/actions/events";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";

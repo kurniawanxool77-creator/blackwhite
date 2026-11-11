@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npx prisma generate && npx vite build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index?__path=/api/:path*" },
+    { "source": "/media/:id", "destination": "/api/index?__path=/media/:id" },
+    { "source": "/robots.txt", "destination": "/api/index?__path=/robots.txt" },
+    { "source": "/sitemap.xml", "destination": "/api/index?__path=/sitemap.xml" },
+    { "source": "/manifest.webmanifest", "destination": "/api/index?__path=/manifest.webmanifest" },
+    { "source": "/icon/:size", "destination": "/api/index?__path=/icon/:size" },
+    { "source": "/apple-icon", "destination": "/api/index?__path=/apple-icon" },
+    { "source": "/superadmin/events/:id/export", "destination": "/api/index?__path=/superadmin/events/:id/export" },
+    { "source": "/superadmin/qr/:id", "destination": "/api/index?__path=/superadmin/qr/:id" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+

@@ -50,7 +50,6 @@ export function GalleryGrid({ photos, categories }: { photos: GalleryPhoto[]; ca
               onClick={() => setActive(idx)}
               className="group mb-2 block w-full break-inside-avoid overflow-hidden rounded-md border border-gray-200 bg-white text-left sm:mb-3"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt={p.eventName} loading="lazy" className="block h-auto w-full transition-opacity group-hover:opacity-90" />
               <span className="block truncate px-2 py-1.5 text-[11px] font-medium text-gray-700 sm:text-xs">{p.eventName}</span>
             </button>

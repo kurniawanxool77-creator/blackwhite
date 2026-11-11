@@ -252,7 +252,6 @@ export function AttendancePreviewModal({ report, open, onClose }: Props) {
                       }
                       className="group flex flex-col items-center rounded border border-gray-200 bg-gray-50 p-1.5 text-center transition hover:border-brand hover:shadow-xs"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={s.src}
                         alt={s.adminName}

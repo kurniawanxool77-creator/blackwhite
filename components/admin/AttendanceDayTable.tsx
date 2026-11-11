@@ -35,7 +35,6 @@ function PhotoTime({ photo, alt, time, note, onClick }: { photo: string | null; 
     <button type="button" onClick={onClick} className="group flex cursor-pointer items-center gap-2 text-left hover:opacity-85" title="Klik untuk melihat foto, lokasi, dan jam">
       {photo ? (
         <span className="relative inline-block h-9 w-9 overflow-hidden rounded border border-gray-200">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={photo} alt={alt} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
         </span>
       ) : (

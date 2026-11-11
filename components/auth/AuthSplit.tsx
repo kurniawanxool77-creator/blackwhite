@@ -7,7 +7,6 @@ export function AuthSplit({ image, caption, children }: { image: string; caption
       </div>
       <div className="relative hidden overflow-hidden bg-brand lg:block">
         {image && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         )}
         <p className="absolute inset-x-0 bottom-0 bg-gray-900/70 px-8 py-6 text-lg font-semibold text-white">{caption}</p>

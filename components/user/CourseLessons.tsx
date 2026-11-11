@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { markLessonDone } from "@/app/(user)/tiket/[id]/belajar-actions";
+import { markLessonDone } from "@/src/lib/actions/user";
 import { youtubeId } from "@/lib/youtube";
 import { VideoPlayer } from "./VideoPlayer";
 

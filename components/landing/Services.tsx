@@ -10,7 +10,6 @@ export function Services({ services }: { services: Site["services"] }) {
           {services.map((s, i) => (
             <div key={s.title} className="group card card-link animate-rise overflow-hidden" style={{ animationDelay: `${i * 90}ms` }}>
               {s.image && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={s.image} alt={s.title} loading="lazy" className="aspect-[16/10] w-full object-cover" />
               )}
               <div className="p-5">

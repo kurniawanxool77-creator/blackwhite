@@ -1,19 +1,20 @@
 import Link from "next/link";
-import { dayStart, myAttendanceToday } from "@/lib/attendance";
+import type { myAttendanceToday } from "@/lib/attendance";
+import { dayStart } from "@/lib/schedule";
 import { fmtDuration, fmtTime } from "@/lib/format";
 import { AttendanceButton } from "./AttendanceButton";
 import { LiveClock } from "./LiveClock";
 
 function Selfie({ src, label }: { src: string | null; label: string }) {
   if (!src) return null;
-  // eslint-disable-next-line @next/next/no-img-element
   return <img src={src} alt={label} title={label} className="h-14 w-14 rounded-md border border-gray-200 object-cover" />;
 }
 
+export type AttendanceTodayProps = Awaited<ReturnType<typeof myAttendanceToday>>;
+
 // Kartu absensi hari ini (gaya aplikasi HRIS): jam berjalan, lalu per pelatihan yang berlangsung
 // tombol besar absen datang / selesai acara dengan foto. Fitur event baru terbuka setelah absen datang.
-export async function AttendancePanel({ adminId }: { adminId: string }) {
-  const { date, items } = await myAttendanceToday(adminId);
+export function AttendancePanel({ date, items }: AttendanceTodayProps) {
   const today = dayStart(date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
   return (

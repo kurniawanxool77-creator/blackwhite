@@ -1,9 +1,8 @@
+import { attendanceStatus, dayStart, isDateKey, type AttendanceStatus } from "./schedule";
 import { todayKeyJakarta } from "./checkin";
 import { db } from "./db";
 
-// Tanggal kalender (YYYY-MM-DD) → tengah malam UTC, format yang sama dengan Event.startDate/endDate.
-export const dayStart = (date: string) => new Date(`${date}T00:00:00.000Z`);
-export const isDateKey = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(+dayStart(v));
+export { attendanceStatus, dayStart, isDateKey, type AttendanceStatus };
 
 // Pelatihan yang berlangsung pada tanggal itu. adminId diisi = hanya yang ditugaskan ke orang itu.
 export function eventsOnDate(date: string, adminId?: string) {
@@ -27,13 +26,7 @@ export async function myAttendanceToday(adminId: string) {
   return { date, items: events.map((event) => ({ event, row: rows.find((r) => r.eventId === event.id) ?? null })) };
 }
 
-export type AttendanceStatus = { label: string; tone: "green" | "gray" | "amber" };
-
-export function attendanceStatus(row: { checkIn: Date; checkOut: Date | null } | null | undefined, fmt: (d: Date) => string): AttendanceStatus {
-  if (!row) return { label: "Belum absen", tone: "amber" };
-  if (!row.checkOut) return { label: `Hadir sejak ${fmt(row.checkIn)}`, tone: "green" };
-  return { label: `Selesai ${fmt(row.checkOut)}`, tone: "gray" };
-}
+// attendanceStatus re-exported from ./schedule
 
 // Sedang bertugas: sudah absen datang hari ini di pelatihan itu dan belum absen selesai. Syarat membuka fitur event.
 export async function isOnDuty(adminId: string, eventId: string) {

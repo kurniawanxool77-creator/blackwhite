@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createAdmin } from "@/app/superadmin/(panel)/admins/actions";
+import { createAdmin } from "@/src/lib/actions/superadmin";
 import { useDrawer } from "./Drawer";
 import { TeamFields } from "./TeamFields";
 

@@ -91,7 +91,6 @@ export function TicketActions({ qrDataUrl, eventName, eventSlug, userName, locat
             </span>
 
             <div className="my-4 p-2 border-2 border-gray-900 rounded bg-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={qrDataUrl} alt="QR Code Fullscreen" className="h-64 w-64 max-w-full" />
             </div>
 

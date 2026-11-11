@@ -2,7 +2,7 @@
 
 import type { Article } from "@prisma/client";
 import { useActionState } from "react";
-import { deleteArticle, saveArticle } from "@/app/superadmin/(panel)/articles/actions";
+import { deleteArticle, saveArticle } from "@/src/lib/actions/superadmin";
 import { ImageUpload } from "./ImageUpload";
 
 export function ArticleForm({ article }: { article?: Article }) {

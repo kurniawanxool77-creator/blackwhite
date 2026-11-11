@@ -59,7 +59,6 @@ export function Lightbox({ photos, index, onIndex, onClose }: { photos: Lightbox
       >
         {photos.length > 1 && <button type="button" onClick={() => go(-1)} aria-label="Foto sebelumnya" className={`${navButton} left-3 hidden sm:flex`}>‹</button>}
         {/* key memicu animasi setiap foto berganti */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img key={photo.url + index} src={photo.url} alt={photo.title} className="animate-rise h-full w-full object-contain select-none" draggable={false} />
         {photos.length > 1 && <button type="button" onClick={() => go(1)} aria-label="Foto berikutnya" className={`${navButton} right-3 hidden sm:flex`}>›</button>}
       </div>
@@ -75,7 +74,6 @@ export function Lightbox({ photos, index, onIndex, onClose }: { photos: Lightbox
               aria-current={i === index}
               className={`h-14 w-20 shrink-0 overflow-hidden rounded border-2 ${i === index ? "border-white" : "border-transparent opacity-60 hover:opacity-100"}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.url} alt="" loading="lazy" className="h-full w-full object-cover" />
             </button>
           ))}

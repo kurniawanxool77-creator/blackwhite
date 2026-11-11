@@ -1,4 +1,4 @@
-import { dayStart } from "@/lib/attendance";
+import { dayStart } from "@/lib/schedule";
 import { fmtDuration, fmtTime } from "@/lib/format";
 
 type Row = {
@@ -16,7 +16,6 @@ export function SelfieThumb({ src, label }: { src: string | null; label: string 
   if (!src) return <span className="inline-block h-9 w-9 rounded-md border border-dashed border-gray-300" title={`${label}: tidak ada foto`} />;
   return (
     <a href={src} target="_blank" rel="noopener noreferrer" title={label}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={label} loading="lazy" className="h-9 w-9 rounded-md border border-gray-200 object-cover" />
     </a>
   );

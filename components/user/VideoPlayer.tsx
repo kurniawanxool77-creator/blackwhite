@@ -47,7 +47,6 @@ export function VideoPlayer({ id, title, onStarted, onEnded }: { id: string; tit
         />
       ) : (
         <button type="button" onClick={() => setPlay(true)} aria-label={`Putar video: ${title}`} className="group absolute inset-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`} alt="" className="h-full w-full object-cover opacity-90 group-hover:opacity-100" />
           <span className="absolute top-1/2 left-1/2 flex h-12 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-md bg-red-600 text-white shadow-lg">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M8 5v14l11-7z" /></svg>

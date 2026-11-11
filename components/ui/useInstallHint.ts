@@ -22,7 +22,9 @@ export function useInstallHint(key: string) {
     setDismissed(true);
     try {
       sessionStorage.setItem(key, "true");
-    } catch {}
+    } catch {
+      /* ignore storage errors */
+    }
   };
 
   return { show: eligible && !dismissed, dismiss };

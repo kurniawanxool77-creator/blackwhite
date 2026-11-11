@@ -3,15 +3,14 @@
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
-import { changeUserPassword } from "@/app/(user)/actions";
+import { changeUserPassword } from "@/src/lib/actions/user";
 import { KeyIcon, LogoutIcon } from "@/components/ui/icons";
-import { changeOwnPassword } from "@/lib/account-actions";
+import { changeOwnPassword } from "@/src/lib/actions/admin";
 import type { ProfileInfo } from "@/lib/profile";
 
 function Avatar({ name, image, size }: { name: string; image: string | null; size: number }) {
   const style = { width: size, height: size };
   return image ? (
-    // eslint-disable-next-line @next/next/no-img-element
     <img src={image} alt="" style={style} className="shrink-0 rounded-full object-cover" referrerPolicy="no-referrer" />
   ) : (
     <span style={{ ...style, fontSize: size * 0.4 }} className="flex shrink-0 items-center justify-center rounded-full bg-brand font-semibold text-white">

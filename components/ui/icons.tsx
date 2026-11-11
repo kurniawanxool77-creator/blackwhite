@@ -254,4 +254,11 @@ export const GoogleIcon = ({ className = "h-4 w-4", ...p }: SVGProps<SVGSVGEleme
   </svg>
 );
 
+export const ChevronRightIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}>
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+);
+
+
 

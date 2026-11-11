@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateOwnContact } from "@/lib/account-actions";
+import { updateOwnContact } from "@/src/lib/actions/admin";
 
 // Panitia/superadmin memperbarui No. HP sendiri; tampil di halaman Tim agar mudah dihubungi.
 export function ContactForm({ phone }: { phone: string | null }) {

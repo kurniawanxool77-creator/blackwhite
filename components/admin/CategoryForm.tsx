@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createCategory } from "@/app/superadmin/(panel)/kategori/actions";
+import { createCategory } from "@/src/lib/actions/superadmin";
 import { useDrawer } from "./Drawer";
 
 export function CategoryForm() {

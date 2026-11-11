@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { resetAdminPassword } from "@/app/superadmin/(panel)/admins/actions";
+import { resetAdminPassword } from "@/src/lib/actions/superadmin";
 
 // Form kecil per baris admin: atur password baru untuk admin yang lupa password.
 export function ResetPasswordForm({ adminId }: { adminId: string }) {

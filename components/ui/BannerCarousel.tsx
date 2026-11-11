@@ -12,7 +12,6 @@ const SWIPE_PX = 40;
 function Slide({ banner }: { banner: Banner }) {
   const body = (
     <>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={banner.imageUrl} alt={banner.title} draggable={false} className="aspect-[16/9] w-full object-cover select-none sm:aspect-[21/8]" />
       {banner.caption && (
         <div className="absolute inset-x-0 bottom-0 bg-gray-900/70 px-4 py-3 text-white sm:px-6 sm:py-4">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { importParticipants } from "@/app/superadmin/(panel)/events/registration-actions";
+import { importParticipants } from "@/src/lib/actions/events";
 
 export function ParticipantImport({ eventId }: { eventId: string }) {
   const [message, action, pending] = useActionState(importParticipants.bind(null, eventId), null);

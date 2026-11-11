@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import type { QuizResult } from "@/app/(user)/tiket/[id]/kuis/actions";
+import type { QuizResult } from "@/src/lib/actions/user";
 
 type Question = { id: string; text: string; options: string[] };
 type Action = (prev: QuizResult, f: FormData) => Promise<QuizResult>;

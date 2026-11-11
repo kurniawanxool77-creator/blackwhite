@@ -14,7 +14,6 @@ export function EventCard({ event, index }: { event: ReadyEvent; index: number }
     >
       <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
         {event.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={event.coverUrl}
             alt={event.name}

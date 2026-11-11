@@ -1,13 +1,11 @@
-import type { Admin } from "@prisma/client";
 import Link from "next/link";
 import { QrCodeIcon } from "@/components/ui/icons";
 import { fmtDateRange, fmtNum } from "@/lib/format";
-import { scanEvents } from "@/lib/scan-flow";
+import type { scanEvents } from "@/lib/scan-flow";
 
 // Langkah 1 scan (/admin/scan, /superadmin/scan): pilih pelatihan. Yang sedang berlangsung di atas.
-export async function ScanScreen({ admin }: { admin: Admin }) {
-  const events = await scanEvents(admin);
-  const base = admin.role === "superadmin" ? "/superadmin" : "/admin";
+export function ScanScreen({ events, role }: { events: Awaited<ReturnType<typeof scanEvents>>; role: string }) {
+  const base = role === "superadmin" ? "/superadmin" : "/admin";
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -15,7 +13,7 @@ export async function ScanScreen({ admin }: { admin: Admin }) {
       <p className="mt-1 text-sm text-gray-600">Pilih pelatihan, lalu pilih item rundown yang akan dipindai.</p>
       {events.length === 0 ? (
         <p className="card mt-4 p-6 text-sm text-gray-600">
-          Tidak ada pelatihan aktif{admin.role === "scanner" ? " yang ditugaskan kepada Anda" : ""}. Pelatihan harus berstatus
+          Tidak ada pelatihan aktif{role === "scanner" ? " yang ditugaskan kepada Anda" : ""}. Pelatihan harus berstatus
           dibuka atau ditutup untuk bisa dipindai.
         </p>
       ) : (

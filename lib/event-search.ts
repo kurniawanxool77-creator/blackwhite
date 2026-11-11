@@ -1,17 +1,10 @@
-import type { Event } from "@prisma/client";
 import { db } from "./db";
 import { getCategories } from "./event-detail";
+import { PRICE_FILTERS, SORTS, type EventFilters, type ReadyEvent, type SortKey } from "./event-filters";
 import { finalPrice } from "./format";
 
+export { PRICE_FILTERS, SORTS, type EventFilters, type ReadyEvent, type SortKey };
 export const queryParam = (v: string | string[] | undefined) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
-
-export type ReadyEvent = Event & { seatsLeft: number | null }; // null = tanpa batas kuota
-export type SortKey = "tanggal" | "harga";
-export const SORTS: Record<SortKey, string> = { tanggal: "Tanggal terdekat", harga: "Harga termurah" };
-export const PRICE_FILTERS: Record<string, string> = { gratis: "Gratis", berbayar: "Berbayar" };
-
-// Filter halaman Pelatihan. Semua opsional; kosong = semua.
-export type EventFilters = { q?: string; kategori?: string; lokasi?: string; mode?: string; harga?: string; urut?: string };
 
 // Sisa kursi = kuota dikurangi peserta yang sudah disetujui.
 export async function seatsLeftOf(event: { id: string; quota: number | null }) {

@@ -1,10 +1,13 @@
 const TZ = "Asia/Jakarta";
 
-export const fmtDate = (d: Date) =>
-  d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: TZ });
+type DateInput = Date | string;
+const toDate = (d: DateInput) => (d instanceof Date ? d : new Date(d));
 
-export const fmtDateTime = (d: Date) =>
-  d.toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ });
+export const fmtDate = (d: DateInput) =>
+  toDate(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: TZ });
+
+export const fmtDateTime = (d: DateInput) =>
+  toDate(d).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: TZ });
 
 export const fmtNum = (n: number) => n.toLocaleString("id-ID");
 
@@ -34,10 +37,11 @@ export const CHECKPOINT_KIND: Record<string, string> = {
 };
 
 // Lama acara dalam hari, termasuk hari pertama dan terakhir.
-export const durationDays = (start: Date, end: Date) => Math.max(1, Math.round((+end - +start) / 86_400_000) + 1);
+export const durationDays = (start: DateInput, end: DateInput) =>
+  Math.max(1, Math.round((+toDate(end) - +toDate(start)) / 86_400_000) + 1);
 
 // Jam saja, mis. "07.45" (Asia/Jakarta).
-export const fmtTime = (d: Date) => d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+export const fmtTime = (d: DateInput) => toDate(d).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 
 // Lama kerja, mis. "8 j 15 m".
 export const fmtDuration = (ms: number) => {
@@ -48,12 +52,14 @@ export const fmtDuration = (ms: number) => {
 export const EVENT_MODE: Record<string, string> = { offline: "Offline", online: "Online", hybrid: "Hybrid" };
 
 // Rentang tanggal ringkas: "6 Nov 2026", "6–7 Nov 2026", "28 Nov – 2 Des 2026", "30 Des 2026 – 2 Jan 2027".
-export function fmtDateRange(start: Date, end: Date) {
+export function fmtDateRange(start: DateInput, end: DateInput) {
+  const s = toDate(start);
+  const e = toDate(end);
   const part = (d: Date, o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("id-ID", { ...o, timeZone: TZ });
-  const [sd, sm, sy] = [part(start, { day: "numeric" }), part(start, { month: "short" }), part(start, { year: "numeric" })];
-  const [ed, em, ey] = [part(end, { day: "numeric" }), part(end, { month: "short" }), part(end, { year: "numeric" })];
-  if (sy !== ey) return `${fmtDate(start)} – ${fmtDate(end)}`;
+  const [sd, sm, sy] = [part(s, { day: "numeric" }), part(s, { month: "short" }), part(s, { year: "numeric" })];
+  const [ed, em, ey] = [part(e, { day: "numeric" }), part(e, { month: "short" }), part(e, { year: "numeric" })];
+  if (sy !== ey) return `${fmtDate(s)} – ${fmtDate(e)}`;
   if (sm !== em) return `${sd} ${sm} – ${ed} ${em} ${ey}`;
   if (sd !== ed) return `${sd}–${ed} ${em} ${ey}`;
-  return fmtDate(start);
+  return fmtDate(s);
 }

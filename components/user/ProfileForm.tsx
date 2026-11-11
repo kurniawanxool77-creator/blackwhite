@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateProfile } from "@/app/(user)/actions";
+import { updateProfile } from "@/src/lib/actions/user";
 import { CheckCircleIcon } from "@/components/ui/icons";
 
 type Props = { name: string; email: string; phone: string; organization: string };

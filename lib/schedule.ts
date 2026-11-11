@@ -41,3 +41,13 @@ export const NO_SHUTTLE_LABEL = "Tidak menggunakan shuttle";
 
 export type RouteLike = { origin: string; destination: string; departAt: Date };
 export const routeLabel = (r: RouteLike) => `${r.origin} → ${r.destination} · ${fmtDepart(r.departAt)}`;
+
+export const dayStart = (date: string) => new Date(`${date}T00:00:00.000Z`);
+export const isDateKey = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(+dayStart(v));
+
+export type AttendanceStatus = { label: string; tone: "green" | "gray" | "amber" };
+export function attendanceStatus(row: { checkIn: Date; checkOut: Date | null } | null | undefined, fmt: (d: Date) => string): AttendanceStatus {
+  if (!row) return { label: "Belum absen", tone: "amber" };
+  if (!row.checkOut) return { label: `Hadir sejak ${fmt(row.checkIn)}`, tone: "green" };
+  return { label: `Selesai ${fmt(row.checkOut)}`, tone: "gray" };
+}

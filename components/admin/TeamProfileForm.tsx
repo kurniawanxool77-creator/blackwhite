@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateTeamProfile } from "@/app/superadmin/(panel)/admins/actions";
+import { updateTeamProfile } from "@/src/lib/actions/superadmin";
 import { TeamFields } from "./TeamFields";
 
 type Admin = { id: string; name: string; position: string; phone: string | null; duties: string };

@@ -1,0 +1,82 @@
+import type { Category } from "@prisma/client";
+import { CategoryForm } from "@/components/admin/CategoryForm";
+import { Drawer } from "@/components/admin/Drawer";
+import { DrawerForm } from "@/components/admin/DrawerForm";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
+import { fmtNum } from "@/lib/format";
+import { DataGate } from "@/src/components/RouteState";
+import { deleteCategory, updateCategory } from "@/src/lib/actions/superadmin";
+import { useApiData } from "@/src/lib/api-client";
+
+export function SuperadminCategoriesPage() {
+  const state = useApiData<{ categories: Category[]; counts: Record<string, number> }>("/api/superadmin/categories");
+
+  return (
+    <DataGate state={state}>
+      {({ categories, counts }) => (
+        <div className="space-y-6">
+          <PageHeader title="Kategori pelatihan" description="Kategori dipilih saat membuat event dan dipakai untuk filter di halaman Pelatihan.">
+            <Drawer label="+ Tambah kategori" title="Tambah kategori baru">
+              <CategoryForm />
+            </Drawer>
+          </PageHeader>
+
+          <section className="card overflow-hidden">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Kategori</th>
+                  <th className="text-right">Event</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {categories.length === 0 && (
+                  <tr><td colSpan={3} className="text-center text-gray-500">Belum ada kategori.</td></tr>
+                )}
+                {categories.map((c) => {
+                  const used = counts[c.name] ?? 0;
+                  return (
+                    <tr key={c.id}>
+                      <td>
+                        <p className="font-medium text-gray-900">{c.name}</p>
+                        {c.description && <p className="text-xs text-gray-500">{c.description}</p>}
+                      </td>
+                      <td className="text-right font-semibold text-brand tabular-nums">{fmtNum(used)}</td>
+                      <td>
+                        <div className="flex justify-end gap-1.5">
+                          <Drawer label="Ubah" title="Ubah kategori" variant="secondary">
+                            <DrawerForm action={updateCategory.bind(null, c.id)}>
+                              <div>
+                                <label className="label" htmlFor={`c-n-${c.id}`}>Nama kategori</label>
+                                <input id={`c-n-${c.id}`} name="name" defaultValue={c.name} className="input" maxLength={60} required />
+                              </div>
+                              <div>
+                                <label className="label" htmlFor={`c-d-${c.id}`}>Keterangan</label>
+                                <input id={`c-d-${c.id}`} name="description" defaultValue={c.description} className="input" maxLength={200} />
+                              </div>
+                            </DrawerForm>
+                          </Drawer>
+                          <form action={async () => { await deleteCategory(c.id); }}>
+                            <ConfirmSubmit
+                              message={used > 0 ? `Hapus kategori "${c.name}"? ${used} event memakainya.` : `Hapus kategori "${c.name}"?`}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Hapus
+                            </ConfirmSubmit>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        </div>
+      )}
+    </DataGate>
+  );
+}
+

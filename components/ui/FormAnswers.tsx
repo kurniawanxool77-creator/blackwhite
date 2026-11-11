@@ -25,7 +25,6 @@ export function FormAnswers({ answers, title = "Data pendaftaran", id, tone, emp
               <dd className="font-medium break-words whitespace-pre-line text-gray-900">
                 {a.type === "file" ? (
                   <a href={a.value} target="_blank" rel="noreferrer" className="inline-block">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={a.value} alt={a.label} className="h-20 w-20 rounded-md border border-gray-200 object-cover" />
                   </a>
                 ) : a.type === "checkbox" ? (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addShuttle, deleteShuttle, updateShuttle } from "@/app/superadmin/(panel)/events/shuttle-actions";
+import { addShuttle, deleteShuttle, updateShuttle } from "@/src/lib/actions/events";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { REG_STATUS } from "@/lib/format";

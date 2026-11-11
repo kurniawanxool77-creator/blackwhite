@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { changeOwnPassword } from "@/lib/account-actions";
+import { changeOwnPassword } from "@/src/lib/actions/admin";
 
 export function PasswordForm() {
   const [state, action, pending] = useActionState(changeOwnPassword, null);

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CategoryFilter, categoryFilterItems } from "@/components/ui/CategoryFilter";
 import { SearchIcon } from "@/components/ui/icons";
-import { PRICE_FILTERS, SORTS, type EventFilters, type ReadyEvent } from "@/lib/event-search";
+import { PRICE_FILTERS, SORTS, type EventFilters, type ReadyEvent } from "@/lib/event-filters";
 import { EVENT_MODE } from "@/lib/format";
 import { EventCard } from "./EventCard";
 

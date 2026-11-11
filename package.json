@@ -3,34 +3,39 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "eslint",
+    "dev": "vite --port 5173",
+    "build": "prisma generate && vite build",
+    "build:server": "node -e \"import('rolldown').then(async({rolldown})=>{const b=await rolldown({input:'server/start.ts',platform:'node',external:id=>!id.startsWith('.')&&!id.startsWith('@/')&&!id.startsWith('/')&&id[1]!==':',resolve:{tsconfigFilename:'tsconfig.json'}});await b.write({file:'.dist-server/server.mjs',format:'esm'});await b.close();})\"",
+    "start": "node .dist-server/server.mjs",
+    "lint": "eslint src server api components lib",
+    "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node --no-warnings --env-file=.env prisma/seed.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "next": "16.4.3",
-    "next-auth": "^4.24.15",
     "qr-scanner": "^1.4.2",
     "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-router-dom": "^7.18.5",
     "sharp": "0.35.5"
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
+    "@eslint/js": "^9.39.5",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.3.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.3",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8"
   }
 }

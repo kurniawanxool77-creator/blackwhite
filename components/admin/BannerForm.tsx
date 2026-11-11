@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createBanner, updateBanner } from "@/app/superadmin/(panel)/banners/actions";
+import { createBanner, updateBanner } from "@/src/lib/actions/superadmin";
 import { useDrawer } from "./Drawer";
 import { ImageUpload } from "./ImageUpload";
 

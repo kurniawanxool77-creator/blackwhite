@@ -29,7 +29,6 @@ export function EventGallery({ photos, title }: { photos: string[]; title: strin
       >
         {/* key memicu animasi muncul setiap foto berganti */}
         <button type="button" onClick={() => setFull(true)} aria-label="Lihat foto layar penuh" className="block w-full cursor-zoom-in">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img key={active} src={photos[active]} alt={`${title}, foto ${active + 1}`} draggable={false} className="animate-rise block aspect-video w-full object-contain select-none" />
         </button>
         {photos.length > 1 && (
@@ -54,7 +53,6 @@ export function EventGallery({ photos, title }: { photos: string[]; title: strin
               onClick={() => setActive(i)}
               className={`aspect-video w-20 shrink-0 overflow-hidden rounded border-2 transition md:w-24 ${i === active ? "border-brand" : "border-transparent opacity-60 hover:opacity-100"}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p} alt="" loading="lazy" className="h-full w-full object-cover" />
             </button>
           ))}

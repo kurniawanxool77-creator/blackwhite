@@ -46,7 +46,6 @@ export function AvatarUpload({
         className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-gray-200 bg-gray-100"
       >
         {url ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={url} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
         ) : (
           <span className="flex h-full w-full items-center justify-center bg-brand text-2xl font-bold text-white">

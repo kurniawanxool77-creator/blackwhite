@@ -3,7 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { registerUser } from "@/app/(landing)/daftar/actions";
+import { registerUser } from "@/src/lib/actions/auth";
 
 // Daftar akun peserta lalu langsung masuk.
 export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {

@@ -57,7 +57,6 @@ export function ImageUpload({ name, label, hint, defaultValue, maxWidth = 1680 }
       <div className="flex items-center gap-3">
         <div className="flex aspect-video w-32 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-gray-100 text-xs text-gray-500">
           {url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt="" className="h-full w-full object-cover" />
           ) : (
             "Belum ada gambar"

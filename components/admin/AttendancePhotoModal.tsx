@@ -77,7 +77,6 @@ export function AttendancePhotoModal({
             </button>
           </div>
           <div className="flex flex-1 items-center justify-center bg-gray-950 p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={data.src} alt={data.title || "Foto"} className="max-h-[65vh] w-auto max-w-full rounded object-contain" />
           </div>
           {data.time && (
@@ -161,7 +160,6 @@ export function AttendancePhotoModal({
                 </div>
                 <div className="flex items-center justify-center p-2 min-h-48 bg-gray-950">
                   {data.checkInPhoto ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={data.checkInPhoto}
                       alt={`Foto datang ${data.adminName}`}
@@ -183,7 +181,6 @@ export function AttendancePhotoModal({
                 </div>
                 <div className="flex items-center justify-center p-2 min-h-48 bg-gray-950">
                   {data.checkOutPhoto ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={data.checkOutPhoto}
                       alt={`Foto selesai ${data.adminName}`}

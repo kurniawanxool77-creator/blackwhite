@@ -5,7 +5,6 @@ export function About({ site }: { site: Site }) {
     <section id="tentang" className="mx-auto max-w-6xl scroll-mt-4 px-4 py-14">
       <div className={`grid items-center gap-10 ${site.aboutImage ? "md:grid-cols-2" : ""}`}>
         {site.aboutImage && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={site.aboutImage} alt="Tentang kami" loading="lazy" className="aspect-[4/3] w-full rounded-md border border-gray-200 object-cover" />
         )}
         <div>

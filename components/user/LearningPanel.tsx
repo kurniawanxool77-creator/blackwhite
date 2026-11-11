@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AwardIcon, PlayIcon } from "@/components/ui/icons";
-import { certificateStatus } from "@/lib/learning";
+import { certificateStatus } from "@/lib/certificate";
 import { CourseLessons } from "./CourseLessons";
 
 type Props = {

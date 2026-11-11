@@ -1,17 +1,10 @@
 import { randomBytes } from "node:crypto";
+import { certificateStatus } from "./certificate";
 import { db } from "./db";
+export { certificateStatus, parseOptions } from "./certificate";
 export { youtubeId } from "./youtube";
 
 // Materi video (YouTube), kuis pilihan ganda, dan sertifikat per pelatihan.
-
-export function parseOptions(json: string): string[] {
-  try {
-    const a = JSON.parse(json);
-    return Array.isArray(a) ? a.map(String) : [];
-  } catch {
-    return [];
-  }
-}
 
 // Nomor sertifikat unik, mis. SBE-2026-4F9A2C.
 const newCertificateNo = () => `SBE-${new Date().getFullYear()}-${randomBytes(3).toString("hex").toUpperCase()}`;
@@ -35,24 +28,7 @@ export async function issueCertificate(registrationId: string): Promise<string> 
   throw new Error("Gagal membuat nomor sertifikat.");
 }
 
-// Syarat sertifikat: pelatihan memberi sertifikat, pendaftaran disetujui, semua video selesai (pelatihan video),
-// lulus kuis (bila ada kuis), dan hadir minimal di satu pos (bila pelatihan memakai QR dan punya pos scan).
-export function certificateStatus(input: {
-  certificate: boolean;
-  status: string;
-  questions: number;
-  passed: boolean;
-  scans: number;
-  needsAttendance: boolean;
-  videos?: { total: number; done: number }; // hanya untuk pelatihan video (type "course")
-}): { eligible: boolean; reason: string } {
-  if (!input.certificate) return { eligible: false, reason: "Pelatihan ini tidak memberikan sertifikat." };
-  if (input.status !== "approved") return { eligible: false, reason: "Pendaftaran belum disetujui." };
-  if (input.videos && input.videos.done < input.videos.total) return { eligible: false, reason: `Selesaikan semua video (${input.videos.done}/${input.videos.total}).` };
-  if (input.needsAttendance && input.scans === 0) return { eligible: false, reason: "Belum tercatat hadir di pelatihan." };
-  if (input.questions > 0 && !input.passed) return { eligible: false, reason: "Selesaikan dan lulus kuis untuk mendapat sertifikat." };
-  return { eligible: true, reason: "Memenuhi syarat sertifikat." };
-}
+// Syarat sertifikat berada di ./certificate (client-safe).
 
 // Status belajar satu pendaftaran: video selesai, nilai kuis terbaik, dan syarat sertifikat.
 // Dipakai halaman tiket, kuis, penandaan video selesai, dan terbit sertifikat otomatis.

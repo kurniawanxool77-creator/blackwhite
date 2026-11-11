@@ -1,5 +1,5 @@
 import type { Checkpoint } from "@prisma/client";
-import { addCheckpoint, deleteCheckpoint, moveCheckpoint, setCheckpointAudience, sortRundown, toggleCheckpointScan, updateCheckpoint } from "@/app/superadmin/(panel)/events/checkpoint-actions";
+import { addCheckpoint, deleteCheckpoint, moveCheckpoint, setCheckpointAudience, sortRundown, toggleCheckpointScan, updateCheckpoint } from "@/src/lib/actions/events";
 import { dayKey, fmtWhen } from "@/lib/schedule";
 import { Drawer } from "./Drawer";
 import { DrawerForm } from "./DrawerForm";

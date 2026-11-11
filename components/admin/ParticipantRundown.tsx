@@ -5,7 +5,7 @@ import type { Participant } from "@/lib/participant";
 import type { RegDetails } from "@/lib/registration-form";
 import { appliesTo, audienceLabel } from "@/lib/rundown";
 import { fmtWhen } from "@/lib/schedule";
-import { manualCheckin, undoScan } from "@/lib/scan";
+import { manualCheckin, undoScan } from "@/src/lib/actions/admin";
 
 type Props = { reg: Participant; details: RegDetails; admin: { id: string; role: string }; locked?: boolean };
 

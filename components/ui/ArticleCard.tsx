@@ -9,7 +9,6 @@ export function ArticleCard({ article }: { article: Article }) {
     <Link href={`/blog/${article.slug}`} className="group card card-link flex gap-3 overflow-hidden p-3 sm:block sm:p-0">
       <div className="h-20 w-28 shrink-0 overflow-hidden rounded bg-gray-100 sm:aspect-video sm:h-auto sm:w-full sm:rounded-none">
         {article.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={article.coverUrl} alt={article.title} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-gray-400" aria-hidden>

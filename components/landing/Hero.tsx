@@ -27,7 +27,6 @@ export function Hero({ site }: { site: Site }) {
           {/* Sisi Kanan: Visual Preview atau Hero Image */}
           <div className="lg:col-span-5">
             {site.heroImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={site.heroImage}
                 alt={site.name}

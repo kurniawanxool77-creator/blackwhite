@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { scanQr, type ScanResult } from "@/lib/scan";
+import { scanQr, type ScanResult } from "@/src/lib/actions/admin";
 import { CameraScanner } from "./CameraScanner";
 
 type Props = {
@@ -88,7 +88,6 @@ export function Scanner({ checkpoint, eventName, changeHref }: Props) {
             <div className="flex items-center gap-4">
               {result.photo !== undefined && (
                 result.photo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={result.photo} alt="Foto peserta" referrerPolicy="no-referrer" className="h-24 w-24 shrink-0 rounded-md border-2 border-white object-cover shadow" />
                 ) : (
                   <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-md border-2 border-dashed border-current text-center text-xs opacity-70">

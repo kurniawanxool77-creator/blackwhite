@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import type { Site } from "@/lib/site";
-import { saveSite } from "@/app/superadmin/(panel)/site/actions";
+import { saveSite } from "@/src/lib/actions/superadmin";
 import { ImageUpload } from "./ImageUpload";
 
 function Field({ label, name, value, rows }: { label: string; name: string; value: string; rows?: number }) {

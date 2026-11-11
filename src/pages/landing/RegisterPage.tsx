@@ -13,27 +13,22 @@ export function RegisterPage() {
   if (user?.role === "user") return <Navigate to="/dashboard" replace />;
 
   return (
-    <AuthSplit image={site.loginImage || site.heroImage} caption={site.name}>
-      <div className="card p-6 sm:p-8">
-        <h1 className="text-xl font-bold text-gray-900">Buat akun peserta</h1>
-        <p className="mt-1 text-sm text-gray-600">Satu akun untuk semua pelatihan, tiket QR, dan sertifikat.</p>
-
-        {googleEnabled && (
-          <div className="mt-5">
-            <GoogleSignInButton callbackUrl="/dashboard" />
-            <OrDivider />
-          </div>
-        )}
-
-        <div className={googleEnabled ? "" : "mt-5"}>
-          <RegisterForm callbackUrl="/dashboard" />
-        </div>
-
-        <p className="mt-5 text-center text-sm text-gray-600">
-          Sudah punya akun?{" "}
-          <Link to="/login" className="font-medium text-brand hover:underline">Masuk</Link>
-        </p>
-      </div>
+    <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900">Daftar akun peserta</h1>
+      <p className="mt-1 mb-6 text-sm text-gray-600">Satu akun untuk mendaftar semua pelatihan dan menyimpan QR tiket Anda.</p>
+      <RegisterForm callbackUrl="/dashboard" />
+      {googleEnabled && (
+        <>
+          <OrDivider />
+          <GoogleSignInButton callbackUrl="/dashboard" label="Daftar dengan Google" />
+        </>
+      )}
+      <p className="mt-6 text-center text-sm text-gray-600">
+        Sudah punya akun?{" "}
+        <Link to="/login" className="font-semibold text-gray-900 hover:underline">
+          Masuk
+        </Link>
+      </p>
     </AuthSplit>
   );
 }

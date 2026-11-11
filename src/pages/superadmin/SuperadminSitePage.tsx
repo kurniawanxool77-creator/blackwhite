@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/admin/PageHeader";
+import { Link } from "react-router-dom";
 import { SiteForm } from "@/components/admin/SiteForm";
 import type { Site } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
@@ -11,11 +11,16 @@ export function SuperadminSitePage() {
     <DataGate state={state}>
       {({ site }) => (
         <div className="mx-auto max-w-3xl">
-          <PageHeader title="Halaman depan & brand" description="Atur nama brand, hero, gambar, layanan, rekening bank, dan informasi kontak." />
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Halaman depan</h1>
+              <p className="mt-1 text-sm text-gray-600">Konten company profile di halaman utama. Daftar event dan artikel tampil otomatis.</p>
+            </div>
+            <Link to="/" target="_blank" className="btn btn-secondary btn-sm">Lihat halaman</Link>
+          </div>
           <SiteForm site={site} />
         </div>
       )}
     </DataGate>
   );
 }
-

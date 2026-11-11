@@ -1,7 +1,6 @@
 import type { Article } from "@prisma/client";
 import { Link, useParams } from "react-router-dom";
 import { ArticleForm } from "@/components/admin/ArticleForm";
-import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { fmtDate } from "@/lib/format";
 import { DataGate } from "@/src/components/RouteState";
@@ -13,42 +12,50 @@ export function SuperadminArticlesPage() {
   return (
     <DataGate state={state}>
       {({ articles }) => (
-        <div className="space-y-5">
-          <PageHeader title="Blog & artikel" description="Tulis berita kegiatan, dokumentasi, dan panduan peserta.">
-            <Link to="/superadmin/articles/new" className="btn btn-primary btn-sm">+ Tulis artikel</Link>
-          </PageHeader>
-
-          <section className="card overflow-hidden">
-            <table className="table text-sm">
+        <>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-xl font-semibold text-gray-900">Artikel</h1>
+            <Link to="/superadmin/articles/new" className="btn btn-primary btn-sm">Tulis artikel</Link>
+          </div>
+          <div className="card mt-4 overflow-x-auto">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Judul</th>
                   <th>Status</th>
-                  <th>Diperbarui</th>
+                  <th>Terbit</th>
+                  <th>Diubah</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
                 {articles.length === 0 && (
-                  <tr><td colSpan={4} className="text-center text-gray-500">Belum ada artikel.</td></tr>
+                  <tr>
+                    <td colSpan={5} className="text-center text-gray-500">Belum ada artikel.</td>
+                  </tr>
                 )}
                 {articles.map((a) => (
                   <tr key={a.id}>
                     <td>
-                      <p className="font-medium text-gray-900">{a.title}</p>
-                      <p className="text-xs text-gray-500">/blog/{a.slug}</p>
+                      <Link to={`/superadmin/articles/${a.id}`} className="font-medium text-brand hover:underline">{a.title}</Link>
+                      {a.excerpt && <p className="line-clamp-1 text-xs text-gray-500">{a.excerpt}</p>}
                     </td>
-                    <td><StatusBadge status={a.published ? "open" : "draft"} label={a.published ? "Terbit" : "Draft"} /></td>
-                    <td className="whitespace-nowrap text-xs text-gray-500">{fmtDate(a.updatedAt)}</td>
-                    <td className="text-right">
-                      <Link to={`/superadmin/articles/${a.id}`} className="btn btn-secondary btn-sm">Ubah</Link>
+                    <td>
+                      <StatusBadge status={a.published ? "approved" : "draft"} label={a.published ? "Terbit" : "Draft"} />
+                    </td>
+                    <td className="whitespace-nowrap">{a.publishedAt ? fmtDate(a.publishedAt) : "-"}</td>
+                    <td className="whitespace-nowrap">{fmtDate(a.updatedAt)}</td>
+                    <td className="text-right whitespace-nowrap">
+                      {a.published && (
+                        <Link to={`/blog/${a.slug}`} target="_blank" className="btn btn-secondary btn-sm">Lihat</Link>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </section>
-        </div>
+          </div>
+        </>
       )}
     </DataGate>
   );

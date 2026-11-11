@@ -1,7 +1,6 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AttendanceEventView } from "@/components/admin/AttendanceEventView";
 import { SelfieThumb } from "@/components/admin/AttendanceHistory";
-import { PageHeader } from "@/components/admin/PageHeader";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import type { EventAttendanceReport } from "@/lib/attendance";
 import { fmtDuration, fmtNum, fmtTime } from "@/lib/format";
@@ -41,6 +40,7 @@ function rowTone(r: AttendancePagePayload["dateRows"][number] | undefined) {
 }
 
 export function SuperadminAttendancePage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const qs = searchParams.toString();
   const state = useApiData<AttendancePagePayload>(qs ? `/api/superadmin/absensi?${qs}` : "/api/superadmin/absensi");
@@ -51,17 +51,37 @@ export function SuperadminAttendancePage() {
         const teamOf = (eid: string) => dateMembers.find((d) => d.id === eid)?.admins ?? [];
         const rowOf = (aid: string, eid: string) => dateRows.find((r) => r.adminId === aid && r.eventId === eid);
 
+        function onFilterDate(e: React.FormEvent<HTMLFormElement>) {
+          e.preventDefault();
+          const val = String(new FormData(e.currentTarget).get("tanggal") ?? "").trim();
+          navigate(`/superadmin/absensi?mode=date${val ? `&tanggal=${encodeURIComponent(val)}` : ""}`);
+        }
+
         return (
           <div className="space-y-6">
-            <PageHeader title="Absensi tim panitia" description="Rekap kehadiran panitia dan foto selfie check-in/check-out per event atau tanggal." />
-
-            <div className="flex flex-wrap gap-2 text-xs font-medium">
-              <Link to="/superadmin/absensi?mode=event" className={`rounded px-3 py-1.5 ${mode !== "date" ? "bg-brand text-white" : "border border-gray-200 bg-white text-gray-700"}`}>
-                Rekap Per Event
-              </Link>
-              <Link to="/superadmin/absensi?mode=date" className={`rounded px-3 py-1.5 ${mode === "date" ? "bg-brand text-white" : "border border-gray-200 bg-white text-gray-700"}`}>
-                Kalender Harian
-              </Link>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Absensi tim</h1>
+                <p className="mt-1 text-sm text-gray-600">
+                  {mode !== "date"
+                    ? "Kehadiran panitia terorganisir per event dari mulai sampai selesai acara, dilengkapi pratinjau rekap."
+                    : "Kehadiran panitia di pelatihan yang berlangsung pada tanggal kalender tertentu."}
+                </p>
+              </div>
+              <div className="flex items-center rounded-md border border-gray-200 bg-white p-1 text-xs font-medium">
+                <Link
+                  to={`/superadmin/absensi?mode=event${selectedEventId ? `&eventId=${selectedEventId}` : ""}`}
+                  className={`rounded px-3 py-1.5 transition ${mode !== "date" ? "bg-brand font-semibold text-white shadow-xs" : "text-gray-600 hover:text-gray-900"}`}
+                >
+                  Rekap Per Event
+                </Link>
+                <Link
+                  to={`/superadmin/absensi?mode=date&tanggal=${date}`}
+                  className={`rounded px-3 py-1.5 transition ${mode === "date" ? "bg-brand font-semibold text-white shadow-xs" : "text-gray-600 hover:text-gray-900"}`}
+                >
+                  Filter Tanggal
+                </Link>
+              </div>
             </div>
 
             {mode !== "date" ? (
@@ -69,11 +89,11 @@ export function SuperadminAttendancePage() {
             ) : (
               <div className="space-y-6">
                 <div className="card p-4">
-                  <form method="get" action="/superadmin/absensi" className="flex flex-wrap items-end gap-3">
+                  <form method="get" onSubmit={onFilterDate} action="/superadmin/absensi" className="flex flex-wrap items-end gap-3">
                     <input type="hidden" name="mode" value="date" />
                     <div>
                       <label className="label text-xs tracking-wider text-gray-500 uppercase" htmlFor="tanggal">Pilih Tanggal Kalender</label>
-                      <input id="tanggal" name="tanggal" type="date" defaultValue={date} className="input" />
+                      <input id="tanggal" name="tanggal" type="date" defaultValue={date} key={date} className="input" />
                     </div>
                     <button className="btn btn-secondary">Tampilkan</button>
                   </form>

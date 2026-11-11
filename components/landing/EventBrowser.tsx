@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useNavigate } from "react-router-dom";
 import { CategoryFilter, categoryFilterItems } from "@/components/ui/CategoryFilter";
 import { SearchIcon } from "@/components/ui/icons";
 import { PRICE_FILTERS, SORTS, type EventFilters, type ReadyEvent } from "@/lib/event-filters";
@@ -17,6 +20,7 @@ type Props = {
 
 // Cari + filter (kategori, lokasi, offline/online, harga, urutan) + kartu pelatihan. Semua filter dikirim (GET) ke /event.
 export function EventBrowser({ results, categories, locations, total, filters = {}, showFilters, limit }: Props) {
+  const navigate = useNavigate();
   const { q, kategori, lokasi, mode, harga, urut } = filters;
   const shown = limit ? results.slice(0, limit) : results;
   const href = (change: Partial<EventFilters>) => {
@@ -33,9 +37,20 @@ export function EventBrowser({ results, categories, locations, total, filters = 
     harga && PRICE_FILTERS[harga],
   ].filter(Boolean);
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    for (const [k, raw] of new FormData(e.currentTarget).entries()) {
+      const v = typeof raw === "string" ? raw.trim() : "";
+      if (v && !(k === "urut" && v === "tanggal")) params.set(k, v);
+    }
+    const qs = params.toString();
+    navigate(qs ? `/event?${qs}` : "/event");
+  }
+
   return (
     <div>
-      <form action="/event" method="get" role="search" className="space-y-2">
+      <form action="/event" method="get" onSubmit={handleSubmit} role="search" className="space-y-2">
         <div className="flex gap-2">
           <div className="relative min-w-0 flex-1">
             <SearchIcon width={18} height={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />

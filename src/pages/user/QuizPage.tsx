@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router-dom";
 import { QuizForm } from "@/components/user/QuizForm";
-import { fmtNum } from "@/lib/format";
 import { DataGate } from "@/src/components/RouteState";
 import { submitQuiz } from "@/src/lib/actions/user";
 import { useApiData } from "@/src/lib/api-client";
@@ -24,13 +23,13 @@ export function QuizPage() {
       {({ registrationId, eventName, passScore, bestScore, blocked, videos, questions }) => {
         const ticketHref = `/tiket/${registrationId}`;
         return (
-          <div className="mx-auto max-w-2xl space-y-6">
+          <div className="mx-auto max-w-2xl space-y-4">
             <div>
-              <Link to={ticketHref} className="text-sm text-gray-500 hover:text-brand">← Kembali ke tiket</Link>
-              <h1 className="mt-2 text-xl font-bold text-gray-900 sm:text-2xl">Kuis evaluasi</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                {eventName} · {fmtNum(questions.length)} soal · nilai lulus {passScore}%
-                {bestScore !== null && ` · nilai terbaik Anda: ${bestScore}%`}
+              <Link to={ticketHref} className="text-sm text-gray-600 hover:text-gray-900">← Kembali ke tiket</Link>
+              <h1 className="mt-1 text-xl font-bold tracking-tight text-gray-900">Kuis · {eventName}</h1>
+              <p className="text-sm text-gray-600">
+                {questions.length} soal · nilai lulus {passScore}%
+                {bestScore !== null && ` · nilai terbaik Anda ${bestScore}%`}
               </p>
             </div>
 

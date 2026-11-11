@@ -1,18 +1,19 @@
 import type { Checkpoint, Event, Registration } from "@prisma/client";
 import { Link, useParams } from "react-router-dom";
+import { GoogleSignInButton } from "@/components/auth/AuthButtons";
 import { EventDetailTabs } from "@/components/landing/EventDetailTabs";
 import { EventGallery } from "@/components/landing/EventGallery";
 import { RegisterForm } from "@/components/landing/RegisterForm";
-import { FormAnswers } from "@/components/ui/FormAnswers";
 import { CalendarIcon, MapPinIcon } from "@/components/ui/icons";
 import { PriceTag } from "@/components/ui/PriceTag";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { durationDays, EVENT_MODE, EVENT_STATUS, fmtDate, fmtDateRange, fmtNum, REG_STATUS } from "@/lib/format";
+import { durationDays, EVENT_MODE, finalPrice, fmtDate, fmtDateRange, fmtNum, REG_STATUS } from "@/lib/format";
 import type { FormField, RegDetails } from "@/lib/registration-form";
 import type { ShuttleOption } from "@/lib/shuttle";
 import type { BankAccount } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { useAuth } from "@/src/lib/auth-client";
 
 type PublicEventDetail = {
   event: Event & {
@@ -47,53 +48,50 @@ function parsePhotos(coverUrl: string | null, rawGallery: string | null): string
 
 export function EventDetailPage() {
   const { slug } = useParams();
+  const { googleEnabled } = useAuth();
   const state = useApiData<PublicEventDetail>(slug ? `/api/public/events/${encodeURIComponent(slug)}` : null);
 
   return (
     <DataGate state={state} notFoundTitle="Pelatihan tidak ditemukan" backTo="/event">
-      {({ event, user, existing, seatsLeft, closed, shuttles, banks, fields, savedDetails }) => {
+      {({ event, user, existing, seatsLeft, closed, shuttles, banks, fields }) => {
         const photos = parsePhotos(event.coverUrl, event.gallery);
         const days = durationDays(event.startDate, event.endDate);
-        const canRegister = event.status === "open" && !closed && (seatsLeft === null || seatsLeft > 0);
-        const regEndPast = event.registrationEnd ? new Date(event.registrationEnd) < new Date() : false;
 
         return (
-          <div className="mx-auto max-w-6xl px-4 py-4 md:py-10">
-            <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-2 text-xs text-gray-500">
-              <Link to="/" className="hover:text-brand">Beranda</Link>
-              <span>/</span>
-              <Link to="/event" className="hover:text-brand">Pelatihan</Link>
-              <span>/</span>
-              <span className="truncate font-medium text-gray-800">{event.name}</span>
-            </nav>
+          <div className="mx-auto max-w-6xl px-4 py-4 md:py-8">
+            <Link to="/event" className="inline-flex min-h-9 items-center text-sm text-gray-600 hover:text-gray-900">
+              ← Semua pelatihan
+            </Link>
 
-            <div className="grid gap-8 lg:grid-cols-12">
-              <div className="min-w-0 lg:col-span-8">
+            <div className="mt-2 grid gap-6 md:mt-4 lg:grid-cols-3 lg:gap-8">
+              <div className="min-w-0 lg:col-span-2">
                 <EventGallery photos={photos} title={event.name} />
+                {event.category && <p className="text-sm font-medium tracking-wide text-brand uppercase">{event.category}</p>}
+                <h1 className="mt-1 text-xl font-bold tracking-tight text-gray-900 md:text-3xl">{event.name}</h1>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge status={event.status} label={EVENT_STATUS[event.status] ?? event.status} />
-                  {event.category && (
-                    <span className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-700">
-                      {event.category}
+                <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-700">
+                  <div className="flex items-center gap-1.5">
+                    <MapPinIcon className="h-4 w-4 text-gray-400" />
+                    <span>{event.location}</span>
+                    <span className="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-800">{EVENT_MODE[event.mode] ?? event.mode}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CalendarIcon className="h-4 w-4 text-gray-400" />
+                    <span>{fmtDateRange(event.startDate, event.endDate)} ({days} hari)</span>
+                  </div>
+                  {event.quota && seatsLeft !== null && (
+                    <span
+                      className={`rounded px-2 py-0.5 font-medium ${
+                        seatsLeft === 0
+                          ? "bg-red-50 text-red-700"
+                          : seatsLeft <= 5
+                          ? "bg-amber-50 text-amber-800"
+                          : "bg-emerald-50 text-emerald-800"
+                      }`}
+                    >
+                      Kuota {fmtNum(event.quota)} · {seatsLeft === 0 ? "Penuh" : `Sisa ${fmtNum(seatsLeft)} Kursi`}
                     </span>
                   )}
-                  <span className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-700">
-                    {EVENT_MODE[event.mode] ?? event.mode}
-                  </span>
-                </div>
-
-                <h1 className="mt-3 text-xl font-bold tracking-tight text-gray-900 md:text-3xl">{event.name}</h1>
-
-                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600">
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarIcon className="h-4 w-4 text-gray-400" />
-                    {fmtDateRange(event.startDate, event.endDate)} ({days} hari)
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPinIcon className="h-4 w-4 text-gray-400" />
-                    {event.location}
-                  </span>
                 </div>
 
                 <EventDetailTabs
@@ -108,77 +106,53 @@ export function EventDetailPage() {
                 />
               </div>
 
-              <aside className="lg:col-span-4">
-                <div className="card sticky top-20 p-5">
-                  <div className="border-b border-gray-100 pb-4">
-                    <p className="text-xs text-gray-500">Biaya pendaftaran</p>
-                    <PriceTag event={event} className="mt-1 text-xl" />
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
-                      <span>{fmtNum(event._count.registrations)} peserta terdaftar</span>
-                      {event.quota !== null && (
-                        <span>
-                          {seatsLeft === 0 ? (
-                            <span className="font-medium text-red-700">Kuota penuh</span>
-                          ) : (
-                            `Sisa ${fmtNum(seatsLeft ?? 0)} dari ${fmtNum(event.quota)} kursi`
-                          )}
-                        </span>
-                      )}
-                    </div>
-                    {event.registrationEnd && (
-                      <p className="mt-1 text-xs text-gray-500">Batas daftar: {fmtDate(event.registrationEnd)}</p>
-                    )}
-                  </div>
+              <aside className="card h-fit p-5 lg:sticky lg:top-24">
+                <h2 className="font-semibold text-gray-900">Daftar pelatihan</h2>
+                <PriceTag event={event} className="mt-2 text-lg" />
+                {event.registrationEnd && (
+                  <p className="mt-1 text-xs text-gray-600">Pendaftaran sampai {fmtDate(event.registrationEnd)}, 23.59 WIB</p>
+                )}
 
-                  <div className="pt-4">
-                    {existing ? (
-                      <div className="space-y-4">
-                        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm">
-                          <p className="font-semibold text-green-900">Anda sudah terdaftar</p>
-                          <p className="mt-1 text-xs text-green-800">
-                            Status: <strong>{REG_STATUS[existing.status] ?? existing.status}</strong>
-                          </p>
-                          <Link to={`/tiket/${existing.id}`} className="btn btn-primary mt-3 w-full text-xs">
-                            Lihat tiket saya
-                          </Link>
-                        </div>
-                        {savedDetails && savedDetails.answers.length > 0 && (
-                          <FormAnswers answers={savedDetails.answers} title="Jawaban formulir Anda" />
-                        )}
-                      </div>
-                    ) : !user ? (
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600">Masuk atau buat akun terlebih dahulu untuk mendaftar pelatihan ini.</p>
-                        <Link to={`/login?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="btn btn-primary w-full">
-                          Masuk untuk mendaftar
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  {existing ? (
+                    <div className="space-y-3 text-sm">
+                      <p>
+                        Status: <StatusBadge status={existing.status} label={REG_STATUS[existing.status] ?? existing.status} />
+                      </p>
+                      {existing.status === "rejected" && existing.rejectReason && (
+                        <p className="text-gray-600">Alasan: {existing.rejectReason}</p>
+                      )}
+                      <Link to={`/tiket/${existing.id}`} className="btn btn-primary w-full">
+                        Lihat tiket
+                      </Link>
+                    </div>
+                  ) : event.status !== "open" || closed ? (
+                    <p className="text-sm text-gray-600">Pendaftaran sudah ditutup.</p>
+                  ) : seatsLeft === 0 ? (
+                    <p className="text-sm text-gray-600">Kuota sudah penuh.</p>
+                  ) : user ? (
+                    <RegisterForm
+                      eventId={event.id}
+                      phone={user.phone ?? ""}
+                      organization={user.organization ?? ""}
+                      price={finalPrice(event)}
+                      fields={fields}
+                      banks={banks}
+                      routes={shuttles}
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {googleEnabled && (
+                        <GoogleSignInButton callbackUrl={`/event/${event.slug}`} label="Daftar dengan Google" />
+                      )}
+                      <p className="text-center text-xs text-gray-500">
+                        {googleEnabled ? "atau " : "Masuk untuk daftar · "}
+                        <Link to={`/login?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="font-medium text-green-700 hover:underline">
+                          pakai email
                         </Link>
-                        <Link to="/daftar" className="btn btn-secondary w-full">
-                          Daftar akun baru
-                        </Link>
-                      </div>
-                    ) : !canRegister ? (
-                      <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                        <p className="font-semibold">Pendaftaran tidak tersedia</p>
-                        <p className="mt-1 text-xs">
-                          {seatsLeft === 0
-                            ? "Kuota peserta sudah terpenuhi."
-                            : regEndPast || closed
-                              ? "Masa pendaftaran untuk event ini sudah berakhir."
-                              : "Pendaftaran untuk event ini sedang ditutup."}
-                        </p>
-                      </div>
-                    ) : (
-                      <RegisterForm
-                        eventId={event.id}
-                        phone={user.phone ?? ""}
-                        organization={user.organization ?? ""}
-                        price={event.price}
-                        fields={fields}
-                        banks={banks}
-                        routes={shuttles}
-                      />
-                    )}
-                  </div>
+                      </p>
+                    </div>
+                  )}
                 </div>
               </aside>
             </div>

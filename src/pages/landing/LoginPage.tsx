@@ -16,27 +16,25 @@ export function LoginPage() {
   if (user?.role === "user") return <Navigate to={callbackUrl} replace />;
 
   return (
-    <AuthSplit image={site.loginImage || site.heroImage} caption={site.name}>
-      <div className="card p-6 sm:p-8">
-        <h1 className="text-xl font-bold text-gray-900">Masuk peserta</h1>
-        <p className="mt-1 text-sm text-gray-600">Lihat tiket QR, materi pembelajaran, dan sertifikat Anda.</p>
-
-        {googleEnabled && (
-          <div className="mt-5">
-            <GoogleSignInButton callbackUrl={callbackUrl} />
-            <OrDivider />
-          </div>
-        )}
-
-        <div className={googleEnabled ? "" : "mt-5"}>
-          <UserLoginForm callbackUrl={callbackUrl} />
-        </div>
-
-        <p className="mt-5 text-center text-sm text-gray-600">
-          Belum punya akun?{" "}
-          <Link to="/daftar" className="font-medium text-brand hover:underline">Daftar di sini</Link>
-        </p>
-      </div>
+    <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900">Masuk</h1>
+      <p className="mt-1 mb-6 text-sm text-gray-600">Untuk daftar pelatihan dan lihat tiket.</p>
+      <UserLoginForm callbackUrl={callbackUrl} />
+      {googleEnabled && (
+        <>
+          <OrDivider />
+          <GoogleSignInButton callbackUrl={callbackUrl} />
+        </>
+      )}
+      <p className="mt-6 text-center text-sm text-gray-600">
+        Belum punya akun?{" "}
+        <Link to={`/daftar?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-green-700 hover:underline">
+          Daftar sekarang
+        </Link>
+      </p>
+      <p className="mt-8 border-t border-gray-200 pt-4 text-center text-xs text-gray-500">
+        Panitia? <Link to="/admin" className="hover:text-gray-900 hover:underline">Login panitia</Link>
+      </p>
     </AuthSplit>
   );
 }

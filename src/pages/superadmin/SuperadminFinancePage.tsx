@@ -1,5 +1,5 @@
-import type { Transaction } from "@prisma/client";
-import { Link, useSearchParams } from "react-router-dom";
+import type { Event, Transaction } from "@prisma/client";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Drawer } from "@/components/admin/Drawer";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { TransactionForm } from "@/components/admin/TransactionForm";
@@ -9,19 +9,41 @@ import { DataGate } from "@/src/components/RouteState";
 import { deleteTransaction } from "@/src/lib/actions/superadmin";
 import { useApiData } from "@/src/lib/api-client";
 
-type FinancePayload = {
-  income: number;
+type FinanceRow = {
+  event: Event;
+  participants: number;
+  registrationIncome: number;
+  otherIncome: number;
   expense: number;
   balance: number;
-  regTotal: number;
-  regByEvent: { eventId: string; eventName: string; count: number; total: number }[];
+};
+
+type FinancePayload = {
+  rows: FinanceRow[];
   transactions: (Transaction & { event: { name: string } | null })[];
+  totals: {
+    registrationIncome: number;
+    otherIncome: number;
+    expense: number;
+    balance: number;
+  };
   events: { id: string; name: string }[];
   eventId: string;
   today: string;
 };
 
+function Stat({ label, value, tone }: { label: string; value: number; tone?: "in" | "out" | "total" }) {
+  const color = tone === "out" ? "text-red-700" : tone === "total" ? (value < 0 ? "text-red-700" : "text-gray-900") : "text-green-700";
+  return (
+    <div className="card p-4">
+      <p className="text-xs font-medium text-gray-600">{label}</p>
+      <p className={`mt-1 text-lg font-bold tabular-nums ${color}`}>{fmtRupiah(value)}</p>
+    </div>
+  );
+}
+
 export function SuperadminFinancePage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const qEvent = searchParams.get("event") || "";
   const apiUrl = qEvent ? `/api/superadmin/keuangan?event=${encodeURIComponent(qEvent)}` : "/api/superadmin/keuangan";
@@ -29,78 +51,86 @@ export function SuperadminFinancePage() {
 
   return (
     <DataGate state={state}>
-      {({ income, expense, balance, regTotal, regByEvent, transactions, events, eventId, today }) => (
-        <div className="space-y-6">
-          <PageHeader title="Keuangan" description="Rekap pembayaran pendaftaran peserta serta pemasukan dan pengeluaran operasional.">
-            <Drawer label="+ Catat transaksi" title="Catat pemasukan atau pengeluaran">
-              <TransactionForm events={events} defaultEventId={eventId} today={today} />
-            </Drawer>
-          </PageHeader>
+      {({ rows, transactions, totals, events, eventId, today }) => {
+        const current = events.find((e) => e.id === eventId);
 
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Link to="/superadmin/keuangan" className={`rounded px-3 py-1.5 font-medium ${!eventId ? "bg-brand text-white" : "border border-gray-200 bg-white text-gray-700"}`}>
-              Semua event
-            </Link>
-            {events.map((ev) => (
-              <Link
-                key={ev.id}
-                to={`/superadmin/keuangan?event=${encodeURIComponent(ev.id)}`}
-                className={`rounded px-3 py-1.5 font-medium ${eventId === ev.id ? "bg-brand text-white" : "border border-gray-200 bg-white text-gray-700"}`}
-              >
-                {ev.name}
-              </Link>
-            ))}
-          </div>
+        function onSelectEvent(e: React.FormEvent<HTMLFormElement>) {
+          e.preventDefault();
+          const picked = new FormData(e.currentTarget).get("event");
+          const val = typeof picked === "string" ? picked.trim() : "";
+          navigate(val ? `/superadmin/keuangan?event=${encodeURIComponent(val)}` : "/superadmin/keuangan");
+        }
 
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div className="card p-4">
-              <p className="text-xs text-gray-500">Pemasukan pendaftaran</p>
-              <p className="mt-1 text-xl font-bold text-gray-900 tabular-nums">{fmtRupiah(regTotal)}</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-xs text-gray-500">Total pemasukan</p>
-              <p className="mt-1 text-xl font-bold text-green-700 tabular-nums">{fmtRupiah(income)}</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-xs text-gray-500">Total pengeluaran</p>
-              <p className="mt-1 text-xl font-bold text-red-700 tabular-nums">{fmtRupiah(expense)}</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-xs text-gray-500">Saldo bersih</p>
-              <p className="mt-1 text-xl font-bold text-gray-900 tabular-nums">{fmtRupiah(balance)}</p>
-            </div>
-          </div>
+        return (
+          <div className="space-y-6">
+            <PageHeader
+              title="Keuangan"
+              description="Pemasukan pendaftaran dihitung otomatis dari peserta yang disetujui. Pemasukan lain dan pengeluaran dicatat manual."
+            >
+              <Drawer label="+ Catat transaksi" title="Catat transaksi">
+                <TransactionForm events={events} defaultEventId={eventId} today={today} />
+              </Drawer>
+            </PageHeader>
 
-          <div className="grid gap-6 lg:grid-cols-5">
-            <section className="card overflow-hidden lg:col-span-2">
-              <h2 className="border-b border-gray-200 px-4 py-3 font-semibold text-gray-900">Pemasukan per event</h2>
-              <table className="table text-sm">
-                <thead>
-                  <tr>
-                    <th>Event</th>
-                    <th className="text-right">Peserta</th>
-                    <th className="text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {regByEvent.length === 0 && (
-                    <tr><td colSpan={3} className="text-center text-gray-500">Belum ada pembayaran peserta.</td></tr>
-                  )}
-                  {regByEvent.map((row) => (
-                    <tr key={row.eventId}>
-                      <td className="font-medium text-gray-900">{row.eventName}</td>
-                      <td className="text-right tabular-nums">{fmtNum(row.count)}</td>
-                      <td className="text-right font-semibold tabular-nums">{fmtRupiah(row.total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
+            <div>
+              <form method="get" onSubmit={onSelectEvent} className="flex flex-wrap gap-2">
+                <select name="event" defaultValue={eventId} className="input w-auto" aria-label="Pilih event" key={eventId}>
+                  <option value="">Semua event</option>
+                  {events.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+                </select>
+                <button className="btn btn-secondary">Tampilkan</button>
+              </form>
+            </div>
 
-            <section className="card overflow-hidden lg:col-span-3">
-              <h2 className="border-b border-gray-200 px-4 py-3 font-semibold text-gray-900">Buku kas & transaksi</h2>
-              <div className="overflow-x-auto">
-                <table className="table text-sm">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <Stat label="Pemasukan pendaftaran" value={totals.registrationIncome} tone="in" />
+              <Stat label="Pemasukan lain" value={totals.otherIncome} tone="in" />
+              <Stat label="Pengeluaran" value={totals.expense} tone="out" />
+              <Stat label={current ? "Saldo event ini" : "Saldo"} value={totals.balance} tone="total" />
+            </div>
+
+            <div className="space-y-6">
+              {!current && (
+                <section className="card overflow-x-auto">
+                  <h2 className="border-b border-gray-200 px-4 py-3 font-semibold text-gray-900">Per event</h2>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Event</th>
+                        <th className="text-right">Peserta</th>
+                        <th className="text-right">Pendaftaran</th>
+                        <th className="text-right">Lain</th>
+                        <th className="text-right">Pengeluaran</th>
+                        <th className="text-right">Saldo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r) => (
+                        <tr key={r.event.id}>
+                          <td>
+                            <Link to={`/superadmin/keuangan?event=${r.event.id}`} className="font-medium text-brand hover:underline">
+                              {r.event.name}
+                            </Link>
+                          </td>
+                          <td className="text-right tabular-nums">{fmtNum(r.participants)}</td>
+                          <td className="text-right whitespace-nowrap tabular-nums">{fmtRupiah(r.registrationIncome)}</td>
+                          <td className="text-right whitespace-nowrap tabular-nums">{fmtRupiah(r.otherIncome)}</td>
+                          <td className="text-right whitespace-nowrap tabular-nums text-red-700">{fmtRupiah(r.expense)}</td>
+                          <td className={`text-right font-semibold whitespace-nowrap tabular-nums ${r.balance < 0 ? "text-red-700" : "text-gray-900"}`}>
+                            {fmtRupiah(r.balance)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </section>
+              )}
+
+              <section className="card overflow-x-auto">
+                <h2 className="border-b border-gray-200 px-4 py-3 font-semibold text-gray-900">
+                  Transaksi manual{current && <span className="font-normal text-gray-500"> · {current.name}</span>}
+                </h2>
+                <table className="table">
                   <thead>
                     <tr>
                       <th>Tanggal</th>
@@ -120,7 +150,7 @@ export function SuperadminFinancePage() {
                           <p className="font-medium text-gray-900">{t.label}</p>
                           <p className="text-xs text-gray-500">{[t.event?.name ?? "Umum", t.note, `oleh ${t.adminName}`].filter(Boolean).join(" · ")}</p>
                         </td>
-                        <td className={`text-right font-semibold tabular-nums whitespace-nowrap ${t.type === "out" ? "text-red-700" : "text-green-700"}`}>
+                        <td className={`text-right font-semibold whitespace-nowrap tabular-nums ${t.type === "out" ? "text-red-700" : "text-green-700"}`}>
                           {t.type === "out" ? "−" : "+"}{fmtRupiah(t.amount)}
                         </td>
                         <td>
@@ -141,7 +171,9 @@ export function SuperadminFinancePage() {
                               />
                             </Drawer>
                             <form action={async () => { await deleteTransaction(t.id); }}>
-                              <ConfirmSubmit message={`Hapus transaksi "${t.label}"?`} className="btn btn-danger btn-sm">Hapus</ConfirmSubmit>
+                              <ConfirmSubmit message={`Hapus transaksi "${t.label}"?`} className="btn btn-danger btn-sm">
+                                Hapus
+                              </ConfirmSubmit>
                             </form>
                           </div>
                         </td>
@@ -149,12 +181,11 @@ export function SuperadminFinancePage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </section>
+              </section>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      }}
     </DataGate>
   );
 }
-

@@ -7,7 +7,8 @@ import { CategoryFilter, categoryFilterItems } from "@/components/ui/CategoryFil
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { PriceTag } from "@/components/ui/PriceTag";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { EVENT_MODE, EVENT_STATUS, fmtDate, fmtNum } from "@/lib/format";
+import { isRunning } from "@/lib/checkin";
+import { EVENT_STATUS, fmtDate, fmtNum } from "@/lib/format";
 import { DataGate } from "@/src/components/RouteState";
 import { createEvent, deleteEvent } from "@/src/lib/actions/events";
 import { useApiData } from "@/src/lib/api-client";
@@ -20,10 +21,10 @@ type EventsPayload = {
   categories: string[];
 };
 
-const deleteMessage = (name: string, totalReg: number) =>
-  totalReg > 0
-    ? `Hapus event "${name}"? ${totalReg} pendaftaran peserta ikut terhapus permanen.`
-    : `Hapus event "${name}"?`;
+const deleteMessage = (name: string, registrations: number) =>
+  registrations
+    ? `Hapus "${name}"? ${registrations} pendaftaran beserta riwayat scan, nilai kuis, dan sertifikatnya ikut terhapus permanen. Tindakan ini tidak bisa dibatalkan.`
+    : `Hapus "${name}" beserta rundown-nya? Tindakan ini tidak bisa dibatalkan.`;
 
 export function SuperadminEventsPage() {
   const [searchParams] = useSearchParams();
@@ -42,69 +43,80 @@ export function SuperadminEventsPage() {
         );
 
         return (
-          <div className="space-y-5">
-            <PageHeader title="Event & pelatihan" description="Kelola pelatihan, formulir pendaftaran, rundown QR, materi, dan sertifikat.">
-              <Drawer label="+ Buat event" title="Buat event baru">
+          <div className="space-y-4">
+            <PageHeader title="Event & pelatihan" description="Klik nama event untuk mengubah info, formulir, rundown, tim, materi, dan sertifikat.">
+              <Drawer label="+ Buat event" title="Buat event / pelatihan baru" size="lg">
                 <EventForm action={createEvent} categories={categories} />
               </Drawer>
             </PageHeader>
 
-            <CategoryFilter items={catItems} />
+            <section>
+              <CategoryFilter items={catItems} />
 
-            <section className="card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="table text-sm">
+              <div className="card mt-4 overflow-x-auto">
+                <table className="table">
                   <thead>
                     <tr>
-                      <th>Event & pelatihan</th>
+                      <th>Event & Pelatihan</th>
                       <th>Tanggal</th>
                       <th>Harga</th>
                       <th>Status</th>
                       <th className="text-right">Menunggu</th>
                       <th className="text-right">Disetujui</th>
-                      <th />
+                      <th className="text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {events.length === 0 && (
-                      <tr><td colSpan={7} className="py-8 text-center text-gray-500">Belum ada event.</td></tr>
+                      <tr><td colSpan={7} className="py-6 text-center text-gray-500">Belum ada event.</td></tr>
                     )}
                     {events.map((e) => {
+                      const running = isRunning(e);
                       const pendingCount = count(e.id, "pending");
                       const approvedCount = count(e.id, "approved");
                       const totalReg = pendingCount + approvedCount + count(e.id, "rejected");
                       return (
                         <tr key={e.id}>
                           <td>
-                            <Link to={`/superadmin/events/${e.id}`} className="font-semibold text-gray-900 hover:text-brand">
-                              {e.name}
-                            </Link>
-                            <p className="text-xs text-gray-500">
-                              {[e.category || "Umum", EVENT_MODE[e.mode] ?? e.mode, e.location, `${fmtNum(e._count.checkpoints)} pos`]
-                                .filter(Boolean)
-                                .join(" · ")}
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <Link to={`/superadmin/events/${e.id}`} className="font-semibold text-brand hover:underline">
+                                {e.name}
+                              </Link>
+                              {running && (
+                                <span className="rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
+                                  Sedang berlangsung
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-0.5 text-xs text-gray-500">
+                              {[e.type === "course" ? "Pelatihan video" : "Tatap muka", e.category, e.location].filter(Boolean).join(" · ")}
+                              {e._count.checkpoints > 0 ? ` · ${e._count.checkpoints} pos checkpoint` : ""}
                             </p>
                           </td>
-                          <td className="whitespace-nowrap text-xs text-gray-600">{fmtDate(e.startDate)}</td>
-                          <td className="whitespace-nowrap"><PriceTag event={e} /></td>
+                          <td className="whitespace-nowrap font-mono text-xs">{fmtDate(e.startDate)}</td>
+                          <td className="whitespace-nowrap"><PriceTag event={e} className="text-sm" /></td>
                           <td><StatusBadge status={e.status} label={EVENT_STATUS[e.status] ?? e.status} /></td>
-                          <td className="text-right tabular-nums">
+                          <td className="text-right">
                             {pendingCount > 0 ? (
-                              <Link to={`/superadmin/events/${e.id}?status=pending`} className="rounded bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800">
+                              <span className="inline-block rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-800">
                                 {fmtNum(pendingCount)}
-                              </Link>
+                              </span>
                             ) : (
                               <span className="text-xs text-gray-400">0</span>
                             )}
                           </td>
-                          <td className="text-right whitespace-nowrap tabular-nums">
+                          <td className="text-right whitespace-nowrap">
                             <span className="font-semibold text-gray-900">{fmtNum(approvedCount)}</span>
                             {e.quota ? <span className="text-xs text-gray-500"> / {fmtNum(e.quota)}</span> : null}
                           </td>
                           <td>
                             <div className="flex justify-end gap-1.5">
-                              <Link to={`/superadmin/absensi?eventId=${e.id}`} className="btn btn-secondary btn-sm">Absensi</Link>
-                              <Link to={`/superadmin/events/${e.id}`} className="btn btn-primary btn-sm">Kelola</Link>
+                              <Link to={`/superadmin/absensi?eventId=${e.id}`} className="btn btn-secondary btn-sm" title="Lihat absensi tim untuk event ini">
+                                Absensi
+                              </Link>
+                              <Link to={`/superadmin/events/${e.id}`} className="btn btn-primary btn-sm">
+                                Kelola
+                              </Link>
                               <form action={async () => { await deleteEvent(e.id); }}>
                                 <ConfirmSubmit message={deleteMessage(e.name, totalReg)} className="btn btn-danger btn-sm">
                                   Hapus

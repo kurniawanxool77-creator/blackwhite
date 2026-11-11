@@ -19,7 +19,8 @@ import { parseUrl, readFormData, readJson, redirect, sendJson } from "../http";
 export async function handleAuth(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<boolean> {
   const method = req.method || "GET";
 
-  const googleEnabled = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
+  // Variabel yang sama dengan yang dipakai startGoogleOAuth/finishGoogleOAuth (server/auth.ts).
+  const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
   if (method === "GET" && pathname === "/api/auth/session") {
     const user = getSessionUser(req);

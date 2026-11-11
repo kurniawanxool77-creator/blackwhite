@@ -23,6 +23,8 @@ type HomePayload = {
   total: number;
 };
 
+const HOME_LIMIT = 6;
+
 export function HomePage() {
   const state = useApiData<HomePayload>("/api/public/home");
 
@@ -33,49 +35,57 @@ export function HomePage() {
           <Hero site={site} />
 
           {banners.length > 0 && (
-            <section className="mx-auto max-w-6xl px-4 pt-4 md:pt-8">
-              <BannerCarousel banners={banners} />
+            <section className="border-b border-gray-200 bg-white">
+              <div className="mx-auto max-w-6xl px-4 py-4 md:py-6">
+                <BannerCarousel banners={banners} />
+              </div>
             </section>
           )}
 
-          <div className="hidden md:block">
-            <Features />
-          </div>
-
-          <section id="acara" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-6 md:py-12">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="hidden text-xs font-semibold tracking-wider text-brand uppercase md:block">Katalog Pelatihan</p>
-                <h2 className="text-base font-bold tracking-tight text-gray-900 md:mt-1 md:text-3xl">Pelatihan & Event Terbuka</h2>
-                <p className="mt-1 hidden text-sm text-gray-600 md:block">
-                  Pilih pelatihan yang sedang membuka pendaftaran online atau gunakan pencarian.
-                </p>
+          <section id="event" className="scroll-mt-16 border-b border-gray-200 bg-white py-6 md:py-14">
+            <div className="mx-auto max-w-6xl px-4">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="hidden text-xs font-semibold tracking-wider text-brand uppercase md:block">Pendaftaran Terbuka</p>
+                  <h2 className="text-base font-bold tracking-tight text-gray-900 md:mt-1 md:text-3xl">
+                    Pelatihan & Event Tersedia
+                  </h2>
+                  <p className="mt-1 hidden text-sm text-gray-600 md:block">
+                    Pilih program pelatihan, lakukan pendaftaran, dan dapatkan QR e-pass resmi Anda.
+                  </p>
+                </div>
+                <Link to="/event" className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand hover:underline">
+                  <span className="md:hidden">Semua</span>
+                  <span className="hidden md:inline">Lihat semua agenda</span>
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Link>
               </div>
-              <Link to="/event" className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand hover:underline">
-                <span className="md:hidden">Semua</span>
-                <span className="hidden md:inline">Semua pelatihan</span>
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-            </div>
 
-            <div className="mt-4 md:mt-6">
-              <EventBrowser results={results} categories={categories} locations={locations} total={total} limit={3} />
+              <div className="mt-4 md:mt-8">
+                <EventBrowser results={results} categories={categories} locations={locations} total={total} limit={HOME_LIMIT} />
+              </div>
             </div>
           </section>
 
           <div className="hidden md:block">
+            <Features />
+
             {site.steps.length > 0 && (
-              <section className="border-t border-gray-200 bg-gray-50/70 py-14">
+              <section className="border-b border-gray-200 bg-gray-50/60 py-14">
                 <div className="mx-auto max-w-6xl px-4">
                   <div className="max-w-2xl">
-                    <p className="text-xs font-semibold tracking-wider text-brand uppercase">Alur Peserta</p>
-                    <h2 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Cara Mengikuti Kegiatan</h2>
-                    <p className="mt-2 text-sm text-gray-600">Proses mudah mulai dari pendaftaran akun hingga mendapatkan sertifikat resmi.</p>
+                    <p className="text-xs font-semibold tracking-wider text-brand uppercase">Alur Presensi</p>
+                    <h2 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                      Bagaimana Sistem Bekerja untuk Anda
+                    </h2>
+                    <p className="mt-2 text-sm text-gray-600">
+                      Langkah mudah dari tahap pendaftaran hingga penyelesaian seluruh checkpoint kegiatan.
+                    </p>
                   </div>
-                  <ol className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                  <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {site.steps.map((step, i) => (
-                      <li key={i} className="card p-5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded border border-brand/20 bg-green-50 text-xs font-bold text-brand">
+                      <li key={step} className="card relative flex flex-col p-5">
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-gray-900 text-xs font-bold text-white">
                           0{i + 1}
                         </div>
                         <h3 className="mt-4 text-sm font-semibold text-gray-900">Tahap {i + 1}</h3>

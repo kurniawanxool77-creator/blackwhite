@@ -1,0 +1,312 @@
+// SQLite untuk lokal. Untuk produksi ganti provider ke "postgresql" dan DATABASE_URL.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Peserta: login dengan Google, atau email + password (daftar di /daftar).
+// emailVerified = pernah masuk lewat Google untuk email ini (kepemilikan email terbukti).
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String
+  passwordHash  String?
+  emailVerified Boolean        @default(false)
+  failedLogins  Int            @default(0)
+  lockedUntil   DateTime?
+  image         String? // foto profil: unggahan (/media/<id>) atau foto Google
+  qrToken       String?        @unique // satu QR pribadi untuk semua pelatihan
+  phone         String?
+  organization  String?
+  createdAt     DateTime       @default(now())
+  registrations Registration[]
+}
+
+// role: "superadmin" | "scanner"
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         String   @default("scanner")
+  active       Boolean  @default(true)
+  // Data tim (halaman Tim panitia). duties: satu tugas per baris.
+  position     String   @default("")
+  phone        String?
+  image        String?
+  duties       String   @default("")
+  failedLogins Int      @default(0)
+  lockedUntil  DateTime?
+  createdAt    DateTime @default(now())
+  events       Event[]  @relation("AdminEvents")
+  scans        Scan[]
+  attendances  Attendance[]
+}
+
+// Absensi anggota tim (gaya HRIS): satu baris per orang, per pelatihan, per hari (tanggal Asia/Jakarta, YYYY-MM-DD).
+model Attendance {
+  id        String    @id @default(cuid())
+  adminId   String
+  eventId   String
+  date      String
+  checkIn   DateTime  @default(now())
+  checkOut  DateTime?
+  // Foto selfie saat absen datang dan saat selesai acara (/media/<id>).
+  checkInPhoto  String?
+  checkOutPhoto String?
+  admin     Admin     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, eventId, date])
+  @@index([date])
+}
+
+// Event atau pelatihan. status: "draft" | "open" | "closed" | "done".
+// price dalam rupiah (0 = gratis), discount dalam persen (0–100).
+model Event {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  name          String
+  category      String         @default("")
+  mode          String         @default("offline") // "offline" | "online" | "hybrid"
+  coverUrl      String?
+  gallery       String         @default("[]") // JSON: daftar URL foto tambahan (maks. 8)
+  price         Int            @default(0)
+  discount      Int            @default(0)
+  location      String
+  description   String         @default("")
+  startDate     DateTime
+  endDate       DateTime
+  quota         Int?
+  status        String         @default("draft")
+  type          String         @default("event") // "event" (tatap muka: rundown, QR) | "course" (pelatihan video berurutan)
+  useQr         Boolean        @default(true) // false: tanpa QR/scan; kehadiran ditandai manual oleh panitia
+  autoApprove   Boolean        @default(false) // true: pendaftar langsung disetujui (tanpa tinjauan panitia)
+  registrationEnd DateTime?    // batas akhir pendaftaran; kosong = sampai event dimulai/ditutup manual
+  codePrefix    String         @default("") // awalan nomor peserta (mis. "RUN" → RUN-001); kosong = tanpa nomor
+  passScore     Int            @default(70) // nilai minimal kuis (%) untuk lulus
+  certificate   Boolean        @default(false) // peserta yang memenuhi syarat mendapat sertifikat
+  formFields    String         @default("[]") // JSON: isian formulir pendaftaran (lihat lib/registration-form.ts)
+  createdAt     DateTime       @default(now())
+  checkpoints   Checkpoint[]
+  registrations Registration[]
+  admins        Admin[]        @relation("AdminEvents")
+  attendances   Attendance[]
+  lessons       Lesson[]
+  questions     Question[]
+  shuttles      ShuttleRoute[]
+  transactions  Transaction[]
+}
+
+// Item rundown. kind: "attendance" | "meal" | "item".
+// scan = false: hanya agenda (tampil di rundown), tidak muncul di scanner dan tidak dihitung di progres.
+model Checkpoint {
+  id      String  @id @default(cuid())
+  eventId String
+  order   Int
+  name    String
+  kind    String  @default("attendance")
+  scan    Boolean @default(true)
+  date      DateTime? // tanggal item (tanpa jam); kosong = belum dijadwalkan
+  startTime String  @default("") // "07.30" (WIB)
+  endTime   String  @default("") // "08.00" (WIB), opsional
+  place   String  @default("") // lokasi pos, mis. "Lobi Hotel Patra"
+  description String @default("") // penjelasan untuk peserta & panitia
+  audience String @default("[]") // JSON "idIsian:nilai"; kosong = semua peserta (lihat lib/rundown.ts)
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  scans   Scan[]
+
+  @@index([eventId, order])
+}
+
+// status: "pending" | "approved" | "rejected". qrToken terisi saat disetujui.
+model Registration {
+  id           String    @id @default(cuid())
+  userId       String
+  eventId      String
+  status       String    @default("pending")
+  rejectReason String?
+  qrToken      String?   @unique
+  approvedAt   DateTime?
+  code         String?   // nomor peserta / BIB (mis. RUN-012); terisi saat disetujui bila event memakai nomor
+  shuttleId    String?   // rute shuttle yang dipilih peserta (kosong = tidak memakai shuttle)
+  shuttle      ShuttleRoute? @relation(fields: [shuttleId], references: [id], onDelete: SetNull)
+  certificateNo String?  @unique // nomor sertifikat; terisi saat diterbitkan
+  certifiedAt  DateTime?
+  details      String    @default("{}") // JSON: { answers, total, paymentProof } (lihat readDetails)
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  scans        Scan[]
+  attempts     QuizAttempt[]
+  progress     LessonProgress[]
+
+  @@unique([userId, eventId])
+  @@unique([eventId, code])
+}
+
+// Konten halaman depan yang bisa diubah Superadmin. key "site" berisi JSON (lihat lib/site.ts).
+model Setting {
+  key   String @id
+  value String
+}
+
+// Slider promosi di beranda. order kecil tampil lebih dulu; hanya yang active tampil.
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String   @default("")
+  imageUrl  String
+  linkUrl   String?
+  caption   Boolean  @default(true) // false: "gambar saja", tanpa judul di atas gambar
+  active    Boolean  @default(true)
+  order     Int
+  createdAt DateTime @default(now())
+}
+
+// Gambar unggahan, dilayani lewat /media/[id]. ownerId kosong = publik (banner, sampul, avatar).
+// ownerId terisi = privat (foto formulir/KTP, bukti transfer, selfie absensi): hanya pemilik dan admin aktif.
+model Media {
+  id        String   @id @default(cuid())
+  mime      String
+  data      Bytes
+  size      Int
+  ownerId   String?
+  createdAt DateTime @default(now())
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String    @default("")
+  content     String
+  coverUrl    String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Catatan tindakan Superadmin. Nama disimpan langsung agar riwayat tetap terbaca bila akun dihapus.
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  adminName String
+  action    String
+  detail    String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Scan {
+  id             String       @id @default(cuid())
+  registrationId String
+  checkpointId   String
+  adminId        String
+  createdAt      DateTime     @default(now())
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  checkpoint     Checkpoint   @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  admin          Admin        @relation(fields: [adminId], references: [id])
+
+  @@unique([registrationId, checkpointId])
+}
+
+// Kategori pelatihan yang dikelola Superadmin. Event.category menyimpan namanya.
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @default("")
+  createdAt   DateTime @default(now())
+}
+
+// Materi video pelatihan (tautan YouTube), berurutan.
+model Lesson {
+  id       String @id @default(cuid())
+  eventId  String
+  order    Int
+  title    String
+  videoUrl String
+  note     String @default("")
+  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@index([eventId, order])
+}
+
+// Video materi yang sudah selesai ditonton seorang peserta.
+model LessonProgress {
+  id             String       @id @default(cuid())
+  registrationId String
+  lessonId       String
+  completedAt    DateTime     @default(now())
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  lesson         Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([registrationId, lessonId])
+}
+
+// Soal kuis pilihan ganda. options = JSON daftar jawaban; answer = indeks jawaban benar.
+model Question {
+  id      String @id @default(cuid())
+  eventId String
+  order   Int
+  text    String
+  options String
+  answer  Int
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, order])
+}
+
+// Satu kali pengerjaan kuis oleh peserta. score dalam persen.
+model QuizAttempt {
+  id             String       @id @default(cuid())
+  registrationId String
+  correct        Int
+  total          Int
+  score          Int
+  passed         Boolean
+  answers        String       @default("[]")
+  createdAt      DateTime     @default(now())
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId])
+}
+
+// Pemasukan/pengeluaran manual. Pemasukan pendaftaran dihitung otomatis dari peserta disetujui.
+model Transaction {
+  id        String   @id @default(cuid())
+  eventId   String?
+  type      String // "in" | "out"
+  amount    Int
+  label     String
+  note      String   @default("")
+  date      DateTime
+  adminName String
+  createdAt DateTime @default(now())
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+}
+
+// Rute shuttle per event: dari mana ke mana, kapan berangkat, berapa kursi. Peserta memilih saat mendaftar.
+model ShuttleRoute {
+  id            String         @id @default(cuid())
+  eventId       String
+  origin        String // titik jemput, mis. "Bandara Ahmad Yani (pintu kedatangan)"
+  destination   String // tujuan, mis. "Hotel Patra"
+  departAt      DateTime // waktu berangkat (disimpan UTC, ditampilkan WIB)
+  capacity      Int? // jumlah kursi; kosong = tanpa batas
+  note          String         @default("") // mis. jenis kendaraan, kontak sopir, termasuk angkut sepeda
+  createdAt     DateTime       @default(now())
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@index([eventId, departAt])
+}

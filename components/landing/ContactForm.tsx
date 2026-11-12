@@ -20,7 +20,7 @@ export function ContactForm({ siteName }: { siteName: string }) {
   if (submitted) {
     return (
       <div className="card rounded-md border border-emerald-200 bg-emerald-50/50 p-6 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md border border-green-200 bg-green-50 text-brand">
           <CheckCircleIcon className="h-6 w-6" />
         </div>
         <h3 className="mt-3 text-base font-bold text-gray-900">Pesan Anda Berhasil Terkirim</h3>

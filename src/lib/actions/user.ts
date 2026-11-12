@@ -1,5 +1,5 @@
 import type { FormState } from "@/lib/form";
-import { callRpc, rpcForm } from "../rpc";
+import { callRpc, errorMessage, rpcForm, rpcFormState } from "../rpc";
 
 export type QuizResult = {
   correct: number;
@@ -11,7 +11,7 @@ export type QuizResult = {
 } | null;
 
 export async function updateProfile(_prev: FormState | null, f: FormData): Promise<FormState> {
-  return rpcForm<FormState>("updateProfile", f);
+  return rpcFormState("updateProfile", f);
 }
 
 export async function cancelRegistration(registrationId: string) {
@@ -19,7 +19,7 @@ export async function cancelRegistration(registrationId: string) {
 }
 
 export async function changeUserPassword(_prev: FormState | null, f: FormData): Promise<FormState> {
-  return rpcForm<FormState>("changeUserPassword", f);
+  return rpcFormState("changeUserPassword", f);
 }
 
 export async function markLessonDone(registrationId: string, lessonId: string): Promise<{ ok: boolean; message?: string; certificateNo?: string | null }> {
@@ -27,6 +27,10 @@ export async function markLessonDone(registrationId: string, lessonId: string): 
 }
 
 export async function submitQuiz(registrationId: string, _prev: QuizResult, f: FormData): Promise<QuizResult> {
-  return rpcForm<QuizResult>("submitQuiz", f, registrationId);
+  try {
+    return await rpcForm<QuizResult>("submitQuiz", f, registrationId);
+  } catch (err) {
+    return { correct: 0, total: 0, score: 0, passed: false, certificateNo: null, message: errorMessage(err) };
+  }
 }
 

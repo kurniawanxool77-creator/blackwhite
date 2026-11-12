@@ -15,16 +15,21 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
     e.preventDefault();
     setPending(true);
     setError("");
-    const form = new FormData(e.currentTarget);
-    const result = await registerUser(null, form);
-    if (!result?.ok) {
-      setError(result?.message ?? "Pendaftaran gagal.");
+    try {
+      const form = new FormData(e.currentTarget);
+      const result = await registerUser(null, form);
+      if (!result?.ok) {
+        setError(result?.message ?? "Pendaftaran gagal.");
+        return;
+      }
+      const res = await signIn("user", { email: form.get("email"), password: form.get("password"), redirect: false });
+      router.replace(res?.ok ? callbackUrl : "/login");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Pendaftaran gagal.");
+    } finally {
       setPending(false);
-      return;
     }
-    const res = await signIn("user", { email: form.get("email"), password: form.get("password"), redirect: false });
-    router.replace(res?.ok ? callbackUrl : "/login");
-    router.refresh();
   }
 
   return (

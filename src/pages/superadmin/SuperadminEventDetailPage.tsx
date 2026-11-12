@@ -90,7 +90,7 @@ export function SuperadminEventDetailPage() {
                     >
                       <span>{t.label}</span>
                       {t.badge && (
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${on ? "bg-green-100 text-brand" : "bg-gray-100 text-gray-600"}`}>
+                        <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${on ? "border border-green-200 bg-green-50 text-brand" : "bg-gray-100 text-gray-600"}`}>
                           {t.badge}
                         </span>
                       )}

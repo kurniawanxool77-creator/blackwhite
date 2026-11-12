@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { errorMessage } from "@/src/lib/rpc";
 import { useDrawer } from "./Drawer";
 
 type Action = (f: FormData) => Promise<string | null | void>;
@@ -15,9 +16,14 @@ export function DrawerForm({ action, submitLabel = "Simpan", children }: { actio
     <form
       action={(f) =>
         start(async () => {
-          const result = await action(f);
-          if (typeof result === "string" && result !== "Tersimpan.") setError(result);
-          else drawer?.close();
+          setError(null);
+          try {
+            const result = await action(f);
+            if (typeof result === "string" && result !== "Tersimpan.") setError(result);
+            else drawer?.close();
+          } catch (err) {
+            setError(errorMessage(err));
+          }
         })
       }
       className="mt-4 space-y-3"

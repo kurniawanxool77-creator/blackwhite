@@ -1,6 +1,8 @@
 import type { Event, Lesson, Question, Registration, User } from "@prisma/client";
+import { useActionState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Drawer } from "@/components/admin/Drawer";
+import { NumInput } from "@/components/admin/EventFormParts";
 import { LessonForm, QuestionForm } from "@/components/admin/LearningForms";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { certificateStatus } from "@/lib/certificate";
@@ -37,6 +39,39 @@ type LearningEvent = Event & {
   })[];
 };
 
+function LearningSettingsCard({ eventId, certificate, passScore }: { eventId: string; certificate: boolean; passScore: number }) {
+  const [state, action, pending] = useActionState(async (_prev: { ok: boolean; msg: string } | null, f: FormData) => {
+    try {
+      await saveLearningSettings(eventId, f);
+      return { ok: true, msg: "Pengaturan tersimpan." };
+    } catch (err) {
+      return { ok: false, msg: err instanceof Error ? err.message : "Gagal menyimpan pengaturan." };
+    }
+  }, null);
+
+  return (
+    <section className="card p-5">
+      <h2 className="font-semibold text-gray-900">Pengaturan kelulusan & sertifikat</h2>
+      <form action={action} className="mt-3 flex flex-wrap items-end gap-4">
+        <label className="flex items-center gap-2 text-sm text-gray-800">
+          <input type="checkbox" name="certificate" defaultChecked={certificate} className="accent-brand" />
+          Beri sertifikat kepada peserta yang memenuhi syarat
+        </label>
+        <div>
+          <label className="label text-xs" htmlFor="passScore">Nilai lulus (%)</label>
+          <NumInput id="passScore" max={100} defaultValue={String(passScore)} className="input w-24" />
+        </div>
+        <button className="btn btn-primary btn-sm" disabled={pending}>
+          {pending ? "Menyimpan..." : "Simpan pengaturan"}
+        </button>
+      </form>
+      {state && (
+        <p className={`mt-2 text-xs ${state.ok ? "text-green-700" : "text-red-700"}`}>{state.msg}</p>
+      )}
+    </section>
+  );
+}
+
 export function SuperadminLearningPage() {
   const { id } = useParams();
   const state = useApiData<{ event: LearningEvent }>(id ? `/api/superadmin/events/${encodeURIComponent(id)}/learning` : null);
@@ -70,20 +105,7 @@ export function SuperadminLearningPage() {
               <h1 className="mt-2 text-xl font-bold text-gray-900">Materi, kuis & sertifikat</h1>
             </div>
 
-            <section className="card p-5">
-              <h2 className="font-semibold text-gray-900">Pengaturan kelulusan & sertifikat</h2>
-              <form action={async (f) => { await saveLearningSettings(event.id, f); }} className="mt-3 flex flex-wrap items-end gap-4">
-                <label className="flex items-center gap-2 text-sm text-gray-800">
-                  <input type="checkbox" name="certificate" defaultChecked={event.certificate} className="accent-brand" />
-                  Beri sertifikat kepada peserta yang memenuhi syarat
-                </label>
-                <div>
-                  <label className="label text-xs" htmlFor="passScore">Nilai lulus (%)</label>
-                  <input id="passScore" name="passScore" type="number" min={0} max={100} defaultValue={event.passScore} className="input w-24" />
-                </div>
-                <button className="btn btn-primary btn-sm">Simpan pengaturan</button>
-              </form>
-            </section>
+            <LearningSettingsCard eventId={event.id} certificate={event.certificate} passScore={event.passScore} />
 
             <div className="grid gap-6 lg:grid-cols-2">
               <section className="card h-fit">

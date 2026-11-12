@@ -1,7 +1,7 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { LiveSync } from "@/components/ui/LiveSync";
-import { NotFoundCard, PageLoader } from "@/src/components/RouteState";
+import { ErrorBoundary, NotFoundCard, PageLoader } from "@/src/components/RouteState";
 import { LandingLayout } from "@/src/layouts/LandingLayout";
 import { PanelLayout } from "@/src/layouts/PanelLayout";
 import { UserLayout } from "@/src/layouts/UserLayout";
@@ -69,8 +69,9 @@ export function App() {
     <BrowserRouter>
       <AuthProvider>
         <LiveSync />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
             <Route element={<LandingLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/tentang" element={<AboutPage />} />
@@ -139,8 +140,9 @@ export function App() {
             </Route>
 
             <Route path="*" element={<NotFoundCard />} />
-          </Routes>
-        </Suspense>
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );

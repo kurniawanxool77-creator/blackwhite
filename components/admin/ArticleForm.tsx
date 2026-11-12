@@ -1,12 +1,29 @@
 "use client";
 
 import type { Article } from "@prisma/client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { deleteArticle, saveArticle } from "@/src/lib/actions/superadmin";
+import { errorMessage } from "@/src/lib/rpc";
 import { ImageUpload } from "./ImageUpload";
 
 export function ArticleForm({ article }: { article?: Article }) {
   const [error, action, pending] = useActionState(saveArticle.bind(null, article?.id ?? null), null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const busy = pending || deleting;
+
+  async function handleDelete() {
+    if (!article || busy) return;
+    if (!window.confirm(`Hapus artikel "${article.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await deleteArticle(article.id);
+    } catch (err) {
+      setDeleteError(errorMessage(err));
+      setDeleting(false);
+    }
+  }
 
   return (
     <form action={action} className="card mt-6 space-y-4 p-5">
@@ -31,18 +48,18 @@ export function ArticleForm({ article }: { article?: Article }) {
         <div className="flex gap-2">
           {article && (
             <button
-              formAction={deleteArticle.bind(null, article.id)}
-              formNoValidate
-              onClick={(e) => { if (!window.confirm(`Hapus artikel "${article.title}"? Tindakan ini tidak dapat dibatalkan.`)) e.preventDefault(); }}
+              type="button"
+              disabled={busy}
+              onClick={handleDelete}
               className="btn btn-danger"
             >
-              Hapus
+              {deleting ? "Menghapus..." : "Hapus"}
             </button>
           )}
-          <button className="btn btn-primary" disabled={pending}>{pending ? "Menyimpan..." : "Simpan"}</button>
+          <button className="btn btn-primary" disabled={busy}>{pending ? "Menyimpan..." : "Simpan"}</button>
         </div>
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {(error || deleteError) && <p className="text-sm text-red-700">{error || deleteError}</p>}
     </form>
   );
 }

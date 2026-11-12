@@ -86,7 +86,7 @@ export function TicketActions({ qrDataUrl, eventName, eventSlug, userName, locat
               ✕
             </button>
 
-            <span className="rounded bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+            <span className="rounded border border-green-200 bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-brand">
               Siap Dipindai Petugas
             </span>
 

@@ -1,5 +1,5 @@
 import type { FormState } from "@/lib/form";
-import { callRpc, rpcForm } from "../rpc";
+import { callRpc, rpcFormState } from "../rpc";
 
 export type ScanResult = {
   tone: "success" | "warning" | "error";
@@ -10,11 +10,11 @@ export type ScanResult = {
 };
 
 export async function changeOwnPassword(_prev: FormState | null, f: FormData): Promise<FormState> {
-  return rpcForm<FormState>("changeOwnPassword", f);
+  return rpcFormState("changeOwnPassword", f);
 }
 
 export async function updateOwnContact(_prev: FormState | null, f: FormData): Promise<FormState> {
-  return rpcForm<FormState>("updateOwnContact", f);
+  return rpcFormState("updateOwnContact", f);
 }
 
 export async function scanQr(checkpointId: string, token: string): Promise<ScanResult> {

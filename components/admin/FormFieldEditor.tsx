@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { fmtNum } from "@/lib/format";
+import { NumInput } from "./EventFormParts";
 import {
   FIELD_GROUPS,
   FIELD_TYPES,
@@ -165,13 +166,10 @@ function PackageListEditor({
                   placeholder="Nama paket"
                   className="input bg-white py-1.5 text-sm"
                 />
-                <input
-                  type="number"
-                  min={0}
-                  step={1000}
-                  value={pkg.price}
-                  onChange={(e) => updateRow(idx, { price: Number(e.target.value) || 0 })}
-                  placeholder="Harga (Rp)"
+                <NumInput
+                  value={pkg.price ? fmtNum(pkg.price) : ""}
+                  onChange={(v) => updateRow(idx, { price: Number(v.replace(/\D/g, "")) || 0 })}
+                  placeholder="Harga Rp (0 = gratis)"
                   className="input bg-white py-1.5 text-sm"
                 />
                 <input

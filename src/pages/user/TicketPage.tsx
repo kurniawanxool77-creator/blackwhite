@@ -33,19 +33,25 @@ type TicketPayload = {
 };
 
 function CancelTicketButton({ registrationId, eventName }: { registrationId: string; eventName: string }) {
-  const [, action, pending] = useActionState(async (_prev: null, _f: FormData) => {
-    await cancelRegistration(registrationId);
-    return null;
+  const [error, action, pending] = useActionState(async (_prev: string | null, _f: FormData) => {
+    try {
+      await cancelRegistration(registrationId);
+      return null;
+    } catch (err) {
+      return err instanceof Error ? err.message : "Gagal membatalkan pendaftaran.";
+    }
   }, null);
 
   return (
     <form action={action} className="mt-6">
       <ConfirmSubmit
+        disabled={pending}
         message={`Apakah Anda yakin ingin membatalkan pendaftaran di ${eventName}?`}
         className="btn btn-danger btn-sm text-xs"
       >
         {pending ? "Membatalkan..." : "Batalkan Pendaftaran"}
       </ConfirmSubmit>
+      {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
     </form>
   );
 }
@@ -222,9 +228,9 @@ export function TicketPage() {
                                 )}
                               </div>
                               {at ? (
-                                <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Terverifikasi</span>
+                                <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-medium text-brand">Terverifikasi</span>
                               ) : isNext ? (
-                                <span className="rounded bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-brand">Pos Berikutnya</span>
+                                <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-brand">Pos Berikutnya</span>
                               ) : (
                                 <span className="text-[10px] text-gray-400">Menunggu</span>
                               )}
@@ -271,7 +277,7 @@ export function TicketPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Status</span>
-                  <span className={`rounded px-2 py-0.5 text-xs font-semibold ${reg.status === "approved" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
+                  <span className={`rounded border px-2 py-0.5 text-xs font-semibold ${reg.status === "approved" ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
                     {reg.status === "approved" ? "Terverifikasi" : total > 0 ? "Menunggu verifikasi" : "Tersimpan"}
                   </span>
                 </div>

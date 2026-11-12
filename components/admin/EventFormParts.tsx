@@ -17,18 +17,41 @@ export function Section({ no, title, hint, children }: { no: number; title: stri
 }
 
 // Input angka berformat ribuan, tanpa spinner.
-export function NumInput({ id, value, onChange, placeholder, max }: { id: string; value: string; onChange: (v: string) => void; placeholder?: string; max?: number }) {
+export function NumInput({
+  id,
+  name = id,
+  value,
+  defaultValue,
+  onChange,
+  placeholder,
+  max,
+  className = "input",
+}: {
+  id?: string;
+  name?: string;
+  value?: string;
+  defaultValue?: string;
+  onChange?: (v: string) => void;
+  placeholder?: string;
+  max?: number;
+  className?: string;
+}) {
+  const format = (input: string) => {
+    const raw = input.replace(/\D/g, "");
+    return raw ? Math.min(max ?? Infinity, Number(raw)).toLocaleString("id-ID") : "";
+  };
   return (
     <input
       id={id}
-      name={id}
-      className="input"
+      name={name}
+      className={className}
       inputMode="numeric"
       placeholder={placeholder}
-      value={value}
+      {...(value !== undefined ? { value } : { defaultValue })}
       onChange={(e) => {
-        const raw = e.target.value.replace(/\D/g, "");
-        onChange(raw ? Math.min(max ?? Infinity, Number(raw)).toLocaleString("id-ID") : "");
+        const formatted = format(e.target.value);
+        if (value === undefined) e.target.value = formatted;
+        onChange?.(formatted);
       }}
     />
   );

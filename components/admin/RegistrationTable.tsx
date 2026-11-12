@@ -89,8 +89,8 @@ export function RegistrationTable({
               >
                 <span>{t.label}</span>
                 <span
-                  className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-                    on ? "bg-brand/10 text-brand font-bold" : "text-gray-500"
+                  className={`rounded px-1.5 py-0.5 text-[10px] ${
+                    on ? "bg-green-50 text-brand font-bold" : "text-gray-500"
                   }`}
                 >
                   {fmtNum(count)}

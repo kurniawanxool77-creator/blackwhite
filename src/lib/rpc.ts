@@ -28,6 +28,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return (data.result as T) ?? (undefined as T);
 }
 
+export function errorMessage(err: unknown): string {
+  return err instanceof Error && err.message ? err.message : "Terjadi kesalahan.";
+}
+
 export async function rpcForm<T = unknown>(action: string, formData: FormData, ...queryArgs: (string | number | null | undefined)[]): Promise<T> {
   const url = new URL(`/api/rpc/${encodeURIComponent(action)}`, window.location.origin);
   for (const a of queryArgs) {
@@ -35,6 +39,22 @@ export async function rpcForm<T = unknown>(action: string, formData: FormData, .
   }
   const res = await fetch(url.pathname + url.search, { method: "POST", body: formData });
   return handleResponse<T>(res);
+}
+
+export async function rpcFormMessage(action: string, formData: FormData, ...queryArgs: (string | number | null | undefined)[]): Promise<string | null> {
+  try {
+    return await rpcForm<string | null>(action, formData, ...queryArgs);
+  } catch (err) {
+    return errorMessage(err);
+  }
+}
+
+export async function rpcFormState(action: string, formData: FormData, ...queryArgs: (string | number | null | undefined)[]): Promise<{ ok: boolean; message: string }> {
+  try {
+    return await rpcForm<{ ok: boolean; message: string }>(action, formData, ...queryArgs);
+  } catch (err) {
+    return { ok: false, message: errorMessage(err) };
+  }
 }
 
 export async function callRpc<T = unknown>(action: string, ...args: unknown[]): Promise<T> {

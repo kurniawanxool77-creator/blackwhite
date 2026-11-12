@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 export function PageLoader({ message = "Memuat data..." }: { message?: string }) {
@@ -81,5 +81,27 @@ export function DataGate<T>({
   if (state.error && state.data === null) return <PageError message={state.error} onRetry={state.refresh} backTo={backTo} />;
   if (!state.data) return <PageLoader />;
   return <>{children(state.data)}</>;
+}
+
+export class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; message: string }> {
+  state = { hasError: false, message: "" };
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, message: error?.message || "Terjadi kesalahan saat menampilkan halaman." };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <PageError
+          message={this.state.message}
+          onRetry={() => window.location.reload()}
+          backTo="/"
+          backLabel="Beranda"
+        />
+      );
+    }
+    return this.props.children;
+  }
 }
 

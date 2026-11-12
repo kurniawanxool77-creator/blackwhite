@@ -119,11 +119,16 @@ export function EventDetailPage() {
                       <p>
                         Status: <StatusBadge status={existing.status} label={REG_STATUS[existing.status] ?? existing.status} />
                       </p>
+                      {existing.status === "pending" && (
+                        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                          Pendaftaran Anda sedang ditinjau panitia. Tiket terbit setelah disetujui.
+                        </p>
+                      )}
                       {existing.status === "rejected" && existing.rejectReason && (
                         <p className="text-gray-600">Alasan: {existing.rejectReason}</p>
                       )}
                       <Link to={`/tiket/${existing.id}`} className="btn btn-primary w-full">
-                        Lihat tiket
+                        {existing.status === "approved" ? "Lihat tiket & QR" : "Lihat status pendaftaran"}
                       </Link>
                     </div>
                   ) : event.status !== "open" || closed ? (
@@ -136,6 +141,7 @@ export function EventDetailPage() {
                       phone={user.phone ?? ""}
                       organization={user.organization ?? ""}
                       price={finalPrice(event)}
+                      autoApprove={event.autoApprove}
                       fields={fields}
                       banks={banks}
                       routes={shuttles}

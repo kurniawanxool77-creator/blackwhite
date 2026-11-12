@@ -12,6 +12,7 @@ type Props = {
   phone: string;
   organization: string;
   price: number;
+  autoApprove?: boolean;
   fields: FormField[];
   banks: BankAccount[];
   routes: ShuttleOption[];
@@ -20,7 +21,7 @@ type Props = {
 type StepKey = "data" | "pilihan" | "bayar";
 const noop = () => {};
 
-export function RegisterForm({ eventId, phone, organization, price, fields, banks, routes }: Props) {
+export function RegisterForm({ eventId, phone, organization, price, autoApprove = false, fields, banks, routes }: Props) {
   const [error, action, pending] = useActionState(registerForEvent.bind(null, eventId), null);
   const form = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(0);
@@ -169,7 +170,11 @@ export function RegisterForm({ eventId, phone, organization, price, fields, bank
             </div>
           </div>
         ) : (
-          <p className="rounded-md border border-green-200 bg-green-50 px-3 py-2.5 text-sm text-green-900">Pelatihan ini gratis. Kirim pendaftaran untuk menunggu persetujuan panitia.</p>
+          <p className="rounded-md border border-green-200 bg-green-50 px-3 py-2.5 text-sm text-green-900">
+            {autoApprove
+              ? "Gratis. Klik kirim agar pendaftaran langsung disetujui dan tiket terbit."
+              : "Gratis. Kirim pendaftaran untuk menunggu persetujuan panitia."}
+          </p>
         )}
 
         <RegistrationFields fields={agreeFields} onPackage={noop} />
@@ -193,7 +198,11 @@ export function RegisterForm({ eventId, phone, organization, price, fields, bank
           </button>
         )}
       </div>
-      <p className="text-center text-xs text-gray-500">Tiket terbit setelah disetujui panitia.</p>
+      <p className="text-center text-xs text-gray-500">
+        {autoApprove
+          ? "Pendaftaran otomatis disetujui selama kuota masih tersedia."
+          : "Pendaftaran masuk antrean persetujuan panitia. Tiket terbit setelah disetujui."}
+      </p>
     </form>
   );
 }

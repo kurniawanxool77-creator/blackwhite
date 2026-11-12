@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { randomBytes } from "node:crypto";
 import { requireAdmin } from "../auth";
+import { invalidateCache } from "../cache";
 import { bodyArgs, queryArgs, readFormData, sendJson } from "../http";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
@@ -205,6 +206,7 @@ export async function handleSuperadminLearningRpc(req: IncomingMessage, res: Ser
     const [eventId, ids] = await bodyArgs(req);
     const count = await approveRegs(String(eventId), Array.isArray(ids) ? ids.map(String) : null);
     await audit(admin, "Setujui pendaftaran", `${count} peserta · event ${eventId}`);
+    invalidateCache("public:");
     return sendJson(res, { result: null }), true;
   }
 
@@ -233,6 +235,7 @@ export async function handleSuperadminLearningRpc(req: IncomingMessage, res: Ser
       existing ? `${existing} sudah terdaftar` : "",
       invalid.length ? `baris tidak valid: ${invalid.join(", ")}` : "",
     ].filter(Boolean).join(", ") + ".";
+    invalidateCache("public:");
     return sendJson(res, { result: summary }), true;
   }
 
@@ -240,6 +243,7 @@ export async function handleSuperadminLearningRpc(req: IncomingMessage, res: Ser
     const [id] = await bodyArgs(req);
     const reg = await db.registration.delete({ where: { id: String(id) }, include: { user: true, event: true } });
     await audit(admin, "Hapus pendaftaran", `${reg.user.name} · ${reg.event.name}`);
+    invalidateCache("public:");
     return sendJson(res, { result: null }), true;
   }
 
@@ -258,6 +262,7 @@ export async function handleSuperadminLearningRpc(req: IncomingMessage, res: Ser
       data: { status: "rejected", rejectReason: str(f, "reason") || null, qrToken: null },
     });
     await audit(admin, "Tolak pendaftaran", `${id}${reg.rejectReason ? ` · ${reg.rejectReason}` : ""}`);
+    invalidateCache("public:");
     return sendJson(res, { result: null }), true;
   }
 

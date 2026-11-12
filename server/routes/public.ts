@@ -101,7 +101,10 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
       const approved = await db.registration.count({ where: { eventId, status: "approved" } });
       if (approved >= event.quota) return sendJson(res, { result: "Kuota event sudah penuh." }), true;
     }
-    const existing = await db.registration.findUnique({ where: { userId_eventId: { userId: user.id, eventId } }, select: { id: true } });
+    const existing = await db.registration.findUnique({ where: { userId_eventId: { userId: user.id, eventId } }, select: { id: true, status: true } });
+    if (existing?.status === "approved") {
+      return sendJson(res, { result: "Anda sudah terdaftar dan disetujui di event ini." }), true;
+    }
     const routes = await shuttleOptions(eventId, existing?.id);
     const read = readAnswers(parseFields(event.formFields), formData, routes);
     if (typeof read === "string") return sendJson(res, { result: read }), true;
@@ -122,7 +125,7 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
     await db.user.update({ where: { id: user.id }, data: { phone, ...(organization ? { organization } : {}) } });
     const reg = await db.registration.upsert({
       where: { userId_eventId: { userId: user.id, eventId } },
-      update: { details, shuttleId: read.shuttleId },
+      update: { details, shuttleId: read.shuttleId, status: "pending", rejectReason: null, approvedAt: null, qrToken: null },
       create: { userId: user.id, eventId, details, shuttleId: read.shuttleId },
     });
     if (event.autoApprove && reg.status === "pending") {
@@ -136,7 +139,7 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
       }
     }
     invalidateCache();
-    sendJson(res, { result: null, redirect: "/dashboard" });
+    sendJson(res, { result: null, redirect: `/tiket/${reg.id}` });
     return true;
   }
 

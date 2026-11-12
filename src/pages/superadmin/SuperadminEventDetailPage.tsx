@@ -25,7 +25,6 @@ type DetailPayload = {
 export function SuperadminEventDetailPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const filter = searchParams.get("status") || "pending";
   const q = searchParams.get("q") || "";
   const requestedTab = searchParams.get("tab") || "peserta";
 
@@ -42,6 +41,15 @@ export function SuperadminEventDetailPage() {
         const fields = parseFields(event.formFields);
         const totalRegs = (counts.pending ?? 0) + (counts.approved ?? 0) + (counts.rejected ?? 0);
         const assignedTeam = team.filter((a) => a.events.length > 0);
+        const defaultFilter =
+          (counts.pending ?? 0) > 0
+            ? "pending"
+            : (counts.approved ?? 0) > 0
+              ? "approved"
+              : (counts.rejected ?? 0) > 0
+                ? "rejected"
+                : "all";
+        const filter = searchParams.get("status") || defaultFilter;
         const activeRegistrations = filter === "all" ? registrations : registrations.filter((r) => r.status === filter);
 
         const tabs: { id: string; label: string; badge?: string }[] = [

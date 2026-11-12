@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { ACTIVITIES, EVENT_TYPES, isEventType, SHUTTLE_FIELD_ID, type ActivityKey, type EventType } from "@/lib/event-types";
 import { finalPrice, fmtRp } from "@/lib/format";
+import { CategoryPicker } from "./CategoryPicker";
 import { useDrawer } from "./Drawer";
 import { ChoiceCards, NumInput, Section } from "./EventFormParts";
 import { GalleryUpload } from "./GalleryUpload";
@@ -85,14 +86,7 @@ export function EventForm({ action, categories, event }: { action: Action; categ
           <label className="label" htmlFor="name">Nama event / pelatihan</label>
           <input id="name" name="name" className="input" defaultValue={event?.name} placeholder="contoh: Semarang Fun Ride 2026" required />
         </div>
-        <div>
-          <label className="label" htmlFor="category">Kategori</label>
-          <select id="category" name="category" className="input" defaultValue={event?.category ?? ""}>
-            <option value="">Tanpa kategori</option>
-            {[...new Set([...categories, ...(event?.category ? [event.category] : [])])].map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <p className="mt-1 text-xs text-gray-500">Kelola daftar kategori di menu <a href="/superadmin/kategori" className="text-brand hover:underline">Kategori</a>.</p>
-        </div>
+        <CategoryPicker categories={categories} defaultValue={event?.category ?? ""} />
         <div>
           <label className="label" htmlFor="description">Deskripsi</label>
           <textarea id="description" name="description" rows={5} className="input" defaultValue={event?.description} placeholder={"Tujuan kegiatan, siapa yang cocok ikut, fasilitas yang didapat, dan syarat peserta.\nPisahkan paragraf dengan baris kosong."} />

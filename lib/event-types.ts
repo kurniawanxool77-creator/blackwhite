@@ -38,7 +38,7 @@ const INSTANSI = [F("instansi1", "Instansi / perusahaan", "text", "umum", false)
 const SETUJU = [F("setuju01", "Saya menyatakan data yang diisi benar dan bersedia mematuhi aturan panitia", "checkbox", "umum", true)];
 
 // Item rundown awal: [nama, jenis, perlu scan, hari ke (0 = hari pertama event, -1 = H-1), jam mulai, jam selesai, tempat, deskripsi].
-export type RundownSeed = [string, "attendance" | "meal" | "item", boolean, number, string, string, string, string];
+export type RundownSeed = [string, "attendance" | "meal" | "item" | "storage", boolean, number, string, string, string, string];
 
 export type Activity = { label: string; hint: string; prefix: string; fields: FormField[]; rundown: RundownSeed[] };
 

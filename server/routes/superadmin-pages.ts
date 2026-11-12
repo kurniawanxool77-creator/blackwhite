@@ -5,9 +5,9 @@ import { matchPath, parseUrl, sendBinary, sendJson, sendText } from "../http";
 import { eventsOnDate, getEventAttendanceReport, isDateKey } from "@/lib/attendance";
 import { startOfTodayJakarta, todayKeyJakarta } from "@/lib/checkin";
 import { db } from "@/lib/db";
-import { getCategories, getEventDetail } from "@/lib/event-detail";
+import { getCategories, getEventDetail, matchesRegSearch } from "@/lib/event-detail";
 import { financeSummary } from "@/lib/finance";
-import { fmtDateTime, REG_STATUS } from "@/lib/format";
+import { finalPrice, fmtDateTime, REG_STATUS } from "@/lib/format";
 import { parseFields, readDetails } from "@/lib/registration-form";
 import { appliesTo } from "@/lib/rundown";
 import { shuttleManifest } from "@/lib/shuttle";
@@ -34,36 +34,93 @@ export async function handleSuperadminPages(req: IncomingMessage, res: ServerRes
   if (exportMatch) {
     const admin = await requireAdmin(req, res, "superadmin");
     if (!admin) return true;
+    const sp = parseUrl(req).searchParams;
+    const statusParam = sp.get("status") || "all";
+    const statusFilter = ["pending", "approved", "rejected"].includes(statusParam) ? statusParam : "all";
+    const q = sp.get("q")?.trim().slice(0, 80) || "";
     const event = await db.event.findUnique({
       where: { id: exportMatch.id },
       include: {
         checkpoints: { where: { scan: true }, orderBy: { order: "asc" } },
-        registrations: { include: { user: { select: SAFE_USER }, scans: true }, orderBy: { createdAt: "asc" } },
+        registrations: {
+          where: statusFilter !== "all" ? { status: statusFilter } : undefined,
+          include: { user: { select: SAFE_USER }, scans: true },
+          orderBy: { createdAt: "asc" },
+        },
       },
     });
     if (!event) return sendText(res, "Event tidak ditemukan", 404), true;
+    const regs = q ? event.registrations.filter((r) => matchesRegSearch(r, q)) : event.registrations;
     const fields = parseFields(event.formFields);
-    const header = ["No. peserta", "Nama", "Email", "No. HP", "Instansi", "Status", ...fields.map((f) => f.label), "Total biaya", "No. referensi", ...event.checkpoints.map((c) => c.name)];
-    const rows = event.registrations.map((r) => {
+    const parsed = regs.map((r) => ({ r, d: readDetails(r.details) }));
+    const hasCodes = Boolean(event.codePrefix) || regs.some((r) => Boolean(r.code));
+    const hasRejectReason = statusFilter === "rejected" || regs.some((r) => Boolean(r.rejectReason));
+    const hasPayment =
+      finalPrice(event) > 0 ||
+      fields.some((f) => f.type === "package") ||
+      parsed.some(({ d }) => (d.total != null && d.total > 0) || Boolean(d.paymentProof));
+    const isOnline = event.mode === "online";
+    const hasQrScans = event.useQr && !isOnline && event.checkpoints.length > 0;
+
+    const header = [
+      ...(hasCodes ? ["No. peserta"] : []),
+      "Nama",
+      "Email",
+      "No. HP",
+      "Instansi",
+      "Tanggal daftar",
+      "Status",
+      ...(hasRejectReason ? ["Alasan ditolak"] : []),
+      ...fields.map((f) => f.label),
+      ...(hasPayment ? ["Total biaya", "No. referensi"] : []),
+      ...(hasQrScans ? ["Pos QR Terpindai", ...event.checkpoints.map((c) => c.name)] : ["Tiket & Akses"]),
+    ];
+
+    const rows = parsed.map(({ r, d }) => {
       const at = new Map(r.scans.map((s) => [s.checkpointId, s.createdAt]));
-      const d = readDetails(r.details);
-      const answer = new Map(d.answers.map((a) => [a.id, a.value]));
+      const byId = new Map(d.answers.map((a) => [a.id, a.value]));
+      const byLabel = new Map(d.answers.map((a) => [a.label, a.value]));
+      const applicableCps = event.checkpoints.filter((c) => appliesTo(c, d));
+      const scannedCount = applicableCps.filter((c) => at.has(c.id)).length;
+      const accessLabel =
+        r.status !== "approved"
+          ? "-"
+          : !event.useQr
+            ? "Manual (tanpa QR)"
+            : isOnline
+              ? "Akses online"
+              : "QR siap";
       return [
-        r.code ?? "",
+        ...(hasCodes ? [r.code ?? ""] : []),
         r.user.name,
         r.user.email,
         r.user.phone ?? "",
         r.user.organization ?? "",
-        REG_STATUS[r.status],
-        ...fields.map((f) => answer.get(f.id) ?? ""),
-        d.total != null ? String(d.total) : "",
-        d.paymentProof,
-        ...event.checkpoints.map((c) => (!appliesTo(c, d) ? "-" : at.get(c.id) ? fmtDateTime(at.get(c.id)!) : "")),
+        fmtDateTime(r.createdAt),
+        REG_STATUS[r.status] ?? r.status,
+        ...(hasRejectReason ? [r.rejectReason ?? ""] : []),
+        ...fields.map((f) => byId.get(f.id) ?? byLabel.get(f.label) ?? ""),
+        ...(hasPayment ? [d.total != null ? String(d.total) : "", d.paymentProof] : []),
+        ...(hasQrScans
+          ? [
+              r.status === "approved" ? `${scannedCount}/${applicableCps.length}` : "-",
+              ...event.checkpoints.map((c) =>
+                !appliesTo(c, d)
+                  ? "-"
+                  : at.get(c.id)
+                    ? fmtDateTime(at.get(c.id)!)
+                    : r.status === "approved"
+                      ? "Belum scan"
+                      : "-",
+              ),
+            ]
+          : [accessLabel]),
       ];
     });
     const csv = "\uFEFF" + [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+    const suffix = statusFilter !== "all" ? `-${statusFilter}` : "";
     sendText(res, csv, 200, "text/csv; charset=utf-8", {
-      "Content-Disposition": `attachment; filename="${event.slug}.csv"`,
+      "Content-Disposition": `attachment; filename="${event.slug}${suffix}.csv"`,
     });
     return true;
   }

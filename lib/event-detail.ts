@@ -2,6 +2,18 @@ import { db } from "./db";
 import { readDetails } from "./registration-form";
 import { appliesTo } from "./rundown";
 
+// Pencarian dipakai bersama daftar peserta dan ekspor CSV agar hasilnya identik.
+export function matchesRegSearch(
+  r: { code?: string | null; user: { name: string; email: string; phone?: string | null; organization?: string | null } },
+  q?: string,
+) {
+  const needle = q?.trim().toLowerCase();
+  if (!needle) return true;
+  return [r.code ?? "", r.user.name, r.user.email, r.user.phone ?? "", r.user.organization ?? ""].some((v) =>
+    v.toLowerCase().includes(needle),
+  );
+}
+
 // Data halaman detail event untuk superadmin dan panitia. adminId diisi = hanya event yang ditugaskan.
 // q menyaring peserta (nama, email, HP, instansi); jumlah per tab tetap dihitung tanpa q.
 export async function getEventDetail(id: string, filter: string, adminId?: string, q?: string) {
@@ -24,10 +36,8 @@ export async function getEventDetail(id: string, filter: string, adminId?: strin
   const approvedDetails = approved.map((r) => readDetails(r.details));
   const eligible = Object.fromEntries(event.checkpoints.map((c) => [c.id, approvedDetails.filter((d) => appliesTo(c, d)).length]));
   const counts = Object.fromEntries(grouped.map((g) => [g.status, g._count])) as Record<string, number>;
-  const needle = q?.toLowerCase();
-  const matches = (r: (typeof registrations)[number]) =>
-    [r.user.name, r.user.email, r.user.phone ?? "", r.user.organization ?? ""].some((v) => v.toLowerCase().includes(needle!));
-  return { event, registrations: needle ? registrations.filter(matches) : registrations, counts, eligible };
+  const needle = q?.trim();
+  return { event, registrations: needle ? registrations.filter((r) => matchesRegSearch(r, needle)) : registrations, counts, eligible };
 }
 
 // Kategori yang dikelola Superadmin (menu Kategori), untuk pilihan di form event.

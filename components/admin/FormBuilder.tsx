@@ -1,127 +1,227 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { EVENT_FORM_TEMPLATE, FIELD_PRESETS } from "@/lib/event-types";
-import { FIELD_GROUPS, FIELD_TYPES, hasOptions, newFieldId, SAMPLE_FIELDS, type FieldGroup, type FieldType, type FormField } from "@/lib/registration-form";
+import { FIELD_PRESETS } from "@/lib/event-types";
+import { fmtNum } from "@/lib/format";
+import { FIELD_GROUPS, type FieldGroup, type FormField } from "@/lib/registration-form";
+import { FormFieldEditor } from "./FormFieldEditor";
 
-type Action = (prev: string | null, f: FormData) => Promise<string | null>;
+type Action = (prev: string | null, formData: FormData) => Promise<string | null>;
 
-// Superadmin menyusun isian formulir pendaftaran per pelatihan: judul, tipe, pilihan, wajib/tidak, urutan.
+const uid = () => Math.random().toString(36).slice(2, 10);
+
 export function FormBuilder({ action, defaultValue }: { action: Action; defaultValue: FormField[] }) {
   const [message, formAction, pending] = useActionState(action, null);
   const [fields, setFields] = useState(defaultValue);
-  const update = (i: number, patch: Partial<FormField>) => setFields((fs) => fs.map((f, j) => (j === i ? { ...f, ...patch } : f)));
-  const move = (i: number, d: number) =>
-    setFields((fs) => {
-      const next = [...fs];
-      [next[i], next[i + d]] = [next[i + d], next[i]];
+  const [groupFilter, setGroupFilter] = useState<"all" | FieldGroup>("all");
+  const [showPresets, setShowPresets] = useState(defaultValue.length === 0);
+  const [expanded, setExpanded] = useState<Set<string>>(
+    () => new Set(defaultValue.slice(0, defaultValue.length > 4 ? 1 : defaultValue.length).map((f) => f.id))
+  );
+
+  const savedJson = JSON.stringify(defaultValue);
+  const [prevSaved, setPrevSaved] = useState(savedJson);
+  if (prevSaved !== savedJson) {
+    setPrevSaved(savedJson);
+    setFields(defaultValue);
+  }
+
+  const isDirty = JSON.stringify(fields) !== savedJson;
+  const visible = fields
+    .map((field, index) => ({ field, index }))
+    .filter((item) => groupFilter === "all" || item.field.group === groupFilter);
+
+  const toggleOne = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
-  const add = () => setFields((fs) => [...fs, { id: newFieldId(), label: "", type: "text", group: "umum", required: false, options: [], hint: "" }]);
-  const addMany = (list: Omit<FormField, "id">[]) => setFields((fs) => [...fs, ...list.map((f) => ({ ...f, options: [...f.options], id: newFieldId() }))]);
+  };
+
+  const add = () => {
+    const id = uid();
+    const targetGroup: FieldGroup = groupFilter === "all" ? "umum" : groupFilter;
+    setFields((list) => [...list, { id, label: "", type: "text", group: targetGroup, required: true, options: [], hint: "" }]);
+    setExpanded((prev) => new Set(prev).add(id));
+  };
+
+  const addMany = (items: Omit<FormField, "id">[]) => {
+    const created = items.map((f) => ({ ...f, id: uid() }));
+    setFields((list) => [...list, ...created]);
+    setGroupFilter("all");
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      created.forEach((f) => next.add(f.id));
+      return next;
+    });
+  };
+
+  const updateAt = (index: number, patch: Partial<FormField>) => {
+    setFields((list) => list.map((f, j) => (j === index ? { ...f, ...patch } : f)));
+  };
+
+  const moveAt = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    if (target < 0 || target >= fields.length) return;
+    setFields((list) => {
+      const copy = [...list];
+      [copy[index], copy[target]] = [copy[target], copy[index]];
+      return copy;
+    });
+  };
+
+  const removeAt = (index: number, id: string) => {
+    setFields((list) => list.filter((_, j) => j !== index));
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const allExpanded = visible.length > 0 && visible.every((v) => expanded.has(v.field.id));
 
   return (
-    <form action={formAction} className="mt-4 space-y-3">
-      <p className="text-sm text-gray-600">
-        Nama, email, dan No. WhatsApp otomatis ditanyakan. Kelompok Kesehatan dan Barang bawaan tampil sebagai tanda khusus di daftar peserta panitia.
-      </p>
+    <form action={formAction} className="space-y-4">
       <input type="hidden" name="formFields" value={JSON.stringify(fields)} />
 
-      {fields.length === 0 ? (
-        <div className="rounded-md border border-dashed border-gray-300 p-6 text-center">
-          <p className="text-sm text-gray-600">Belum ada isian tambahan. Peserta cukup daftar cepat.</p>
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => addMany(EVENT_FORM_TEMPLATE)}>
-              Pakai formulir event (baju, shuttle, penginapan)
+      <div className="rounded-md border border-gray-200 bg-gray-50 p-3 flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-semibold text-gray-800">{fmtNum(fields.length)} isian formulir</span>
+          {isDirty && (
+            <span className="rounded bg-amber-100 px-2 py-0.5 font-medium text-amber-800">
+              Perubahan belum disimpan
+            </span>
+          )}
+          {message && (
+            <span className={`font-medium ${message === "Tersimpan." ? "text-green-700" : "text-red-700"}`}>
+              {message}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {visible.length > 0 && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() =>
+                setExpanded((prev) => {
+                  const next = new Set(prev);
+                  if (allExpanded) visible.forEach((v) => next.delete(v.field.id));
+                  else visible.forEach((v) => next.add(v.field.id));
+                  return next;
+                })
+              }
+            >
+              {allExpanded ? "Tutup semua" : "Buka semua"}
             </button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => addMany(SAMPLE_FIELDS)}>
-              Pakai contoh formulir lengkap
-            </button>
+          )}
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowPresets((s) => !s)}>
+            {showPresets ? "Sembunyikan template" : "+ Tambah dari template"}
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={add}>
+            + Tambah isian
+          </button>
+          <button className="btn btn-primary btn-sm" disabled={pending}>
+            {pending ? "Menyimpan..." : "Simpan formulir"}
+          </button>
+        </div>
+      </div>
+
+      {showPresets && (
+        <div className="rounded-md border border-gray-200 bg-gray-50 p-3 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-gray-700">Template isian cepat</p>
+            <p className="text-xs text-gray-500">Klik untuk langsung menambahkan paket pertanyaan siap pakai.</p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {FIELD_PRESETS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => addMany(p.fields)}
+                className="flex flex-col items-start rounded-md border border-gray-200 bg-white px-3 py-2 text-left hover:border-brand hover:bg-green-50/40 transition"
+              >
+                <span className="text-xs font-semibold text-gray-900">+ {p.label}</span>
+                <span className="mt-0.5 text-[11px] text-gray-500 line-clamp-1">
+                  {p.fields.map((x) => x.label).join(", ")}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
-      ) : (
-        <ol className="space-y-2">
-          {fields.map((f, i) => (
-            <li key={f.id} className="rounded-md border border-gray-200 bg-white p-3">
-              <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-                <span className="w-6 shrink-0 text-center text-xs font-semibold text-gray-500 tabular-nums">{i + 1}</span>
-                <input
-                  className="input min-w-0 flex-1 basis-40"
-                  value={f.label}
-                  onChange={(e) => update(i, { label: e.target.value })}
-                  placeholder="Judul isian, mis. Tanggal lahir"
-                  aria-label={`Judul isian ${i + 1}`}
-                />
-                <select className="input basis-full sm:w-44 sm:basis-auto sm:shrink-0" value={f.type} onChange={(e) => update(i, { type: e.target.value as FieldType })} aria-label={`Tipe isian ${i + 1}`}>
-                  {Object.entries(FIELD_TYPES).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </div>
-              <div className="mt-2 space-y-2 pl-8">
-                {f.type === "shuttle" && (
-                  <p className="rounded border border-gray-200 bg-gray-50 px-2.5 py-2 text-xs text-gray-600">
-                    Pilihan rute diambil dari bagian <strong>Shuttle</strong> di halaman event (dari, ke, jadwal, kapasitas). Peserta juga bisa memilih &quot;Tidak menggunakan shuttle&quot;.
-                  </p>
-                )}
-                {hasOptions(f.type) && (
-                  <textarea
-                    className="input"
-                    rows={Math.max(3, f.options.length)}
-                    value={f.options.join("\n")}
-                    onChange={(e) => update(i, { options: e.target.value.split("\n") })}
-                    placeholder={f.type === "package" ? "Satu paket per baris: Nama | harga | keterangan\nReguler | 550.000 | Hanya pelatihan" : "Satu pilihan per baris"}
-                    aria-label={`Pilihan isian ${i + 1}`}
-                  />
-                )}
-                <input
-                  className="input"
-                  value={f.hint}
-                  onChange={(e) => update(i, { hint: e.target.value })}
-                  placeholder="Keterangan kecil di bawah isian (opsional)"
-                  aria-label={`Keterangan isian ${i + 1}`}
-                />
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-3">
-                  <select
-                    className="input w-auto"
-                    value={f.group}
-                    onChange={(e) => update(i, { group: e.target.value as FieldGroup })}
-                    aria-label={`Kelompok isian ${i + 1}`}
-                    title="Kelompok: menentukan di bagian mana jawaban tampil untuk panitia"
-                  >
-                    {Object.entries(FIELD_GROUPS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
-                    <input type="checkbox" checked={f.required} onChange={(e) => update(i, { required: e.target.checked })} className="h-4 w-4 accent-brand" />
-                    Wajib diisi
-                  </label>
-                  </div>
-                  <div className="flex gap-1">
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Naikkan">↑</button>
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => move(i, 1)} disabled={i === fields.length - 1} aria-label="Turunkan">↓</button>
-                    <button type="button" className="btn btn-danger btn-sm" onClick={() => setFields((fs) => fs.filter((_, j) => j !== i))}>Hapus</button>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ol>
       )}
 
-      <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
-        <p className="text-xs font-semibold text-gray-700">Tambah cepat</p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {FIELD_PRESETS.map((p) => (
-            <button key={p.label} type="button" className="btn btn-secondary btn-sm" onClick={() => addMany(p.fields)}>+ {p.label}</button>
+      {fields.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Filter kelompok formulir">
+          <button
+            type="button"
+            onClick={() => setGroupFilter("all")}
+            className={`rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+              groupFilter === "all"
+                ? "border-brand bg-green-50 text-brand"
+                : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            Semua ({fmtNum(fields.length)})
+          </button>
+          {Object.entries(FIELD_GROUPS).map(([k, label]) => {
+            const count = fields.filter((f) => f.group === k).length;
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setGroupFilter(k as FieldGroup)}
+                className={`rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+                  groupFilter === k
+                    ? "border-brand bg-green-50 text-brand"
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {label} ({fmtNum(count)})
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {visible.length === 0 ? (
+        <p className="rounded-md border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+          {fields.length === 0
+            ? "Belum ada isian tambahan. Hanya nama, email, dan No. WhatsApp yang diminta. Klik \"+ Tambah isian\" atau pilih dari template di atas."
+            : "Tidak ada isian pada kelompok ini."}
+        </p>
+      ) : (
+        <div className="space-y-2.5">
+          {visible.map(({ field, index }) => (
+            <FormFieldEditor
+              key={field.id}
+              field={field}
+              index={index}
+              total={fields.length}
+              expanded={expanded.has(field.id)}
+              onToggle={() => toggleOne(field.id)}
+              onChange={(patch) => updateAt(index, patch)}
+              onMove={(delta) => moveAt(index, delta)}
+              onRemove={() => removeAt(index, field.id)}
+            />
           ))}
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className="btn btn-secondary" onClick={add}>+ Tambah isian kosong</button>
-        <button className="btn btn-primary" disabled={pending}>{pending ? "Menyimpan..." : "Simpan formulir"}</button>
-        {message && <p className={`text-sm ${message === "Tersimpan." ? "text-green-700" : "text-red-700"}`}>{message}</p>}
-      </div>
-      <p className="text-xs text-gray-500">Isian tanpa judul, atau pilihan tanpa opsi, tidak disimpan. Mengubah formulir tidak mengubah jawaban peserta yang sudah mendaftar.</p>
+      {visible.length > 4 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
+          <button type="button" className="btn btn-secondary" onClick={add}>+ Tambah isian</button>
+          <button className="btn btn-primary" disabled={pending}>{pending ? "Menyimpan..." : "Simpan formulir"}</button>
+        </div>
+      )}
+
+      <p className="text-xs text-gray-500">
+        Isian tanpa judul, atau pilihan tanpa opsi, tidak disimpan. Mengubah formulir tidak mengubah jawaban peserta yang sudah mendaftar.
+      </p>
     </form>
   );
 }

@@ -34,6 +34,7 @@ export const CHECKPOINT_KIND: Record<string, string> = {
   attendance: "Kehadiran",
   meal: "Konsumsi",
   item: "Pengambilan barang",
+  storage: "Penyimpanan barang",
 };
 
 // Lama acara dalam hari, termasuk hari pertama dan terakhir.

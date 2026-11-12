@@ -1,7 +1,10 @@
+import { useState } from "react";
 import type { Registration, User } from "@prisma/client";
 import Link from "next/link";
+import { useNavigate } from "react-router-dom";
 import { approveRegistrations, deleteRegistration, rejectRegistration } from "@/src/lib/actions/events";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
+import { DownloadIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { fmtDateTime, fmtNum, REG_STATUS } from "@/lib/format";
@@ -42,17 +45,29 @@ export function RegistrationTable({
   mode,
   useQr = true,
 }: Props) {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState(q ?? "");
+  const [prevQ, setPrevQ] = useState(q ?? "");
+  if (prevQ !== (q ?? "")) {
+    setPrevQ(q ?? "");
+    setSearch(q ?? "");
+  }
+
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   const isOnline = mode === "online";
   const hasScans = useQr && !isOnline && checkpoints.some((c) => c.scan);
 
-  const tabHref = (status: string) => {
+  const tabHref = (status: string, nextQ = q) => {
     const params = new URLSearchParams();
     if (tab) params.set("tab", tab);
     params.set("status", status);
-    if (q) params.set("q", q);
+    if (nextQ) params.set("q", nextQ);
     return `?${params.toString()}`;
   };
+
+  const exportParams = new URLSearchParams({ status: filter });
+  if (q) exportParams.set("q", q);
+  const exportHref = `/superadmin/events/${eventId}/export?${exportParams.toString()}`;
 
   return (
     <section className="card">
@@ -92,22 +107,55 @@ export function RegistrationTable({
         )}
       </div>
 
-      <form method="get" role="search" className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-4 py-3">
-        {tab && <input type="hidden" name="tab" value={tab} />}
-        <input type="hidden" name="status" value={filter} />
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Cari nama, email, no. HP, atau instansi"
-          aria-label="Cari peserta"
-          className="input max-w-sm flex-1"
-        />
-        <button className="btn btn-secondary btn-sm">Cari</button>
-        {q && (
-          <>
-            <span className="text-sm text-gray-600">{fmtNum(registrations.length)} hasil untuk &quot;{q}&quot;</span>
-            <Link href={tabHref(filter)} className="text-sm text-brand hover:underline font-medium">Reset</Link>
-          </>
+      <form
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          navigate(tabHref(filter, search.trim()));
+        }}
+        className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-4 py-3"
+      >
+        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-60">
+          <input
+            name="q"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari nomor peserta, nama, email, no. HP, atau instansi"
+            aria-label="Cari peserta"
+            className="input max-w-sm flex-1"
+          />
+          <button className="btn btn-secondary btn-sm">Cari</button>
+          {q && (
+            <>
+              <span className="text-sm text-gray-600">{fmtNum(registrations.length)} hasil untuk &quot;{q}&quot;</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  navigate(tabHref(filter, ""));
+                }}
+                className="text-sm text-brand hover:underline font-medium"
+              >
+                Reset
+              </button>
+            </>
+          )}
+        </div>
+        {!readOnly && (
+          <div className="flex items-center gap-2">
+            <a href={exportHref} className="btn btn-secondary btn-sm inline-flex items-center gap-1.5">
+              <DownloadIcon className="h-3.5 w-3.5" />
+              Unduh CSV ({fmtNum(registrations.length)})
+            </a>
+            {(filter !== "all" || q) && total > registrations.length && (
+              <a
+                href={`/superadmin/events/${eventId}/export?status=all`}
+                className="text-xs font-medium text-brand hover:underline whitespace-nowrap"
+              >
+                Semua ({fmtNum(total)})
+              </a>
+            )}
+          </div>
         )}
       </form>
 
@@ -212,7 +260,10 @@ export function RegistrationTable({
                   {!readOnly && (
                     <td>
                       <div className="flex justify-end gap-1.5">
-                        {r.status === "approved" && (
+                        <Link href={`${detailBase}/${r.id}`} className="btn btn-secondary btn-sm">
+                          Detail
+                        </Link>
+                        {r.status === "approved" && useQr && (
                           <a href={`/superadmin/qr/${r.id}`} target="_blank" className="btn btn-secondary btn-sm">
                             Lihat Tiket
                           </a>

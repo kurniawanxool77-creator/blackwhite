@@ -7,7 +7,7 @@ import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { ACTIVITIES, isActivity, isEventType, type ActivityKey } from "@/lib/event-types";
 import { digits, str } from "@/lib/form";
-import { fmtRp } from "@/lib/format";
+import { CHECKPOINT_KIND, fmtRp } from "@/lib/format";
 import { MAX_GALLERY } from "@/lib/gallery";
 import { cleanPrefix } from "@/lib/participant-code";
 import { cleanFields, parseFields } from "@/lib/registration-form";
@@ -166,10 +166,12 @@ export async function handleSuperadminEventRpc(req: IncomingMessage, res: Server
   if (action === "addCheckpoint") {
     const [eventId] = queryArgs(req);
     const f = await readFormData(req);
-    const name = str(f, "name");
+    const name = str(f, "name").slice(0, 120);
     if (name) {
+      const rawKind = str(f, "kind");
+      const kind = Object.prototype.hasOwnProperty.call(CHECKPOINT_KIND, rawKind) ? rawKind : "attendance";
       const last = await db.checkpoint.findFirst({ where: { eventId }, orderBy: { order: "desc" } });
-      await db.checkpoint.create({ data: { eventId, name, kind: str(f, "kind") || "attendance", scan: f.get("scan") === "on", order: (last?.order ?? 0) + 1, ...cpDetails(f) } });
+      await db.checkpoint.create({ data: { eventId, name, kind, scan: f.get("scan") === "on", order: (last?.order ?? 0) + 1, ...cpDetails(f) } });
       invalidateCache("public:");
     }
     return sendJson(res, { result: null }), true;
@@ -180,7 +182,8 @@ export async function handleSuperadminEventRpc(req: IncomingMessage, res: Server
     const f = await readFormData(req);
     const name = str(f, "name").slice(0, 120);
     if (!name) return sendJson(res, { result: "Nama item wajib diisi." }), true;
-    const kind = ["attendance", "meal", "item"].includes(str(f, "kind")) ? str(f, "kind") : "attendance";
+    const rawKind = str(f, "kind");
+    const kind = Object.prototype.hasOwnProperty.call(CHECKPOINT_KIND, rawKind) ? rawKind : "attendance";
     await db.checkpoint.update({ where: { id }, data: { name, kind, ...cpDetails(f) } });
     await audit(admin, "Ubah item rundown", name);
     invalidateCache("public:");

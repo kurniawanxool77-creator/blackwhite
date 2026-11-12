@@ -53,7 +53,7 @@ export function SuperadminUsersPage() {
             )
           : filtered;
 
-        function onSearch(e: React.FormEvent<HTMLFormElement>) {
+        function onSearch(e: React.SubmitEvent<HTMLFormElement>) {
           e.preventDefault();
           const val = String(new FormData(e.currentTarget).get("q") ?? "").trim();
           const params = new URLSearchParams();

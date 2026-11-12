@@ -37,7 +37,7 @@ export function EventBrowser({ results, categories, locations, total, filters = 
     harga && PRICE_FILTERS[harga],
   ].filter(Boolean);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const params = new URLSearchParams();
     for (const [k, raw] of new FormData(e.currentTarget).entries()) {

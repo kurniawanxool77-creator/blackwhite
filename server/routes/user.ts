@@ -16,7 +16,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   const method = req.method || "GET";
 
   if (method === "GET" && pathname === "/api/user/dashboard") {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const [registrations, categories, me] = await Promise.all([
       db.registration.findMany({
@@ -49,7 +49,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
 
   const ticketQuizParams = method === "GET" ? matchPath("/api/user/ticket/:id/quiz", pathname) : null;
   if (ticketQuizParams) {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const reg = await db.registration.findFirst({
       where: { id: ticketQuizParams.id, userId: user.id, status: "approved" },
@@ -77,7 +77,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
 
   const ticketParams = method === "GET" ? matchPath("/api/user/ticket/:id", pathname) : null;
   if (ticketParams) {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const reg = await db.registration.findFirst({
       where: { id: ticketParams.id, userId: user.id },
@@ -108,7 +108,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   }
 
   if (method === "GET" && pathname === "/api/user/account") {
-    const session = await requireUser(req, res);
+    const session = requireUser(req, res);
     if (!session) return true;
     const user = await db.user.findUnique({
       where: { id: session.id },
@@ -119,7 +119,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   }
 
   if (method === "POST" && pathname === "/api/rpc/updateProfile") {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const f = await readFormData(req);
     const name = str(f, "name");
@@ -138,7 +138,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   }
 
   if (method === "POST" && pathname === "/api/rpc/cancelRegistration") {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const qId = parseUrl(req).searchParams.getAll("a")[0];
     let registrationId = qId ?? "";
@@ -155,7 +155,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   }
 
   if (method === "POST" && pathname === "/api/rpc/changeUserPassword") {
-    const session = await requireUser(req, res);
+    const session = requireUser(req, res);
     if (!session) return true;
     const f = await readFormData(req);
     const user = await db.user.findUnique({ where: { id: session.id } });
@@ -188,7 +188,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   }
 
   if (method === "POST" && pathname === "/api/rpc/markLessonDone") {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const raw = await readJson<{ registrationId?: string; lessonId?: string; args?: unknown[] }>(req);
     const obj = (raw.args?.[0] && typeof raw.args[0] === "object" ? raw.args[0] : raw) as { registrationId?: string; lessonId?: string };
@@ -216,7 +216,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
   }
 
   if (method === "POST" && pathname === "/api/rpc/submitQuiz") {
-    const user = await requireUser(req, res);
+    const user = requireUser(req, res);
     if (!user) return true;
     const url = parseUrl(req);
     const f = await readFormData(req);

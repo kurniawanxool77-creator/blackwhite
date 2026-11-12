@@ -51,7 +51,7 @@ export function SuperadminAttendancePage() {
         const teamOf = (eid: string) => dateMembers.find((d) => d.id === eid)?.admins ?? [];
         const rowOf = (aid: string, eid: string) => dateRows.find((r) => r.adminId === aid && r.eventId === eid);
 
-        function onFilterDate(e: React.FormEvent<HTMLFormElement>) {
+        function onFilterDate(e: React.SubmitEvent<HTMLFormElement>) {
           e.preventDefault();
           const val = String(new FormData(e.currentTarget).get("tanggal") ?? "").trim();
           navigate(`/superadmin/absensi?mode=date${val ? `&tanggal=${encodeURIComponent(val)}` : ""}`);

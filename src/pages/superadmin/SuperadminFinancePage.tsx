@@ -54,7 +54,7 @@ export function SuperadminFinancePage() {
       {({ rows, transactions, totals, events, eventId, today }) => {
         const current = events.find((e) => e.id === eventId);
 
-        function onSelectEvent(e: React.FormEvent<HTMLFormElement>) {
+        function onSelectEvent(e: React.SubmitEvent<HTMLFormElement>) {
           e.preventDefault();
           const picked = new FormData(e.currentTarget).get("event");
           const val = typeof picked === "string" ? picked.trim() : "";

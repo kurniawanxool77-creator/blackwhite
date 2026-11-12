@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { splitBankLine } from "@/lib/site-defaults";
 import type { Site } from "@/lib/site";
 import { saveSite } from "@/src/lib/actions/superadmin";
@@ -25,7 +25,7 @@ export function SiteForm({ site }: { site: Site }) {
   const [showBankErrors, setShowBankErrors] = useState(false);
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const bankRows = String(formData.get("banks") ?? "")

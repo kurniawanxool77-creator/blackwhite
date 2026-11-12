@@ -10,23 +10,28 @@ export function AdminLoginForm({ portal }: { portal: "superadmin" | "admin" }) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setPending(true);
     setError("");
-    const form = new FormData(e.currentTarget);
-    const res = await signIn("admin", {
-      email: form.get("email"),
-      password: form.get("password"),
-      portal,
-      redirect: false,
-    });
-    if (res?.ok) {
-      // Proxy mengarahkan ke halaman awal sesuai peran.
-      router.replace(`/${portal}`);
-      router.refresh();
-    } else {
+    try {
+      const form = new FormData(e.currentTarget);
+      const res = await signIn("admin", {
+        email: form.get("email"),
+        password: form.get("password"),
+        portal,
+        redirect: false,
+      });
+      if (res?.ok) {
+        // Proxy mengarahkan ke halaman awal sesuai peran.
+        router.replace(`/${portal}`);
+        router.refresh();
+        return;
+      }
       setError("Email atau password salah, atau akun tidak memiliki akses ke halaman ini.");
+    } catch {
+      setError("Gagal terhubung ke server. Silakan coba lagi.");
+    } finally {
       setPending(false);
     }
   }

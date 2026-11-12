@@ -10,7 +10,7 @@ export function UserLoginForm({ callbackUrl }: { callbackUrl: string }) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setPending(true);
     setError("");

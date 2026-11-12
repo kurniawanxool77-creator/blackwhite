@@ -26,11 +26,12 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
   const form = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(0);
   const [stepError, setStepError] = useState<string | null>(null);
+  const [hideError, setHideError] = useState(false);
   const [summary, setSummary] = useState<{ label: string; value: string }[]>([]);
   const [packagePrice, setPackagePrice] = useState<number | null>(null);
 
   const hasPackage = fields.some((f) => f.type === "package");
-  const total = (hasPackage ? packagePrice : price) ?? 0;
+  const total = packagePrice ?? price;
   const isChoice = (f: FormField) => hasOptions(f.type) || f.type === "shuttle";
   const dataFields = fields.filter((f) => !isChoice(f) && f.type !== "checkbox");
   const choiceFields = fields.filter(isChoice);
@@ -66,6 +67,7 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
   function buildSummary() {
     const fd = new FormData(form.current!);
     const rows = [{ label: "Nomor WhatsApp", value: String(fd.get("phone") ?? "") }];
+    let pkgPrice: number | null = null;
     for (const f of fields) {
       const v = String(fd.get(`f_${f.id}`) ?? "").trim();
       if (!v || f.type === "checkbox") continue;
@@ -73,14 +75,17 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
       else if (f.type === "shuttle") rows.push({ label: f.label, value: routes.find((r) => r.id === v)?.label ?? NO_SHUTTLE_LABEL });
       else if (f.type === "package") {
         const p = f.options.map(parsePackage).find((o) => o.name === v);
+        if (p) pkgPrice = p.price;
         rows.push({ label: f.label, value: p ? `${p.name} · ${p.price ? fmtRupiah(p.price) : "Gratis"}` : v });
       } else rows.push({ label: f.label, value: v });
     }
+    setPackagePrice(pkgPrice);
     setSummary(rows);
   }
 
   function next() {
     if (!validate()) return;
+    setHideError(true);
     if (steps[step + 1]?.key === "bayar") buildSummary();
     setStep((s) => s + 1);
     form.current?.scrollIntoView({ block: "start", behavior: "smooth" });
@@ -90,11 +95,14 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
     <form
       ref={form}
       action={action}
+      onChange={() => setHideError(true)}
       onSubmit={(e) => {
         if (!last) {
           e.preventDefault();
           next();
+          return;
         }
+        setHideError(false);
       }}
       className="scroll-mt-24 space-y-4"
     >
@@ -180,11 +188,21 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
         <RegistrationFields fields={agreeFields} onPackage={noop} />
       </div>
 
-      {(stepError || error) && <p className="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-700">{stepError ?? error}</p>}
+      {(stepError || (!pending && !hideError && error)) && (
+        <p className="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-700">{stepError ?? error}</p>
+      )}
 
       <div className="flex gap-2">
         {step > 0 && (
-          <button type="button" onClick={() => setStep((s) => s - 1)} className="btn btn-secondary">
+          <button
+            type="button"
+            onClick={() => {
+              setStepError(null);
+              setHideError(true);
+              setStep((s) => s - 1);
+            }}
+            className="btn btn-secondary"
+          >
             Kembali
           </button>
         )}

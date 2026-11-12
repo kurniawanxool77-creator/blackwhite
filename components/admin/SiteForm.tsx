@@ -1,8 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState, type FormEvent } from "react";
+import { splitBankLine } from "@/lib/site-defaults";
 import type { Site } from "@/lib/site";
 import { saveSite } from "@/src/lib/actions/superadmin";
+import { BankAccountsInput } from "./BankAccountsInput";
 import { ImageUpload } from "./ImageUpload";
 
 function Field({ label, name, value, rows }: { label: string; name: string; value: string; rows?: number }) {
@@ -19,10 +21,38 @@ function Field({ label, name, value, rows }: { label: string; name: string; valu
 }
 
 export function SiteForm({ site }: { site: Site }) {
-  const [message, action, pending] = useActionState(saveSite, null);
+  const [pending, setPending] = useState(false);
+  const [showBankErrors, setShowBankErrors] = useState(false);
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const bankRows = String(formData.get("banks") ?? "")
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map(splitBankLine);
+    if (bankRows.some((b) => !b.bank || !b.number)) {
+      setShowBankErrors(true);
+      setStatus({ ok: false, text: "Lengkapi nama bank dan nomor rekening untuk setiap baris yang diisi." });
+      return;
+    }
+    setShowBankErrors(false);
+    setPending(true);
+    setStatus(null);
+    try {
+      const msg = await saveSite(null, formData);
+      setStatus({ ok: true, text: msg ?? "Tersimpan. Halaman depan sudah diperbarui." });
+    } catch (err) {
+      setStatus({ ok: false, text: err instanceof Error ? err.message : "Gagal menyimpan perubahan." });
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={action} className="mt-6 space-y-6">
+    <form onSubmit={onSubmit} className="mt-6 space-y-6">
       <section className="card space-y-4 p-5">
         <h2 className="font-semibold text-gray-900">Identitas & hero</h2>
         <Field label="Nama perusahaan / brand" name="name" value={site.name} />
@@ -60,14 +90,16 @@ export function SiteForm({ site }: { site: Site }) {
         <Field label="Alamat" name="address" value={site.contact.address} />
       </section>
 
-      <section className="card space-y-2 p-5">
-        <h2 className="font-semibold text-gray-900">Rekening pembayaran</h2>
-        <p className="text-sm text-gray-600">Tampil di langkah Pembayaran saat peserta mendaftar dan di halaman tiket. Satu rekening per baris: <span className="font-mono text-xs">Bank | Nomor rekening | Atas nama</span></p>
-        <textarea name="banks" rows={3} className="input font-mono text-sm" defaultValue={site.banks.join("\n")} placeholder="Bank Mandiri | 137-00-1928374-1 | Panitia Penyelenggara" aria-label="Rekening pembayaran" />
+      <section className="card space-y-3 p-5">
+        <div>
+          <h2 className="font-semibold text-gray-900">Rekening pembayaran</h2>
+          <p className="mt-0.5 text-sm text-gray-600">Tampil di langkah Pembayaran saat peserta mendaftar dan di halaman tiket.</p>
+        </div>
+        <BankAccountsInput defaultValue={site.banks} showErrors={showBankErrors} />
       </section>
 
-      <div className="flex items-center justify-end gap-3">
-        {message && <p className="text-sm text-green-700">{message}</p>}
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        {status && <p className={`text-sm ${status.ok ? "text-green-700" : "text-red-700"}`}>{status.text}</p>}
         <button className="btn btn-primary" disabled={pending}>{pending ? "Menyimpan..." : "Simpan"}</button>
       </div>
     </form>

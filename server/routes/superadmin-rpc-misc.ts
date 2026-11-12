@@ -9,6 +9,7 @@ import { digits, PHONE_RE, str, type FormState } from "../../lib/form";
 import { fmtRupiah } from "../../lib/format";
 import { hashPassword } from "../../lib/password";
 import { DEFAULT_SITE, type Site } from "../../lib/site";
+import { formatBankLine, splitBankLine } from "../../lib/site-defaults";
 import { isImageUrl, isLinkUrl } from "../../lib/url";
 
 const queryArgs = (req: IncomingMessage) => parseUrl(req).searchParams.getAll("a");
@@ -341,6 +342,10 @@ export async function handleSuperadminMiscRpc(req: IncomingMessage, res: ServerR
     const f = await readFormData(req);
     const s = (k: string) => String(f.get(k) ?? "").trim();
     const image = (v: string) => (isImageUrl(v) ? v : "");
+    const bankRows = s("banks").split(/\r?\n/).map((x) => x.trim()).filter(Boolean).slice(0, 10).map(splitBankLine);
+    if (bankRows.some((b) => !b.bank || !b.number)) {
+      return sendJson(res, { error: "Setiap rekening pembayaran wajib memiliki nama bank dan nomor rekening.", throwError: true }, 400), true;
+    }
     const site: Site = {
       name: s("name") || DEFAULT_SITE.name,
       tagline: s("tagline"),
@@ -351,7 +356,7 @@ export async function handleSuperadminMiscRpc(req: IncomingMessage, res: ServerR
       services: [0, 1, 2].map((i) => ({ title: s(`service${i}Title`), body: s(`service${i}Body`), image: image(s(`service${i}Image`)) })).filter((x) => x.title),
       steps: s("steps").split(/\r?\n/).map((x) => x.trim()).filter(Boolean),
       contact: { email: s("email"), phone: s("phone"), address: s("address") },
-      banks: s("banks").split(/\r?\n/).map((x) => x.trim()).filter(Boolean).slice(0, 10),
+      banks: bankRows.map(formatBankLine).filter(Boolean),
     };
     const value = JSON.stringify(site);
     await db.setting.upsert({ where: { key: "site" }, update: { value }, create: { key: "site", value } });

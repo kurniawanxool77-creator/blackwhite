@@ -292,8 +292,8 @@ export function TicketPage() {
                 {reg.status === "pending" && total > 0 && banks.length > 0 && (
                   <div className="space-y-1 rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
                     <p className="font-semibold">Rekening pembayaran:</p>
-                    {banks.map((b) => (
-                      <p key={b.number}>
+                    {banks.map((b, i) => (
+                      <p key={`${b.bank}-${b.number}-${i}`}>
                         {b.bank} <span className="font-mono">{b.number}</span>
                         {b.holder && ` a.n ${b.holder}`}
                       </p>

@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { Readable } from "node:stream";
 
 export type RouteParams = Record<string, string>;
 
@@ -67,20 +66,29 @@ export function setCookieHeader(
   res.setHeader("Set-Cookie", next);
 }
 
-export async function readBodyText(req: IncomingMessage): Promise<string> {
-  const preParsed = (req as IncomingMessage & { body?: unknown }).body;
-  if (req.readableEnded && preParsed !== undefined) {
-    return typeof preParsed === "string" ? preParsed : JSON.stringify(preParsed);
+export async function readBodyBuffer(req: IncomingMessage): Promise<Buffer> {
+  if (req.readableEnded) {
+    const r = req as IncomingMessage & { body?: unknown; rawBody?: unknown };
+    if (Buffer.isBuffer(r.rawBody)) return r.rawBody;
+    if (Buffer.isBuffer(r.body)) return r.body;
+    if (typeof r.body === "string") return Buffer.from(r.body, "utf8");
+    if (r.body !== undefined) return Buffer.from(JSON.stringify(r.body), "utf8");
   }
   const chunks: Buffer[] = [];
   for await (const chunk of req) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  return Buffer.concat(chunks).toString("utf8");
+  return Buffer.concat(chunks);
+}
+
+export async function readBodyText(req: IncomingMessage): Promise<string> {
+  return (await readBodyBuffer(req)).toString("utf8");
 }
 
 export async function readJson<T = Record<string, unknown>>(req: IncomingMessage): Promise<T> {
-  const preParsed = (req as IncomingMessage & { body?: unknown }).body;
-  if (req.readableEnded && preParsed && typeof preParsed === "object" && !Buffer.isBuffer(preParsed)) {
-    return preParsed as T;
+  if (req.readableEnded) {
+    const preParsed = (req as IncomingMessage & { body?: unknown }).body;
+    if (preParsed && typeof preParsed === "object" && !Buffer.isBuffer(preParsed)) {
+      return preParsed as T;
+    }
   }
   const text = await readBodyText(req);
   if (!text) return {} as T;
@@ -88,18 +96,22 @@ export async function readJson<T = Record<string, unknown>>(req: IncomingMessage
 }
 
 export async function readFormData(req: IncomingMessage): Promise<FormData> {
-  const headers = new Headers();
-  for (const [k, v] of Object.entries(req.headers)) {
-    if (v === undefined) continue;
-    headers.set(k, Array.isArray(v) ? v.join(", ") : v);
+  if (req.readableEnded) {
+    const preParsed = (req as IncomingMessage & { body?: unknown }).body;
+    if (preParsed && typeof preParsed === "object" && !Buffer.isBuffer(preParsed)) {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(preParsed as Record<string, unknown>)) {
+        if (Array.isArray(v)) v.forEach((x) => fd.append(k, String(x ?? "")));
+        else if (v !== undefined && v !== null) fd.append(k, String(v));
+      }
+      return fd;
+    }
   }
-  const webReq = new Request(parseUrl(req).href, {
-    method: req.method || "POST",
-    headers,
-    body: Readable.toWeb(req) as unknown as BodyInit,
-    duplex: "half",
-  } as RequestInit & { duplex: "half" });
-  return webReq.formData();
+  const rawCt = req.headers["content-type"];
+  const contentType = (Array.isArray(rawCt) ? rawCt[0] : rawCt) || "";
+  if (!contentType) return new FormData();
+  const body = await readBodyBuffer(req);
+  return new Response(new Uint8Array(body), { headers: { "content-type": contentType } }).formData();
 }
 
 export function sendJson(res: ServerResponse, data: unknown, status = 200, headers: Record<string, string> = {}) {

@@ -151,8 +151,8 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
             {banks.length > 0 && (
               <div className="space-y-1.5 text-sm">
                 <p className="font-semibold text-gray-800">Transfer ke salah satu rekening:</p>
-                {banks.map((b) => (
-                  <p key={b.number} className="rounded border border-gray-200 bg-white px-2.5 py-1.5">
+                {banks.map((b, i) => (
+                  <p key={`${b.bank}-${b.number}-${i}`} className="rounded border border-gray-200 bg-white px-2.5 py-1.5">
                     <span className="font-medium text-gray-900">{b.bank}</span> <span className="font-mono">{b.number}</span>
                     {b.holder && <span className="block text-xs text-gray-600">a.n {b.holder}</span>}
                   </p>

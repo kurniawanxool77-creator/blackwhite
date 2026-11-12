@@ -13,11 +13,20 @@ export type Site = {
 
 export type BankAccount = { bank: string; number: string; holder: string };
 
+export const splitBankLine = (line: string): BankAccount => {
+  const [bank = "", number = "", holder = ""] = line.split("|").map((x) => x.replace(/\|/g, " ").trim());
+  return { bank, number, holder };
+};
+
+export const formatBankLine = ({ bank, number, holder }: BankAccount): string => {
+  const clean = (v: string) => v.replace(/\|/g, " ").trim();
+  const [b, n, h] = [clean(bank), clean(number), clean(holder)];
+  if (!b && !n && !h) return "";
+  return h ? `${b} | ${n} | ${h}` : `${b} | ${n}`;
+};
+
 export const parseBanks = (lines: string[]): BankAccount[] =>
-  lines.flatMap((l) => {
-    const [bank = "", number = "", holder = ""] = l.split("|").map((x) => x.trim());
-    return bank && number ? [{ bank, number, holder }] : [];
-  });
+  lines.map(splitBankLine).filter((b) => Boolean(b.bank && b.number));
 
 export const DEFAULT_SITE: Site = {
   name: "BlackWhite",

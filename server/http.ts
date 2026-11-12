@@ -6,8 +6,9 @@ export type RouteParams = Record<string, string>;
 export function getOrigin(req: IncomingMessage): string {
   const protoHeader = req.headers["x-forwarded-proto"];
   const proto = (Array.isArray(protoHeader) ? protoHeader[0] : protoHeader)?.split(",")[0]?.trim() || "http";
-  const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost:5173";
-  return `${proto}://${Array.isArray(host) ? host[0] : host}`;
+  const hostHeader = req.headers["x-forwarded-host"] || req.headers.host || "localhost:5173";
+  const host = (Array.isArray(hostHeader) ? hostHeader[0] : hostHeader).split(",")[0].trim() || "localhost:5173";
+  return `${proto}://${host}`;
 }
 
 export function parseUrl(req: IncomingMessage): URL {
@@ -67,12 +68,20 @@ export function setCookieHeader(
 }
 
 export async function readBodyText(req: IncomingMessage): Promise<string> {
+  const preParsed = (req as IncomingMessage & { body?: unknown }).body;
+  if (req.readableEnded && preParsed !== undefined) {
+    return typeof preParsed === "string" ? preParsed : JSON.stringify(preParsed);
+  }
   const chunks: Buffer[] = [];
   for await (const chunk of req) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
   return Buffer.concat(chunks).toString("utf8");
 }
 
 export async function readJson<T = Record<string, unknown>>(req: IncomingMessage): Promise<T> {
+  const preParsed = (req as IncomingMessage & { body?: unknown }).body;
+  if (req.readableEnded && preParsed && typeof preParsed === "object" && !Buffer.isBuffer(preParsed)) {
+    return preParsed as T;
+  }
   const text = await readBodyText(req);
   if (!text) return {} as T;
   return JSON.parse(text) as T;

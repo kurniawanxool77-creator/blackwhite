@@ -12,7 +12,11 @@ const COOKIE_NAME = "bw_session";
 const OAUTH_STATE_COOKIE = "bw_oauth_state";
 const MAX_AGE_SEC = 30 * 24 * 60 * 60;
 
-const secret = () => process.env.NEXTAUTH_SECRET || "blackwhite-dev-secret-change-in-env";
+const secret = () => process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "blackwhite-dev-secret-change-in-env";
+const isSecureCookie = (req: IncomingMessage) =>
+  String(req.headers["x-forwarded-proto"] ?? "").includes("https") ||
+  process.env.VERCEL === "1" ||
+  process.env.NODE_ENV === "production";
 const b64u = (buf: Buffer | string) => Buffer.from(buf).toString("base64url");
 const unb64u = (s: string) => Buffer.from(s, "base64url");
 
@@ -52,18 +56,16 @@ export function getSessionUser(req: IncomingMessage): SessionUser | null {
 }
 
 export function writeSessionCookie(res: ServerResponse, req: IncomingMessage, user: SessionUser) {
-  const secure = req.headers["x-forwarded-proto"] === "https" || process.env.NODE_ENV === "production";
   setCookieHeader(res, COOKIE_NAME, sign({ ...user, exp: Date.now() + MAX_AGE_SEC * 1000 }), {
     maxAge: MAX_AGE_SEC,
     httpOnly: true,
     sameSite: "Lax",
-    secure,
+    secure: isSecureCookie(req),
   });
 }
 
 export function clearSessionCookie(res: ServerResponse, req: IncomingMessage) {
-  const secure = req.headers["x-forwarded-proto"] === "https" || process.env.NODE_ENV === "production";
-  setCookieHeader(res, COOKIE_NAME, "", { maxAge: 0, httpOnly: true, sameSite: "Lax", secure });
+  setCookieHeader(res, COOKIE_NAME, "", { maxAge: 0, httpOnly: true, sameSite: "Lax", secure: isSecureCookie(req) });
 }
 
 export async function getActiveAdmin(req: IncomingMessage): Promise<Admin | null> {
@@ -133,8 +135,7 @@ export function startGoogleOAuth(req: IncomingMessage, res: ServerResponse, call
   const nonce = crypto.randomBytes(16).toString("hex");
   const safeCb = callbackUrl.startsWith("/") ? callbackUrl : "/dashboard";
   const state = sign({ nonce, callbackUrl: safeCb, exp: Date.now() + 10 * 60_000 });
-  const secure = req.headers["x-forwarded-proto"] === "https" || process.env.NODE_ENV === "production";
-  setCookieHeader(res, OAUTH_STATE_COOKIE, nonce, { maxAge: 600, httpOnly: true, sameSite: "Lax", secure });
+  setCookieHeader(res, OAUTH_STATE_COOKIE, nonce, { maxAge: 600, httpOnly: true, sameSite: "Lax", secure: isSecureCookie(req) });
   const redirectUri = `${getOrigin(req)}/api/auth/callback/google`;
   const params = new URLSearchParams({
     client_id: clientId,

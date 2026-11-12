@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import sharp from "sharp";
 import { isRunning, todayKeyJakarta } from "@/lib/checkin";
@@ -30,6 +29,27 @@ async function pngIcon(size: number, fontSize: number) {
 
 export async function handleMeta(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<boolean> {
   const method = req.method || "GET";
+
+  if (method === "GET" && pathname === "/api/health") {
+    try {
+      await db.$queryRaw`SELECT 1`;
+      sendJson(res, {
+        ok: true,
+        db: "ok",
+        runtime: process.env.VERCEL ? "vercel" : "node",
+        timestamp: new Date().toISOString(),
+        env: {
+          databaseUrl: Boolean(process.env.DATABASE_URL),
+          authSecret: Boolean(process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET),
+          googleOAuth: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+        },
+      });
+    } catch (err) {
+      console.error("[HEALTHCHECK]", err);
+      sendJson(res, { ok: false, db: "error", timestamp: new Date().toISOString() }, 503);
+    }
+    return true;
+  }
 
   if (method === "GET" && pathname === "/api/live") {
     const v = await cached("live", 2500, async () => {
@@ -231,8 +251,6 @@ export async function handleMeta(req: IncomingMessage, res: ServerResponse, path
     return true;
   }
 
-  // Biarkan route ping tetap aman
-  void randomBytes;
   return false;
 }
 

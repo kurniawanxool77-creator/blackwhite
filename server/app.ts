@@ -14,6 +14,17 @@ import { handleUser } from "./routes/user";
 export async function handleApiRequest(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
   const { pathname } = parseUrl(req);
   const method = req.method || "GET";
+  const isPublicCacheable =
+    method === "GET" &&
+    (pathname.startsWith("/api/public/") ||
+      pathname === "/api/live" ||
+      pathname === "/robots.txt" ||
+      pathname === "/sitemap.xml" ||
+      pathname === "/manifest.webmanifest" ||
+      pathname.startsWith("/icon/") ||
+      pathname === "/apple-icon" ||
+      pathname.startsWith("/media/"));
+  if (!isPublicCacheable) res.setHeader("Cache-Control", "private, no-store");
   try {
     if (await handleMeta(req, res, pathname)) return true;
     if (await handleAuth(req, res, pathname)) return true;

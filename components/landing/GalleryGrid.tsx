@@ -22,17 +22,19 @@ export function GalleryGrid({ photos, categories }: { photos: GalleryPhoto[]; ca
   const [active, setActive] = useState<number | null>(null);
   const close = useCallback(() => setActive(null), []);
 
-  const filtered = selectedCategory === "all" ? photos : photos.filter((p) => p.category === selectedCategory);
+  const usedCategories = categories.filter((cat) => photos.some((p) => p.category === cat));
+  const currentCategory = selectedCategory !== "all" && usedCategories.includes(selectedCategory) ? selectedCategory : "all";
+  const filtered = currentCategory === "all" ? photos : photos.filter((p) => p.category === currentCategory);
 
   return (
     <div>
-      {categories.length > 0 && (
+      {usedCategories.length > 0 && (
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-4 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-6">
-          <button type="button" onClick={() => setSelectedCategory("all")} className={chip(selectedCategory === "all")}>
+          <button type="button" onClick={() => setSelectedCategory("all")} className={chip(currentCategory === "all")}>
             Semua ({photos.length})
           </button>
-          {categories.map((cat) => (
-            <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={chip(selectedCategory === cat)}>
+          {usedCategories.map((cat) => (
+            <button key={cat} type="button" onClick={() => setSelectedCategory(cat)} className={chip(currentCategory === cat)}>
               {cat} ({photos.filter((p) => p.category === cat).length})
             </button>
           ))}

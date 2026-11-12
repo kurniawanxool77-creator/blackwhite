@@ -88,8 +88,27 @@ const serviceScene = (kind) => {
   ][kind];
   return svg(900, 600, "#e3e8f5", card + inner);
 };
-const posterScene = (title, sub, bg, v) =>
-  svg(1200, 675, bg, `<rect x="${760 + v * 30}" y="-60" width="520" height="520" fill="#fff" fill-opacity="0.07" transform="rotate(${20 + v * 8} 1000 200)"/><rect x="${860 - v * 40}" y="300" width="420" height="420" fill="#fff" fill-opacity="0.07" transform="rotate(${-15 - v * 6} 1070 510)"/><text x="80" y="330" font-family="Arial, sans-serif" font-size="76" font-weight="700" fill="#fff">${esc(title)}</text><text x="80" y="410" font-family="Arial, sans-serif" font-size="38" fill="#fff" fill-opacity="0.85">${esc(sub)}</text><rect x="80" y="450" width="120" height="8" rx="3" fill="#fff"/>`);
+function wrapPosterLines(text, max = 24) {
+  const lines = [];
+  let cur = "";
+  for (const w of text.split(/\s+/)) {
+    if (cur && `${cur} ${w}`.length > max && lines.length < 1) {
+      lines.push(cur);
+      cur = w;
+    } else cur = cur ? `${cur} ${w}` : w;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+const posterScene = (title, sub, bg, v) => {
+  const lines = wrapPosterLines(title);
+  const maxLen = Math.max(...lines.map((l) => l.length));
+  const size = lines.length > 1 ? (maxLen > 24 ? 52 : 60) : (maxLen > 22 ? 62 : 76);
+  const firstY = lines.length > 1 ? 260 : 330;
+  const titles = lines.map((l, i) => `<text x="80" y="${firstY + i * Math.round(size * 1.25)}" font-family="Arial, sans-serif" font-size="${size}" font-weight="700" fill="#fff">${esc(l)}</text>`).join("");
+  return svg(1200, 675, bg, `<rect x="${760 + v * 30}" y="-60" width="520" height="520" fill="#fff" fill-opacity="0.07" transform="rotate(${20 + v * 8} 1000 200)"/><rect x="${860 - v * 40}" y="300" width="420" height="420" fill="#fff" fill-opacity="0.07" transform="rotate(${-15 - v * 6} 1070 510)"/>${titles}<text x="80" y="420" font-family="Arial, sans-serif" font-size="38" fill="#fff" fill-opacity="0.85">${esc(sub)}</text><rect x="80" y="455" width="120" height="8" rx="3" fill="#fff"/>`);
+};
 
 async function ensureSite() {
   if (await db.setting.findUnique({ where: { key: "site" } })) return;

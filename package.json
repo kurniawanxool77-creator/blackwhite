@@ -2,6 +2,9 @@
   "name": "sistem-barcode-event",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite --port 5173",
     "build": "prisma generate && vite build",

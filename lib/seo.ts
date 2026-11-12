@@ -1,12 +1,15 @@
 // Alamat publik situs untuk tautan absolut (sitemap, canonical, Open Graph, data terstruktur).
 // Isi SITE_URL di .env saat online; bila kosong memakai NEXTAUTH_URL atau domain Vercel otomatis.
+const isLocal = (u?: string) => Boolean(u && /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(u));
+
 export const siteUrl = () => {
+  const nextAuth = process.env.VERCEL === "1" && isLocal(process.env.NEXTAUTH_URL) ? "" : process.env.NEXTAUTH_URL;
   const url =
     process.env.SITE_URL ||
-    process.env.NEXTAUTH_URL ||
+    nextAuth ||
     (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
-    "http://localhost:3000";
+    "http://localhost:5173";
   return url.replace(/\/$/, "");
 };
 

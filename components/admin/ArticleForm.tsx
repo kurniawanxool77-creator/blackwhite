@@ -30,7 +30,12 @@ export function ArticleForm({ article }: { article?: Article }) {
         </label>
         <div className="flex gap-2">
           {article && (
-            <button formAction={deleteArticle.bind(null, article.id)} formNoValidate className="btn btn-danger">
+            <button
+              formAction={deleteArticle.bind(null, article.id)}
+              formNoValidate
+              onClick={(e) => { if (!window.confirm(`Hapus artikel "${article.title}"? Tindakan ini tidak dapat dibatalkan.`)) e.preventDefault(); }}
+              className="btn btn-danger"
+            >
               Hapus
             </button>
           )}

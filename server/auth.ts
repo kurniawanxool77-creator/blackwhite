@@ -14,9 +14,9 @@ const MAX_AGE_SEC = 30 * 24 * 60 * 60;
 
 const secret = () => process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || "blackwhite-dev-secret-change-in-env";
 const isSecureCookie = (req: IncomingMessage) =>
-  String(req.headers["x-forwarded-proto"] ?? "").includes("https") ||
-  process.env.VERCEL === "1" ||
-  process.env.NODE_ENV === "production";
+  String(req.headers["x-forwarded-proto"] ?? "").includes("https") || process.env.VERCEL === "1";
+
+const safeCallbackPath = (raw?: string) => (raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard");
 const b64u = (buf: Buffer | string) => Buffer.from(buf).toString("base64url");
 const unb64u = (s: string) => Buffer.from(s, "base64url");
 
@@ -133,7 +133,7 @@ export function startGoogleOAuth(req: IncomingMessage, res: ServerResponse, call
     return `${callbackUrl || "/login"}?error=GoogleNotConfigured`;
   }
   const nonce = crypto.randomBytes(16).toString("hex");
-  const safeCb = callbackUrl.startsWith("/") ? callbackUrl : "/dashboard";
+  const safeCb = safeCallbackPath(callbackUrl);
   const state = sign({ nonce, callbackUrl: safeCb, exp: Date.now() + 10 * 60_000 });
   setCookieHeader(res, OAUTH_STATE_COOKIE, nonce, { maxAge: 600, httpOnly: true, sameSite: "Lax", secure: isSecureCookie(req) });
   const redirectUri = `${getOrigin(req)}/api/auth/callback/google`;
@@ -149,6 +149,8 @@ export function startGoogleOAuth(req: IncomingMessage, res: ServerResponse, call
 }
 
 export async function finishGoogleOAuth(req: IncomingMessage, res: ServerResponse, code: string, stateToken: string) {
+  setCookieHeader(res, OAUTH_STATE_COOKIE, "", { maxAge: 0, httpOnly: true, sameSite: "Lax", secure: isSecureCookie(req) });
+  if (!code) return "/login?error=OAuthCancelled";
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) return "/login?error=GoogleNotConfigured";
@@ -178,11 +180,11 @@ export async function finishGoogleOAuth(req: IncomingMessage, res: ServerRespons
   const dbUser = existing
     ? await db.user.update({
         where: { id: existing.id },
-        data: { image: profile.picture ?? existing.image, emailVerified: true, ...(existing.emailVerified ? {} : { passwordHash: null }) },
+        data: { image: existing.image || profile.picture || null, emailVerified: true, ...(existing.emailVerified ? {} : { passwordHash: null }) },
       })
     : await db.user.create({ data: { email, name: profile.name ?? email, image: profile.picture ?? null, emailVerified: true } });
 
   writeSessionCookie(res, req, { id: dbUser.id, name: dbUser.name, email: dbUser.email, role: "user" });
-  return state.callbackUrl || "/dashboard";
+  return safeCallbackPath(state.callbackUrl);
 }
 

@@ -3,13 +3,13 @@ import { randomBytes } from "node:crypto";
 import { requireAdmin } from "../auth";
 import { invalidateCache } from "../cache";
 import { bodyArgs, queryArgs, readFormData, sendJson } from "../http";
-import { audit } from "@/lib/audit";
-import { db } from "@/lib/db";
-import { digits, str } from "@/lib/form";
-import { certificateStatus, issueCertificate, youtubeId } from "@/lib/learning";
-import { nextCodes } from "@/lib/participant-code";
-import { readDetails } from "@/lib/registration-form";
-import { appliesTo } from "@/lib/rundown";
+import { audit } from "../../lib/audit";
+import { db } from "../../lib/db";
+import { digits, str } from "../../lib/form";
+import { certificateStatus, issueCertificate, youtubeId } from "../../lib/learning";
+import { nextCodes } from "../../lib/participant-code";
+import { readDetails } from "../../lib/registration-form";
+import { appliesTo } from "../../lib/rundown";
 
 function readLesson(f: FormData) {
   const title = str(f, "title").slice(0, 160);

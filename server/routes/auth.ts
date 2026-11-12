@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { db } from "@/lib/db";
-import { PHONE_RE, str } from "@/lib/form";
-import { hashPassword } from "@/lib/password";
-import { adminProfile, userProfile } from "@/lib/profile";
+import { db } from "../../lib/db";
+import { PHONE_RE, str } from "../../lib/form";
+import { hashPassword } from "../../lib/password";
+import { adminProfile, userProfile } from "../../lib/profile";
 import {
   authenticateAdmin,
   authenticateUser,

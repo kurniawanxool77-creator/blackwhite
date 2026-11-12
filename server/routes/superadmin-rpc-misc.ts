@@ -3,13 +3,13 @@ import { randomBytes } from "node:crypto";
 import { requireAdmin } from "../auth";
 import { invalidateCache } from "../cache";
 import { parseUrl, readFormData, readJson, sendJson } from "../http";
-import { audit } from "@/lib/audit";
-import { db } from "@/lib/db";
-import { digits, PHONE_RE, str, type FormState } from "@/lib/form";
-import { fmtRupiah } from "@/lib/format";
-import { hashPassword } from "@/lib/password";
-import { DEFAULT_SITE, type Site } from "@/lib/site";
-import { isImageUrl, isLinkUrl } from "@/lib/url";
+import { audit } from "../../lib/audit";
+import { db } from "../../lib/db";
+import { digits, PHONE_RE, str, type FormState } from "../../lib/form";
+import { fmtRupiah } from "../../lib/format";
+import { hashPassword } from "../../lib/password";
+import { DEFAULT_SITE, type Site } from "../../lib/site";
+import { isImageUrl, isLinkUrl } from "../../lib/url";
 
 const queryArgs = (req: IncomingMessage) => parseUrl(req).searchParams.getAll("a");
 async function bodyArgs(req: IncomingMessage) {

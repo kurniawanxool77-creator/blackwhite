@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Admin } from "@prisma/client";
-import { db } from "@/lib/db";
-import { hashPassword, verifyPassword } from "@/lib/password";
-import type { Role } from "@/lib/roles";
+import { db } from "../lib/db";
+import { hashPassword, verifyPassword } from "../lib/password";
+import type { Role } from "../lib/roles";
 import { getOrigin, parseCookies, sendJson, setCookieHeader } from "./http";
 
 export type SessionUser = { id: string; name: string; email: string; role: Role };

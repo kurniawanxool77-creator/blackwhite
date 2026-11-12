@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Prisma } from "@prisma/client";
 import sharp from "sharp";
-import { isRunning, todayKeyJakarta } from "@/lib/checkin";
-import { db, LIVE_KEY } from "@/lib/db";
-import { MAX_IMAGE_BYTES, sniffImageType, toAvatarWebp, toSelfieWebp, toWebp } from "@/lib/media";
-import { noticesFor } from "@/lib/notifications";
-import { siteUrl } from "@/lib/seo";
-import { getSite } from "@/lib/site";
+import { isRunning, todayKeyJakarta } from "../../lib/checkin";
+import { db, LIVE_KEY } from "../../lib/db";
+import { MAX_IMAGE_BYTES, sniffImageType, toAvatarWebp, toSelfieWebp, toWebp } from "../../lib/media";
+import { noticesFor } from "../../lib/notifications";
+import { siteUrl } from "../../lib/seo";
+import { getSite } from "../../lib/site";
 import { getActiveAdmin, getSessionUser } from "../auth";
 import { cached, invalidateCache } from "../cache";
 import { matchPath, parseUrl, readFormData, sendBinary, sendJson, sendText } from "../http";

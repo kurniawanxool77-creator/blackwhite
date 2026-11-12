@@ -1,15 +1,15 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAdmin } from "../auth";
 import { matchPath, parseUrl, sendJson } from "../http";
-import { isOnDuty, myAttendanceToday } from "@/lib/attendance";
-import { canUndoScan, greetingJakarta, todayKeyJakarta } from "@/lib/checkin";
-import { db } from "@/lib/db";
-import { getEventDetail } from "@/lib/event-detail";
-import { getParticipant } from "@/lib/participant";
-import { answersIn, answersMatching, healthAlerts, readDetails } from "@/lib/registration-form";
-import { scanEvent, scanEvents } from "@/lib/scan-flow";
-import { shuttleManifest } from "@/lib/shuttle";
-import { getMemberDetail } from "@/lib/team";
+import { isOnDuty, myAttendanceToday } from "../../lib/attendance";
+import { canUndoScan, greetingJakarta, todayKeyJakarta } from "../../lib/checkin";
+import { db } from "../../lib/db";
+import { getEventDetail } from "../../lib/event-detail";
+import { getParticipant } from "../../lib/participant";
+import { answersIn, answersMatching, healthAlerts, readDetails } from "../../lib/registration-form";
+import { scanEvent, scanEvents } from "../../lib/scan-flow";
+import { shuttleManifest } from "../../lib/shuttle";
+import { getMemberDetail } from "../../lib/team";
 
 const MEMBER_SELECT = { id: true, name: true, email: true, role: true, position: true, phone: true, image: true, duties: true } as const;
 export const SAFE_USER = { id: true, name: true, email: true, phone: true, organization: true, image: true } as const;

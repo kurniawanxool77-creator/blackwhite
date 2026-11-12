@@ -2,15 +2,15 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Prisma } from "@prisma/client";
 import { requireAdmin } from "../auth";
 import { readFormData, readJson, sendJson } from "../http";
-import { isOnDuty } from "@/lib/attendance";
-import { audit } from "@/lib/audit";
-import { canUndoScan } from "@/lib/checkin";
-import { db } from "@/lib/db";
-import { PHONE_RE, str, type FormState } from "@/lib/form";
-import { fmtDateTime } from "@/lib/format";
-import { hashPassword, verifyPassword } from "@/lib/password";
-import { readDetails } from "@/lib/registration-form";
-import { appliesTo, audienceLabel } from "@/lib/rundown";
+import { isOnDuty } from "../../lib/attendance";
+import { audit } from "../../lib/audit";
+import { canUndoScan } from "../../lib/checkin";
+import { db } from "../../lib/db";
+import { PHONE_RE, str, type FormState } from "../../lib/form";
+import { fmtDateTime } from "../../lib/format";
+import { hashPassword, verifyPassword } from "../../lib/password";
+import { readDetails } from "../../lib/registration-form";
+import { appliesTo, audienceLabel } from "../../lib/rundown";
 import { SAFE_USER } from "./admin";
 
 async function canAccessEvent(admin: { id: string; role: string }, eventId: string) {

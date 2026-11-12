@@ -2,17 +2,17 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import QRCode from "qrcode";
 import { requireAdmin } from "../auth";
 import { matchPath, parseUrl, sendBinary, sendJson, sendText } from "../http";
-import { eventsOnDate, getEventAttendanceReport, isDateKey } from "@/lib/attendance";
-import { startOfTodayJakarta, todayKeyJakarta } from "@/lib/checkin";
-import { db } from "@/lib/db";
-import { getCategories, getEventDetail, matchesRegSearch } from "@/lib/event-detail";
-import { financeSummary } from "@/lib/finance";
-import { finalPrice, fmtDateTime, REG_STATUS } from "@/lib/format";
-import { parseFields, readDetails } from "@/lib/registration-form";
-import { appliesTo } from "@/lib/rundown";
-import { shuttleManifest } from "@/lib/shuttle";
-import { getSite } from "@/lib/site";
-import { ensureUserQr } from "@/lib/qr";
+import { eventsOnDate, getEventAttendanceReport, isDateKey } from "../../lib/attendance";
+import { startOfTodayJakarta, todayKeyJakarta } from "../../lib/checkin";
+import { db } from "../../lib/db";
+import { getCategories, getEventDetail, matchesRegSearch } from "../../lib/event-detail";
+import { financeSummary } from "../../lib/finance";
+import { finalPrice, fmtDateTime, REG_STATUS } from "../../lib/format";
+import { parseFields, readDetails } from "../../lib/registration-form";
+import { appliesTo } from "../../lib/rundown";
+import { shuttleManifest } from "../../lib/shuttle";
+import { getSite } from "../../lib/site";
+import { ensureUserQr } from "../../lib/qr";
 
 const SAFE_USER = { id: true, name: true, email: true, phone: true, organization: true, image: true } as const;
 

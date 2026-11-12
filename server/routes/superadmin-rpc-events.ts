@@ -3,17 +3,17 @@ import { randomBytes } from "node:crypto";
 import { requireAdmin } from "../auth";
 import { invalidateCache } from "../cache";
 import { bodyArgs, queryArgs, readFormData, sendJson } from "../http";
-import { audit } from "@/lib/audit";
-import { db } from "@/lib/db";
-import { ACTIVITIES, isActivity, isEventType, type ActivityKey } from "@/lib/event-types";
-import { digits, str } from "@/lib/form";
-import { CHECKPOINT_KIND, fmtRp } from "@/lib/format";
-import { MAX_GALLERY } from "@/lib/gallery";
-import { cleanPrefix } from "@/lib/participant-code";
-import { cleanFields, parseFields } from "@/lib/registration-form";
-import { choiceOptions } from "@/lib/rundown";
-import { cleanTime, routeLabel, wibToDate } from "@/lib/schedule";
-import { isImageUrl } from "@/lib/url";
+import { audit } from "../../lib/audit";
+import { db } from "../../lib/db";
+import { ACTIVITIES, isActivity, isEventType, type ActivityKey } from "../../lib/event-types";
+import { digits, str } from "../../lib/form";
+import { CHECKPOINT_KIND, fmtRp } from "../../lib/format";
+import { MAX_GALLERY } from "../../lib/gallery";
+import { cleanPrefix } from "../../lib/participant-code";
+import { cleanFields, parseFields } from "../../lib/registration-form";
+import { choiceOptions } from "../../lib/rundown";
+import { cleanTime, routeLabel, wibToDate } from "../../lib/schedule";
+import { isImageUrl } from "../../lib/url";
 
 function readEvent(f: FormData) {
   const name = str(f, "name");

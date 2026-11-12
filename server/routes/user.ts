@@ -3,14 +3,14 @@ import QRCode from "qrcode";
 import { requireUser } from "../auth";
 import { invalidateCache } from "../cache";
 import { matchPath, parseUrl, readFormData, readJson, sendJson } from "../http";
-import { db } from "@/lib/db";
-import { greetingJakarta } from "@/lib/checkin";
-import { getCategories } from "@/lib/event-detail";
-import { PHONE_RE, str, type FormState } from "@/lib/form";
-import { issueIfEligible, learningState, parseOptions } from "@/lib/learning";
-import { hashPassword, verifyPassword } from "@/lib/password";
-import { ensureUserQr } from "@/lib/qr";
-import { getSite, parseBanks } from "@/lib/site";
+import { db } from "../../lib/db";
+import { greetingJakarta } from "../../lib/checkin";
+import { getCategories } from "../../lib/event-detail";
+import { PHONE_RE, str, type FormState } from "../../lib/form";
+import { issueIfEligible, learningState, parseOptions } from "../../lib/learning";
+import { hashPassword, verifyPassword } from "../../lib/password";
+import { ensureUserQr } from "../../lib/qr";
+import { getSite, parseBanks } from "../../lib/site";
 
 export async function handleUser(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<boolean> {
   const method = req.method || "GET";

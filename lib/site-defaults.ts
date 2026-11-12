@@ -38,7 +38,7 @@ export const DEFAULT_SITE: Site = {
     "Tunjukkan QR di setiap checkpoint",
     "Pantau progres Anda di dasbor",
   ],
-  contact: { email: "info@contoh.co.id", phone: "+62 812 0000 0000", address: "Jakarta, Indonesia" },
+  contact: { email: "admin@blackwhite.co.id", phone: "+62 821-5615-7217", address: "Jakarta, Indonesia" },
   banks: ["Bank Mandiri | 137-00-1928374-1 | Panitia Penyelenggara", "BCA | 088-349-2810 | Panitia Penyelenggara"],
 };
 

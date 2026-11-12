@@ -124,7 +124,7 @@ async function ensureSite() {
       { title: "Laporan langsung", body: "Lihat siapa yang sudah dan belum hadir di tiap checkpoint, lalu ekspor ke CSV.", image: await store(serviceScene(2)) },
     ],
     steps: ["Buat akun atau masuk dengan Google, lalu daftar pelatihan", "Tunggu persetujuan panitia", "Tunjukkan QR di setiap checkpoint", "Pantau progres Anda di dasbor"],
-    contact: { email: "info@contoh.co.id", phone: "+62 812 0000 0000", address: "Jakarta, Indonesia" },
+    contact: { email: "admin@blackwhite.co.id", phone: "+62 821-5615-7217", address: "Jakarta, Indonesia" },
   };
   await db.setting.create({ data: { key: "site", value: JSON.stringify(site) } });
 }

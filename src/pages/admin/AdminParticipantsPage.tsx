@@ -51,7 +51,7 @@ export function AdminParticipantsPage() {
               />
               {eventsMap.size > 1 && (
                 <select value={eventFilter} onChange={(e) => setEventFilter(e.target.value)} className="input w-auto text-sm">
-                  <option value="">Semua event ({eventsMap.size})</option>
+                  <option value="">Semua event ({fmtNum(eventsMap.size)})</option>
                   {Array.from(eventsMap.entries()).map(([id, name]) => (
                     <option key={id} value={id}>{name}</option>
                   ))}
@@ -92,7 +92,7 @@ export function AdminParticipantsPage() {
                           </td>
                           <td className="text-gray-700">{r.event.name}</td>
                           <td className="tabular-nums text-gray-700">
-                            {r.scans.length}/{expected} pos
+                            {fmtNum(r.scans.length)} / {fmtNum(expected)} pos
                           </td>
                           <td className="text-right">
                             <Link to={`/admin/events/${r.eventId}/peserta/${r.id}`} className="btn btn-secondary btn-sm">Detail</Link>

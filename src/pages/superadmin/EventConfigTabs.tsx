@@ -1,4 +1,5 @@
 import type { Checkpoint, Event } from "@prisma/client";
+import { useActionState } from "react";
 import { Link } from "react-router-dom";
 import { CheckpointPanel } from "@/components/admin/CheckpointPanel";
 import { EventForm } from "@/components/admin/EventForm";
@@ -9,8 +10,52 @@ import type { FormField } from "@/lib/registration-form";
 import { dayKey } from "@/lib/schedule";
 import type { shuttleManifest } from "@/lib/shuttle";
 import { deleteEvent, saveFormFields, setEventAdmins, updateEvent } from "@/src/lib/actions/events";
+import { errorMessage } from "@/src/lib/rpc";
 
 type TeamOption = { id: string; name: string; position: string; events: { id: string }[] };
+
+function TeamAssignForm({ eventId, team }: { eventId: string; team: TeamOption[] }) {
+  const [state, action, pending] = useActionState(
+    async (_prev: { ok: boolean; text: string } | null, f: FormData) => {
+      try {
+        await setEventAdmins(eventId, f);
+        return { ok: true, text: "Tim bertugas tersimpan." };
+      } catch (err) {
+        return { ok: false, text: errorMessage(err) };
+      }
+    },
+    null,
+  );
+
+  return (
+    <form action={action} className="p-5">
+      {team.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          Belum ada akun tim. Tambahkan di menu <Link to="/superadmin/admins" className="font-medium text-brand hover:underline">Tim & admin</Link>.
+        </p>
+      ) : (
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {team.map((a) => (
+            <label
+              key={a.id}
+              className="flex items-center gap-2.5 rounded-md border border-gray-200 p-3 text-sm transition has-checked:border-brand has-checked:bg-green-50/60"
+            >
+              <input type="checkbox" name="admins" value={a.id} defaultChecked={a.events.length > 0} className="h-4 w-4 cursor-pointer accent-brand" />
+              <div className="min-w-0">
+                <span className="block font-semibold text-gray-900">{a.name}</span>
+                <span className="block truncate text-xs text-gray-500">{a.position || "Tim Pelaksana"}</span>
+              </div>
+            </label>
+          ))}
+        </div>
+      )}
+      <div className="mt-4 flex items-center justify-end gap-3">
+        {state && <p className={`text-xs ${state.ok ? "text-green-700" : "text-red-700"}`}>{state.text}</p>}
+        <button className="btn btn-primary btn-sm" disabled={pending}>{pending ? "Menyimpan..." : "Simpan Tim Bertugas"}</button>
+      </div>
+    </form>
+  );
+}
 
 function parseGallery(raw: string | null | undefined): string[] {
   try {
@@ -85,31 +130,7 @@ export function EventConfigTabs({
             Centang anggota tim yang bertugas pada pelatihan ini. Hanya tim terpilih yang memiliki akses scan tiket dan absensi di venue.
           </p>
         </div>
-        <form action={async (f) => { await setEventAdmins(event.id, f); }} className="p-5">
-          {team.length === 0 ? (
-            <p className="text-sm text-gray-500">
-              Belum ada akun tim. Tambahkan di menu <Link to="/superadmin/admins" className="font-medium text-brand hover:underline">Tim & admin</Link>.
-            </p>
-          ) : (
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {team.map((a) => (
-                <label
-                  key={a.id}
-                  className="flex items-center gap-2.5 rounded-md border border-gray-200 p-3 text-sm transition has-checked:border-brand has-checked:bg-green-50/60"
-                >
-                  <input type="checkbox" name="admins" value={a.id} defaultChecked={a.events.length > 0} className="h-4 w-4 cursor-pointer accent-brand" />
-                  <div className="min-w-0">
-                    <span className="block font-semibold text-gray-900">{a.name}</span>
-                    <span className="block truncate text-xs text-gray-500">{a.position || "Tim Pelaksana"}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          )}
-          <div className="mt-4 flex justify-end">
-            <button className="btn btn-primary btn-sm">Simpan Tim Bertugas</button>
-          </div>
-        </form>
+        <TeamAssignForm eventId={event.id} team={team} />
       </section>
     );
   }

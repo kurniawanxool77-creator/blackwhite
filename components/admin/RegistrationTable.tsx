@@ -264,7 +264,7 @@ export function RegistrationTable({
                           Detail
                         </Link>
                         {r.status === "approved" && useQr && (
-                          <a href={`/superadmin/qr/${r.id}`} target="_blank" className="btn btn-secondary btn-sm">
+                          <a href={`/superadmin/qr/${r.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
                             Lihat Tiket
                           </a>
                         )}

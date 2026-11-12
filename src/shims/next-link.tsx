@@ -27,7 +27,7 @@ const Link = forwardRef<HTMLAnchorElement, LinkProps>(({ href, prefetch: _p, rep
     (to.startsWith("/superadmin/events/") && to.endsWith("/export"));
 
   if (external) {
-    return <a ref={ref} href={to} target={target} {...rest} />;
+    return <a ref={ref} href={to} target={target} rel={target === "_blank" ? (rest.rel || "noopener noreferrer") : rest.rel} {...rest} />;
   }
   return <RouterLink ref={ref} to={to} replace={replace} {...rest} />;
 });

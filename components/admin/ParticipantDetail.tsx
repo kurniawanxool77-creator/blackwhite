@@ -46,7 +46,7 @@ export function ParticipantDetail({ reg, admin, backHref, locked }: Props) {
           <div className="flex flex-col items-end gap-2">
             <StatusBadge status={reg.status} label={REG_STATUS[reg.status]} />
             {admin.role === "superadmin" && approved && (
-              <a href={`/superadmin/qr/${reg.id}`} target="_blank" className="btn btn-secondary btn-sm">Lihat QR</a>
+              <a href={`/superadmin/qr/${reg.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">Lihat QR</a>
             )}
           </div>
         </div>

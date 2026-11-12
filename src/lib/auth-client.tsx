@@ -132,7 +132,11 @@ export async function signIn(
 }
 
 export async function signOut(options?: { callbackUrl?: string }) {
-  await fetch("/api/auth/logout", { method: "POST" });
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch {
+    // Tetap bersihkan state lokal meskipun koneksi terputus
+  }
   await refreshGlobalSession?.();
   triggerRevalidate();
   if (options?.callbackUrl) {

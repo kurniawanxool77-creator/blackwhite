@@ -1,6 +1,7 @@
 import type { Checkpoint, Event, Registration } from "@prisma/client";
 import { Link, useParams } from "react-router-dom";
 import { GoogleSignInButton } from "@/components/auth/AuthButtons";
+import { OrDivider } from "@/components/auth/OrDivider";
 import { EventDetailTabs } from "@/components/landing/EventDetailTabs";
 import { EventGallery } from "@/components/landing/EventGallery";
 import { RegisterForm } from "@/components/landing/RegisterForm";
@@ -81,13 +82,12 @@ export function EventDetailPage() {
                   </div>
                   {event.quota && seatsLeft !== null && (
                     <span
-                      className={`rounded px-2 py-0.5 font-medium ${
-                        seatsLeft === 0
-                          ? "bg-red-50 text-red-700"
-                          : seatsLeft <= 5
+                      className={`rounded px-2 py-0.5 font-medium ${seatsLeft === 0
+                        ? "bg-red-50 text-red-700"
+                        : seatsLeft <= 5
                           ? "bg-amber-50 text-amber-800"
                           : "bg-emerald-50 text-emerald-800"
-                      }`}
+                        }`}
                     >
                       Kuota {fmtNum(event.quota)} · {seatsLeft === 0 ? "Penuh" : `Sisa ${fmtNum(seatsLeft)} Kursi`}
                     </span>
@@ -149,12 +149,21 @@ export function EventDetailPage() {
                   ) : (
                     <div className="space-y-3">
                       {googleEnabled && (
-                        <GoogleSignInButton callbackUrl={`/event/${event.slug}`} label="Daftar dengan Google" />
+                        <>
+                          <GoogleSignInButton callbackUrl={`/event/${event.slug}`} label="Daftar dengan Google" />
+                          <OrDivider className="my-2" />
+                        </>
                       )}
+                      <Link
+                        to={`/daftar?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`}
+                        className="btn btn-primary w-full"
+                      >
+                        Daftar sekarang
+                      </Link>
                       <p className="text-center text-xs text-gray-500">
-                        {googleEnabled ? "atau " : "Masuk untuk daftar · "}
+                        Sudah punya akun?{" "}
                         <Link to={`/login?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="font-medium text-green-700 hover:underline">
-                          pakai email
+                          Masuk
                         </Link>
                       </p>
                     </div>

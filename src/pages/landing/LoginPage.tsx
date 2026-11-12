@@ -10,7 +10,7 @@ export function LoginPage() {
   const { loading, user, site, googleEnabled } = useAuth();
   const [searchParams] = useSearchParams();
   const rawCallback = searchParams.get("callbackUrl") || "/dashboard";
-  const callbackUrl = rawCallback.startsWith("/") ? rawCallback : "/dashboard";
+  const callbackUrl = rawCallback.startsWith("/") && !rawCallback.startsWith("//") ? rawCallback : "/dashboard";
 
   if (loading) return <PageLoader />;
   if (user?.role === "user") return <Navigate to={callbackUrl} replace />;

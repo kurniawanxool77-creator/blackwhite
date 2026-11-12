@@ -1,4 +1,4 @@
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { GoogleSignInButton } from "@/components/auth/AuthButtons";
 import { AuthSplit } from "@/components/auth/AuthSplit";
 import { OrDivider } from "@/components/auth/OrDivider";
@@ -8,24 +8,27 @@ import { useAuth } from "@/src/lib/auth-client";
 
 export function RegisterPage() {
   const { loading, user, site, googleEnabled } = useAuth();
+  const [searchParams] = useSearchParams();
+  const rawCallback = searchParams.get("callbackUrl") || "/dashboard";
+  const callbackUrl = rawCallback.startsWith("/") && !rawCallback.startsWith("//") ? rawCallback : "/dashboard";
 
   if (loading) return <PageLoader />;
-  if (user?.role === "user") return <Navigate to="/dashboard" replace />;
+  if (user?.role === "user") return <Navigate to={callbackUrl} replace />;
 
   return (
     <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>
       <h1 className="text-2xl font-bold tracking-tight text-gray-900">Daftar akun peserta</h1>
       <p className="mt-1 mb-6 text-sm text-gray-600">Satu akun untuk mendaftar semua pelatihan dan menyimpan QR tiket Anda.</p>
-      <RegisterForm callbackUrl="/dashboard" />
+      <RegisterForm callbackUrl={callbackUrl} />
       {googleEnabled && (
         <>
           <OrDivider />
-          <GoogleSignInButton callbackUrl="/dashboard" label="Daftar dengan Google" />
+          <GoogleSignInButton callbackUrl={callbackUrl} label="Daftar dengan Google" />
         </>
       )}
       <p className="mt-6 text-center text-sm text-gray-600">
         Sudah punya akun?{" "}
-        <Link to="/login" className="font-semibold text-gray-900 hover:underline">
+        <Link to={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-gray-900 hover:underline">
           Masuk
         </Link>
       </p>

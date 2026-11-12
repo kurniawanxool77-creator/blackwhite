@@ -14,13 +14,18 @@ export function UserLoginForm({ callbackUrl }: { callbackUrl: string }) {
     e.preventDefault();
     setPending(true);
     setError("");
-    const form = new FormData(e.currentTarget);
-    const res = await signIn("user", { email: form.get("email"), password: form.get("password"), redirect: false });
-    if (res?.ok) {
-      router.replace(callbackUrl);
-      router.refresh();
-    } else {
+    try {
+      const form = new FormData(e.currentTarget);
+      const res = await signIn("user", { email: form.get("email"), password: form.get("password"), redirect: false });
+      if (res?.ok) {
+        router.replace(callbackUrl);
+        router.refresh();
+        return;
+      }
       setError("Email atau password salah. Jika mendaftar dengan Google, silakan gunakan tombol Google di bawah.");
+    } catch {
+      setError("Gagal terhubung ke server. Silakan coba lagi.");
+    } finally {
       setPending(false);
     }
   }

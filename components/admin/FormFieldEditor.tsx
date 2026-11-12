@@ -169,7 +169,7 @@ function PackageListEditor({
                 <NumInput
                   value={pkg.price ? fmtNum(pkg.price) : ""}
                   onChange={(v) => updateRow(idx, { price: Number(v.replace(/\D/g, "")) || 0 })}
-                  placeholder="Harga Rp (0 = gratis)"
+                  placeholder="Tambahan Rp (0 = tanpa)"
                   className="input bg-white py-1.5 text-sm"
                 />
                 <input

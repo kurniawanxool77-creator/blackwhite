@@ -53,9 +53,9 @@ export function FileField({ name, required, label = "Pilih foto" }: { name: stri
   );
 }
 
-// Isian formulir pendaftaran yang disusun Superadmin. onPackage: harga paket yang dipilih (untuk total biaya).
+// Isian formulir pendaftaran yang disusun Superadmin. addon: true bila harga paket ditambahkan ke biaya dasar event.
 // routes: rute shuttle event untuk isian tipe "shuttle" (rute penuh tidak bisa dipilih).
-export function RegistrationFields({ fields, onPackage, routes = [] }: { fields: FormField[]; onPackage: (price: number) => void; routes?: ShuttleOption[] }) {
+export function RegistrationFields({ fields, addon = false, routes = [] }: { fields: FormField[]; addon?: boolean; routes?: ShuttleOption[] }) {
   return fields.map((f) => {
     const name = `f_${f.id}`;
     const hint = f.hint && <p className="mt-1 text-xs text-gray-500">{f.hint}</p>;
@@ -112,13 +112,16 @@ export function RegistrationFields({ fields, onPackage, routes = [] }: { fields:
                     name={name}
                     value={p.name}
                     required={f.required}
-                    onChange={() => f.type === "package" && onPackage(p.price)}
                     className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                   />
                   <span className="min-w-0 text-sm">
                     <span className="block font-medium text-gray-900">{p.name}</span>
                     {p.note && <span className="block text-xs text-gray-600">{p.note}</span>}
-                    {f.type === "package" && <span className="block font-semibold text-brand">{p.price ? fmtRupiah(p.price) : "Gratis"}</span>}
+                    {f.type === "package" && (
+                      <span className="block font-semibold text-brand">
+                        {p.price ? (addon ? `+ ${fmtRupiah(p.price)}` : fmtRupiah(p.price)) : addon ? "Tanpa biaya tambahan" : "Gratis"}
+                      </span>
+                    )}
                   </span>
                 </label>
               );

@@ -184,7 +184,7 @@ async function main() {
         formFields: JSON.stringify([
           f("lahir001", "Tanggal lahir", "date", "umum", true),
           f("kota0001", "Kota domisili", "text", "umum", true),
-          f("paket001", "Pilih paket", "package", "umum", true, ["Reguler | 2.000.000 | Pelatihan 3 hari + sertifikat", "Paket Lengkap | 3.250.000 | Pelatihan + hotel 2 malam + antar-jemput bandara"]),
+          f("paket001", "Pilih paket", "package", "umum", true, ["Reguler | 0 | Pelatihan 3 hari + sertifikat", "Paket Lengkap | 1.250.000 | Tambahan hotel 2 malam + antar-jemput bandara"]),
           f("kaos0001", "Ukuran kaos", "select", "umum", true, ["S", "M", "L", "XL", "XXL"]),
           f("barang01", "Barang yang dibawa", "textarea", "barang", false, [], "Sebutkan jenis, merek, warna, atau ciri khusus"),
           f("fotobrg1", "Foto barang bawaan", "file", "barang", false, [], "Agar panitia mudah mengenali barang Anda"),

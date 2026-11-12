@@ -19,7 +19,6 @@ type Props = {
 };
 
 type StepKey = "data" | "pilihan" | "bayar";
-const noop = () => {};
 
 export function RegisterForm({ eventId, phone, organization, price, autoApprove = false, fields, banks, routes }: Props) {
   const [error, action, pending] = useActionState(registerForEvent.bind(null, eventId), null);
@@ -28,15 +27,14 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
   const [stepError, setStepError] = useState<string | null>(null);
   const [hideError, setHideError] = useState(false);
   const [summary, setSummary] = useState<{ label: string; value: string }[]>([]);
-  const [packagePrice, setPackagePrice] = useState<number | null>(null);
+  const [packagePrice, setPackagePrice] = useState(0);
 
-  const hasPackage = fields.some((f) => f.type === "package");
-  const total = packagePrice ?? price;
+  const total = price + packagePrice;
   const isChoice = (f: FormField) => hasOptions(f.type) || f.type === "shuttle";
   const dataFields = fields.filter((f) => !isChoice(f) && f.type !== "checkbox");
   const choiceFields = fields.filter(isChoice);
   const agreeFields = fields.filter((f) => f.type === "checkbox");
-  const paid = hasPackage ? fields.some((f) => f.type === "package" && f.options.some((o) => parsePackage(o).price > 0)) : price > 0;
+  const paid = price > 0 || fields.some((f) => f.type === "package" && f.options.some((o) => parsePackage(o).price > 0));
   const steps: { key: StepKey; title: string }[] = [
     { key: "data", title: "Data diri" },
     ...(choiceFields.length ? [{ key: "pilihan" as const, title: "Pilihan & paket" }] : []),
@@ -64,10 +62,20 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
     return true;
   }
 
+  function sumPackagePrice(fd: FormData): number {
+    let sum = 0;
+    for (const f of fields) {
+      if (f.type !== "package") continue;
+      const v = String(fd.get(`f_${f.id}`) ?? "").trim();
+      const p = v ? f.options.map(parsePackage).find((o) => o.name === v) : undefined;
+      if (p) sum += p.price;
+    }
+    return sum;
+  }
+
   function buildSummary() {
     const fd = new FormData(form.current!);
     const rows = [{ label: "Nomor WhatsApp", value: String(fd.get("phone") ?? "") }];
-    let pkgPrice: number | null = null;
     for (const f of fields) {
       const v = String(fd.get(`f_${f.id}`) ?? "").trim();
       if (!v || f.type === "checkbox") continue;
@@ -75,11 +83,11 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
       else if (f.type === "shuttle") rows.push({ label: f.label, value: routes.find((r) => r.id === v)?.label ?? NO_SHUTTLE_LABEL });
       else if (f.type === "package") {
         const p = f.options.map(parsePackage).find((o) => o.name === v);
-        if (p) pkgPrice = p.price;
-        rows.push({ label: f.label, value: p ? `${p.name} · ${p.price ? fmtRupiah(p.price) : "Gratis"}` : v });
+        const tag = p ? (p.price ? ` · ${price > 0 ? `+${fmtRupiah(p.price)}` : fmtRupiah(p.price)}` : price > 0 ? "" : " · Gratis") : "";
+        rows.push({ label: f.label, value: p ? `${p.name}${tag}` : v });
       } else rows.push({ label: f.label, value: v });
     }
-    setPackagePrice(pkgPrice);
+    setPackagePrice(sumPackagePrice(fd));
     setSummary(rows);
   }
 
@@ -95,7 +103,10 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
     <form
       ref={form}
       action={action}
-      onChange={() => setHideError(true)}
+      onChange={() => {
+        setHideError(true);
+        if (form.current) setPackagePrice(sumPackagePrice(new FormData(form.current)));
+      }}
       onSubmit={(e) => {
         if (!last) {
           e.preventDefault();
@@ -128,12 +139,12 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
             <input id="organization" name="organization" className="input" placeholder="Kosongkan jika perorangan" defaultValue={organization} />
           </div>
         )}
-        <RegistrationFields fields={dataFields} onPackage={noop} />
+        <RegistrationFields fields={dataFields} />
       </div>
 
       {choiceFields.length > 0 && (
         <div data-step="pilihan" className={current === "pilihan" ? "space-y-4" : "hidden"}>
-          <RegistrationFields fields={choiceFields} onPackage={setPackagePrice} routes={routes} />
+          <RegistrationFields fields={choiceFields} addon={price > 0} routes={routes} />
         </div>
       )}
 
@@ -152,6 +163,18 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
 
         {total > 0 ? (
           <div className="space-y-3 rounded-md border border-gray-200 bg-gray-50 p-3.5">
+            {price > 0 && packagePrice > 0 && (
+              <div className="space-y-1 text-xs text-gray-600">
+                <div className="flex justify-between">
+                  <span>Biaya pendaftaran</span>
+                  <span className="tabular-nums">{fmtRupiah(price)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tambahan paket</span>
+                  <span className="tabular-nums">+ {fmtRupiah(packagePrice)}</span>
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between border-b border-gray-200 pb-2">
               <span className="text-sm font-semibold text-gray-900">Total bayar</span>
               <span className="text-lg font-bold text-brand tabular-nums">{fmtRupiah(total)}</span>
@@ -185,7 +208,7 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
           </p>
         )}
 
-        <RegistrationFields fields={agreeFields} onPackage={noop} />
+        <RegistrationFields fields={agreeFields} />
       </div>
 
       {(stepError || (!pending && !hideError && error)) && (

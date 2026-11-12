@@ -111,7 +111,7 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
     if (read.shuttleId && routes.find((r) => r.id === read.shuttleId)?.seatsLeft === 0) {
       return sendJson(res, { result: "Kursi shuttle di rute ini sudah penuh. Pilih rute lain." }), true;
     }
-    const total = read.packagePrice ?? finalPrice(event);
+    const total = finalPrice(event) + (read.packagePrice ?? 0);
     const paymentProof = str(formData, "paymentProof").slice(0, 300);
     const paymentProofUrl = str(formData, "paymentProofUrl");
     if (paymentProofUrl && !/^\/media\/[a-z0-9]+$/i.test(paymentProofUrl)) return sendJson(res, { result: "Bukti transfer tidak valid. Unggah ulang." }), true;

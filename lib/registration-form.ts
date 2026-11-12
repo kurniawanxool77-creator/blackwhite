@@ -109,7 +109,7 @@ export function readAnswers(
       (field.type === "file" && !MEDIA_RE.test(value)) ||
       (hasOptions(field.type) && !field.options.some((o) => optionName(field, o) === value));
     if (bad) return `${field.label} tidak valid.`;
-    if (field.type === "package") packagePrice = parsePackage(field.options.find((o) => parsePackage(o).name === value)!).price;
+    if (field.type === "package") packagePrice = (packagePrice ?? 0) + parsePackage(field.options.find((o) => parsePackage(o).name === value)!).price;
     answers.push({ id: field.id, label: field.label, type: field.type, group: field.group, value });
   }
   return { answers, packagePrice, shuttleId };

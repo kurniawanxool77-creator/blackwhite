@@ -361,7 +361,7 @@ export async function handleSuperadminMiscRpc(req: IncomingMessage, res: ServerR
     const value = JSON.stringify(site);
     await db.setting.upsert({ where: { key: "site" }, update: { value }, create: { key: "site", value } });
     await audit(admin, "Ubah halaman depan");
-    invalidateCache("public:");
+    invalidateCache();
     return sendJson(res, { result: "Tersimpan. Halaman depan sudah diperbarui." }), true;
   }
 

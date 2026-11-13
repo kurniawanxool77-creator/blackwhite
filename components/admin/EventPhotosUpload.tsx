@@ -157,3 +157,4 @@ export function EventPhotosUpload({ coverUrl, gallery = [] }: Props) {
     </div>
   );
 }
+

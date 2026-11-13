@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = { name: string; label: string; hint?: string; defaultValue?: string | null; maxWidth?: number };
 
@@ -35,6 +35,10 @@ export function ImageUpload({ name, label, hint, defaultValue, maxWidth = 1680 }
   const [url, setUrl] = useState(defaultValue ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUrl(defaultValue ?? "");
+  }, [defaultValue]);
 
   async function pick(file: File | undefined) {
     if (!file) return;

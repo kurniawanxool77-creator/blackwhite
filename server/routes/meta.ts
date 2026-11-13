@@ -98,8 +98,8 @@ export async function handleMeta(req: IncomingMessage, res: ServerResponse, path
       sendJson(res, { error: "Tidak diizinkan." }, 401);
       return true;
     }
-    const file = (await readFormData(req)).get("file");
-    if (!(file instanceof File)) return sendJson(res, { error: "File tidak ditemukan." }, 400), true;
+    const file = (await readFormData(req)).get("file") as Blob | null;
+    if (!file || typeof file.arrayBuffer !== "function" || file.size === 0) return sendJson(res, { error: "File tidak ditemukan." }, 400), true;
     if (file.size > MAX_IMAGE_BYTES) return sendJson(res, { error: "Ukuran gambar maksimal 4 MB." }, 413), true;
     const original = new Uint8Array(await file.arrayBuffer());
     if (!sniffImageType(original)) return sendJson(res, { error: "Format harus JPEG, PNG, atau WebP." }, 415), true;

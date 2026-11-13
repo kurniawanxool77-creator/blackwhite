@@ -53,6 +53,19 @@ export function SiteForm({ site }: { site: Site }) {
 
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-6">
+      {status && (
+        <div className={`rounded-md border p-3.5 text-sm font-medium ${status.ok ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"}`}>
+          {status.text}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5">
+        <span className="text-xs text-gray-600">Setelah memilih gambar atau mengubah teks, klik simpan agar langsung aktif di website.</span>
+        <button type="submit" className="btn btn-primary btn-sm shrink-0" disabled={pending}>
+          {pending ? "Menyimpan..." : "Simpan perubahan"}
+        </button>
+      </div>
+
       <section className="card space-y-4 p-5">
         <h2 className="font-semibold text-gray-900">Identitas & hero</h2>
         <Field label="Nama perusahaan / brand" name="name" value={site.name} />

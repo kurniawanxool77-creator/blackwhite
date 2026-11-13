@@ -60,7 +60,7 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
         _count: { select: { registrations: { where: { status: "approved" } }, lessons: true, questions: true } },
       },
     });
-    if (!event || event.status === "draft") return sendJson(res, { error: "Pelatihan tidak ditemukan." }, 404), true;
+    if (!event || event.status === "draft") return sendJson(res, { error: "Event tidak ditemukan." }, 404), true;
     const session = getSessionUser(req);
     const isUser = session?.role === "user";
     const [user, existing, site, seatsLeft] = await Promise.all([

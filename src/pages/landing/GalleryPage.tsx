@@ -12,9 +12,9 @@ export function GalleryPage() {
         <div className="mx-auto max-w-6xl px-4 py-4 md:py-12">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold tracking-wider text-brand uppercase">Dokumentasi Visual</p>
-            <h1 className="mt-1 text-lg font-bold tracking-tight text-gray-900 md:text-3xl">Galeri Kegiatan & Pelatihan</h1>
+            <h1 className="mt-1 text-lg font-bold tracking-tight text-gray-900 md:text-3xl">Galeri Kegiatan & Event</h1>
             <p className="mt-2 text-sm text-gray-600">
-              Dokumentasi pelaksanaan kegiatan pelatihan, registrasi barcode, dan suasana pos checkpoint acara di {site.name}.
+              Dokumentasi pelaksanaan kegiatan event, registrasi barcode, dan suasana pos checkpoint acara di {site.name}.
             </p>
           </div>
 

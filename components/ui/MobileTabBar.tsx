@@ -6,7 +6,7 @@ import { CalendarIcon, HomeIcon, PhotoIcon, TicketIcon, UserIcon } from "./icons
 
 const TABS = [
   { href: "/", label: "Beranda", Icon: HomeIcon, active: (p: string) => p === "/" || p.startsWith("/blog") },
-  { href: "/event", label: "Pelatihan", Icon: CalendarIcon, active: (p: string) => p.startsWith("/event") },
+  { href: "/event", label: "Event", Icon: CalendarIcon, active: (p: string) => p.startsWith("/event") },
   { href: "/galeri", label: "Galeri", Icon: PhotoIcon, active: (p: string) => p.startsWith("/galeri") },
   { href: "/dashboard", label: "Tiket", Icon: TicketIcon, active: (p: string) => p.startsWith("/dashboard") || p.startsWith("/tiket") },
   { href: "/akun", label: "Akun", Icon: UserIcon, active: (p: string) => p === "/akun" || p === "/login" || p === "/daftar" },

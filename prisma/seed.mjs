@@ -114,7 +114,7 @@ async function ensureSite() {
   if (await db.setting.findUnique({ where: { key: "site" } })) return;
   const site = {
     name: "BlackWhite",
-    tagline: "Pelatihan bersertifikat dengan pendaftaran online dan absensi QR",
+    tagline: "Event dan kegiatan dengan pendaftaran online dan absensi QR",
     about: "Kami membantu penyelenggara event mengelola peserta secara tertib: pendaftaran, persetujuan, hingga pemindaian QR di setiap titik acara seperti bandara, hotel, konsumsi, dan pengambilan barang.\n\nSetiap peserta mendapat satu QR. Panitia memindainya di setiap checkpoint, dan peserta dapat memantau progresnya langsung dari ponsel.",
     heroImage: await store(heroScene()),
     aboutImage: await store(aboutScene()),
@@ -123,7 +123,7 @@ async function ensureSite() {
       { title: "QR per checkpoint", body: "Satu QR per peserta dipindai di setiap titik acara, berurutan sesuai jadwal.", image: await store(serviceScene(1)) },
       { title: "Laporan langsung", body: "Lihat siapa yang sudah dan belum hadir di tiap checkpoint, lalu ekspor ke CSV.", image: await store(serviceScene(2)) },
     ],
-    steps: ["Buat akun atau masuk dengan Google, lalu daftar pelatihan", "Tunggu persetujuan panitia", "Tunjukkan QR di setiap checkpoint", "Pantau progres Anda di dasbor"],
+    steps: ["Buat akun atau masuk dengan Google, lalu daftar event", "Tunggu persetujuan panitia", "Tunjukkan QR di setiap checkpoint", "Pantau progres Anda di dasbor"],
     contact: { email: "admin@blackwhite.co.id", phone: "+62 821-5615-7217", address: "Jakarta, Indonesia" },
   };
   await db.setting.create({ data: { key: "site", value: JSON.stringify(site) } });

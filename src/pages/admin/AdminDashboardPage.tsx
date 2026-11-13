@@ -50,7 +50,7 @@ export function AdminDashboardPage() {
                     Halo {firstName}, {greeting}
                   </h1>
                   <p className="mt-0.5 text-sm text-gray-600">
-                    Absen datang dulu sebelum memulai kegiatan di pelatihan Anda.
+                    Absen datang dulu sebelum memulai kegiatan di event Anda.
                   </p>
                 </div>
                 <Link to="/admin/events" className="btn btn-primary flex items-center justify-center gap-2">

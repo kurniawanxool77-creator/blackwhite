@@ -57,8 +57,8 @@ export function EventBrowser({ results, categories, locations, total, filters = 
             <input
               name="q"
               defaultValue={q}
-              placeholder="Cari pelatihan atau kota"
-              aria-label="Cari pelatihan"
+              placeholder="Cari event atau kota"
+              aria-label="Cari event"
               autoComplete="off"
               className="input pl-10"
             />
@@ -93,13 +93,13 @@ export function EventBrowser({ results, categories, locations, total, filters = 
       />
 
       <p className="mt-4 text-sm text-gray-600" aria-live="polite">
-        {active.length > 0 ? `${results.length} dari ${total} pelatihan · ${active.join(" · ")}` : `${total} pelatihan sedang dibuka.`}
+        {active.length > 0 ? `${results.length} dari ${total} event · ${active.join(" · ")}` : `${total} event sedang dibuka.`}
         {active.length > 0 && <Link href="/event" className="ml-2 font-medium text-gray-900 underline underline-offset-2">Reset filter</Link>}
       </p>
 
       {shown.length === 0 ? (
         <p className="card mt-4 p-8 text-center text-sm text-gray-600">
-          {total === 0 ? "Belum ada pelatihan yang membuka pendaftaran." : "Tidak ada pelatihan yang cocok. Coba ubah filter."}
+          {total === 0 ? "Belum ada event yang membuka pendaftaran." : "Tidak ada event yang cocok. Coba ubah filter."}
         </p>
       ) : (
         <div className="mt-3 grid gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3">
@@ -109,7 +109,7 @@ export function EventBrowser({ results, categories, locations, total, filters = 
 
       {limit && results.length > limit && (
         <div className="mt-6 text-center">
-          <Link href={href({})} className="btn btn-secondary">Lihat semua {results.length} pelatihan</Link>
+          <Link href={href({})} className="btn btn-secondary">Lihat semua {results.length} event</Link>
         </div>
       )}
     </div>

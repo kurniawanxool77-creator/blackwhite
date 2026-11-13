@@ -44,8 +44,8 @@ export function SuperadminEventsPage() {
 
         return (
           <div className="space-y-4">
-            <PageHeader title="Event & pelatihan" description="Klik nama event untuk mengubah info, formulir, rundown, tim, materi, dan sertifikat.">
-              <Drawer label="+ Buat event" title="Buat event / pelatihan baru" size="lg">
+            <PageHeader title="Event & Acara" description="Klik nama event untuk mengubah info, formulir, rundown, tim, materi, dan sertifikat.">
+              <Drawer label="+ Buat event" title="Buat event baru" size="lg">
                 <EventForm action={createEvent} categories={categories} />
               </Drawer>
             </PageHeader>
@@ -57,7 +57,7 @@ export function SuperadminEventsPage() {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Event & Pelatihan</th>
+                      <th>Event & Acara</th>
                       <th>Tanggal</th>
                       <th>Harga</th>
                       <th>Status</th>

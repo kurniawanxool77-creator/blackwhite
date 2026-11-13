@@ -30,7 +30,7 @@ export const parseBanks = (lines: string[]): BankAccount[] =>
 
 export const DEFAULT_SITE: Site = {
   name: "BlackWhite",
-  tagline: "Pelatihan bersertifikat dengan pendaftaran online dan absensi QR",
+  tagline: "Event dan kegiatan dengan pendaftaran online dan absensi QR",
   about:
     "Kami membantu penyelenggara event mengelola peserta secara tertib: pendaftaran, persetujuan, hingga pemindaian QR di setiap titik acara seperti bandara, hotel, konsumsi, dan pengambilan barang.",
   heroImage: "",
@@ -42,7 +42,7 @@ export const DEFAULT_SITE: Site = {
     { title: "Laporan langsung", body: "Lihat siapa yang sudah dan belum hadir di tiap checkpoint, lalu ekspor ke CSV." },
   ],
   steps: [
-    "Buat akun atau masuk dengan Google, lalu daftar pelatihan",
+    "Buat akun atau masuk dengan Google, lalu daftar event",
     "Tunggu persetujuan panitia",
     "Tunjukkan QR di setiap checkpoint",
     "Pantau progres Anda di dasbor",

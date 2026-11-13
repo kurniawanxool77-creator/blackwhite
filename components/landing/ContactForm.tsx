@@ -94,7 +94,7 @@ export function ContactForm({ siteName }: { siteName: string }) {
             Kategori Keperluan <span className="text-red-500">*</span>
           </label>
           <select id="category" name="category" required className="input text-xs">
-            <option value="pendaftaran">Pendaftaran Pelatihan</option>
+            <option value="pendaftaran">Pendaftaran Event / Acara</option>
             <option value="kendala-qr">Kendala QR Code / Presensi</option>
             <option value="pembayaran">Konfirmasi Pembayaran</option>
             <option value="kerjasama">Kerja Sama In-House Training</option>

@@ -59,7 +59,7 @@ export function UserDashboardPage() {
               </h1>
               <Link to="/event" className="btn btn-secondary btn-sm hidden sm:inline-flex">
                 <CalendarIcon className="h-4 w-4" />
-                Cari pelatihan
+                Cari event
               </Link>
             </div>
 
@@ -113,7 +113,7 @@ export function UserDashboardPage() {
                 </h2>
                 {registrations.length === 0 ? (
                   <Link to="/event" className="btn btn-primary btn-sm mt-4">
-                    Cari pelatihan
+                    Cari event
                   </Link>
                 ) : (
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -123,7 +123,7 @@ export function UserDashboardPage() {
                       </Link>
                     )}
                     <Link to="/event" className="btn btn-primary btn-sm">
-                      Cari pelatihan
+                      Cari event
                     </Link>
                   </div>
                 )}

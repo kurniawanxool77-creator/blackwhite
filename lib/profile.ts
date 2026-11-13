@@ -49,7 +49,7 @@ export async function userProfile(userId: string): Promise<ProfileInfo | null> {
     details: [
       { label: "No. HP", value: user.phone ?? "Belum diisi" },
       { label: "Instansi", value: user.organization ?? "Belum diisi" },
-      { label: "Pendaftaran", value: `${fmtNum(user._count.registrations)} pelatihan` },
+      { label: "Pendaftaran", value: `${fmtNum(user._count.registrations)} event` },
       { label: "Metode masuk", value: user.passwordHash ? (user.emailVerified ? "Email & password, Google" : "Email & password") : "Google" },
       { label: "Bergabung", value: fmtDate(user.createdAt) },
     ],

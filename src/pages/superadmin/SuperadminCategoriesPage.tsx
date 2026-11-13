@@ -17,7 +17,7 @@ export function SuperadminCategoriesPage() {
     <DataGate state={state}>
       {({ categories, counts }) => (
         <div className="space-y-4">
-          <PageHeader title="Kategori pelatihan" description="Kategori dipilih saat membuat event dan dipakai untuk filter di halaman Pelatihan.">
+          <PageHeader title="Kategori event" description="Kategori dipilih saat membuat event dan dipakai untuk filter di halaman Event.">
             <Drawer label="+ Tambah kategori" title="Tambah kategori">
               <CategoryForm />
             </Drawer>

@@ -15,8 +15,8 @@ export function DutyGate({ event, backHref }: { event: Event; backHref?: string 
         <h1 className="mt-1 text-lg font-semibold text-gray-900">{event.name}</h1>
         <p className="mt-2 text-sm text-gray-600">
           {running
-            ? "Absen datang dengan foto selfie dulu untuk membuka scan dan check-in di pelatihan ini."
-            : "Absensi dan scan hanya bisa dilakukan pada hari pelatihan berlangsung."}
+            ? "Absen datang dengan foto selfie dulu untuk membuka scan dan check-in di event ini."
+            : "Absensi dan scan hanya bisa dilakukan pada hari event berlangsung."}
         </p>
         {running && (
           <div className="mt-4 flex justify-center">

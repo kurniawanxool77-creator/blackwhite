@@ -3,11 +3,33 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 export type RouteParams = Record<string, string>;
 
 export function getOrigin(req: IncomingMessage): string {
+  const envUrl = (process.env.APP_URL || process.env.SITE_URL || process.env.NEXTAUTH_URL || "").trim().replace(/\/+$/, "");
+  const hostHeader = req.headers["x-forwarded-host"] || req.headers.host || "";
+  const host = (Array.isArray(hostHeader) ? hostHeader[0] : hostHeader).split(",")[0].trim();
+  const isLocalHost = !host || host.includes("localhost") || host.includes("127.0.0.1");
+
+  if (envUrl) {
+    try {
+      const parsedEnv = new URL(envUrl);
+      if (!host || host === parsedEnv.host || isLocalHost === (parsedEnv.hostname === "localhost" || parsedEnv.hostname === "127.0.0.1")) {
+        return envUrl;
+      }
+    } catch {
+      // ignore invalid env URL
+    }
+  }
+
   const protoHeader = req.headers["x-forwarded-proto"];
-  const proto = (Array.isArray(protoHeader) ? protoHeader[0] : protoHeader)?.split(",")[0]?.trim() || "http";
-  const hostHeader = req.headers["x-forwarded-host"] || req.headers.host || "localhost:5173";
-  const host = (Array.isArray(hostHeader) ? hostHeader[0] : hostHeader).split(",")[0].trim() || "localhost:5173";
-  return `${proto}://${host}`;
+  let proto = (Array.isArray(protoHeader) ? protoHeader[0] : protoHeader)?.split(",")[0]?.trim();
+
+  if (process.env.VERCEL === "1" || (!isLocalHost && (!proto || proto === "http"))) {
+    proto = "https";
+  } else if (!proto) {
+    proto = isLocalHost ? "http" : "https";
+  }
+
+  const resolvedHost = host || (process.env.VERCEL_URL ? process.env.VERCEL_URL : "localhost:5173");
+  return `${proto}://${resolvedHost}`;
 }
 
 export function parseUrl(req: IncomingMessage): URL {

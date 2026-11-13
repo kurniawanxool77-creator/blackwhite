@@ -10,7 +10,7 @@ import type { ProfileInfo } from "@/lib/profile";
 const LINKS = [
   { href: "/", label: "Beranda" },
   { href: "/tentang", label: "Tentang" },
-  { href: "/event", label: "Pelatihan" },
+  { href: "/event", label: "Event" },
   { href: "/galeri", label: "Galeri" },
   { href: "/blog", label: "Artikel" },
   { href: "/kontak", label: "Kontak" },

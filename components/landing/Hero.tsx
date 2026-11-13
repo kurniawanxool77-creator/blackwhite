@@ -11,14 +11,14 @@ export function Hero({ site }: { site: Site }) {
           {/* Sisi kiri: satu judul (h1) dan satu kalimat berisi kata kunci utama untuk mesin pencari. */}
           <div className={site.heroImage ? "lg:col-span-7" : ""}>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl lg:leading-tight">
-              {site.tagline || "Pelatihan bersertifikat dengan pendaftaran online dan absensi QR"}
+              {site.tagline || "Event dan seminar dengan pendaftaran online dan absensi QR"}
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-600 sm:text-lg">
-              Daftar pelatihan, seminar, dan workshop secara online di {site.name}. Dapatkan tiket QR, materi video, kuis, dan sertifikat resmi dalam satu akun.
+              Daftar event, seminar, dan kegiatan secara online di {site.name}. Dapatkan tiket QR, jadwal acara, dan kemudahan check-in dalam satu akun.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/event" className="btn btn-primary shadow-sm">
-                Lihat pelatihan
+                Lihat event
                 <ArrowRightIcon className="h-4 w-4" />
               </Link>
             </div>

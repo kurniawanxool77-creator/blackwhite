@@ -16,9 +16,9 @@ export function AdminMaterialsPage() {
     <DataGate state={state}>
       {({ events }) => (
         <div className="space-y-6">
-          <PageHeader title="Materi pelatihan" description="Ringkasan modul video, kuis, dan jumlah penerima sertifikat." />
+          <PageHeader title="Materi event" description="Ringkasan modul video, kuis, dan jumlah penerima sertifikat." />
           {events.length === 0 ? (
-            <div className="card p-6 text-sm text-gray-600">Belum ada pelatihan aktif yang ditugaskan kepada Anda.</div>
+            <div className="card p-6 text-sm text-gray-600">Belum ada event aktif yang ditugaskan kepada Anda.</div>
           ) : (
             <div className="space-y-4">
               {events.map((e) => (

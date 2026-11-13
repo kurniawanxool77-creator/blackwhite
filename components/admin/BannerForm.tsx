@@ -29,7 +29,7 @@ export function BannerForm({ events, banner }: { events: EventOption[]; banner?:
       <fieldset>
         <legend className="label">Jenis banner</legend>
         <div className="grid grid-cols-2 gap-2">
-          {([["promo", "Iklan pelatihan", "Judul tampil di bawah gambar"], ["image", "Gambar saja", "Tanpa tulisan tambahan"]] as const).map(([v, l, h]) => (
+          {([["promo", "Iklan event", "Judul tampil di bawah gambar"], ["image", "Gambar saja", "Tanpa tulisan tambahan"]] as const).map(([v, l, h]) => (
             <label key={v} className="flex cursor-pointer items-start gap-2 rounded-md border border-gray-200 p-3 text-sm has-checked:border-brand has-checked:bg-green-50/60">
               <input type="radio" name="kind" value={v} checked={kind === v} onChange={() => setKind(v)} className="mt-0.5 accent-brand" />
               <span>
@@ -42,7 +42,7 @@ export function BannerForm({ events, banner }: { events: EventOption[]; banner?:
       </fieldset>
       <div>
         <label className="label" htmlFor="title">{kind === "promo" ? "Judul" : "Nama banner (untuk pembaca layar)"}</label>
-        <input id="title" name="title" className="input" defaultValue={banner?.title} placeholder={kind === "promo" ? "contoh: Pelatihan K3 Umum, diskon 20%" : "contoh: Promo akhir tahun"} required />
+        <input id="title" name="title" className="input" defaultValue={banner?.title} placeholder={kind === "promo" ? "contoh: Event Fun Bike, diskon 20%" : "contoh: Promo akhir tahun"} required />
       </div>
       {kind === "promo" && (
         <div>
@@ -53,7 +53,7 @@ export function BannerForm({ events, banner }: { events: EventOption[]; banner?:
       <ImageUpload key={saved} name="imageUrl" defaultValue={banner?.imageUrl} label="Gambar banner" hint="JPEG, PNG, atau WebP, maks. 4 MB. Disarankan 1680 × 640 px; teks penting di tengah." />
       {kind === "promo" ? (
         <div>
-          <label className="label" htmlFor="eventSlug">Pelatihan yang diiklankan</label>
+          <label className="label" htmlFor="eventSlug">Event yang diiklankan</label>
           <select id="eventSlug" name="eventSlug" className="input" defaultValue={linkedSlug}>
             <option value="">Tanpa tautan</option>
             {events.map((e) => <option key={e.slug} value={e.slug}>{e.name}</option>)}

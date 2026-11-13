@@ -22,7 +22,7 @@ export async function noticesFor(admin: Admin): Promise<{ total: number; items: 
     ]);
     const items: Notice[] = [
       ...pending.map((r) => ({ id: `reg-${r.id}`, title: `${r.user.name} menunggu persetujuan`, detail: r.event.name, href: `/superadmin/events/${r.event.id}?status=pending`, at: r.createdAt.toISOString(), tone: "warn" as const })),
-      ...starting.map((e) => ({ id: `ev-${e.id}`, title: `${+e.startDate < +today + DAY ? "Hari ini" : "Besok"}: ${e.name}`, detail: "Pelatihan dimulai", href: `/superadmin/events/${e.id}`, at: e.startDate.toISOString(), tone: "info" as const })),
+      ...starting.map((e) => ({ id: `ev-${e.id}`, title: `${+e.startDate < +today + DAY ? "Hari ini" : "Besok"}: ${e.name}`, detail: "Event dimulai", href: `/superadmin/events/${e.id}`, at: e.startDate.toISOString(), tone: "info" as const })),
     ];
     return { total: pendingCount + starting.length, items };
   }

@@ -22,7 +22,7 @@ export function AdminRundownPage() {
           <PageHeader title="Rundown & Pos Lapangan" description="Pantau jadwal sesi dan progres verifikasi barcode di tiap pos." />
 
           {events.length === 0 ? (
-            <div className="card p-6 text-sm text-gray-600">Belum ada pelatihan aktif yang ditugaskan.</div>
+            <div className="card p-6 text-sm text-gray-600">Belum ada event aktif yang ditugaskan.</div>
           ) : (
             events.map((event) => {
               const totalApproved = event._count.registrations;

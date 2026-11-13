@@ -169,7 +169,7 @@ export const SAMPLE_FIELDS: Omit<FormField, "id">[] = [
   { label: "Tanggal lahir", type: "date", group: "umum", required: true, options: [], hint: "" },
   { label: "Kota domisili", type: "text", group: "umum", required: true, options: [], hint: "" },
   { label: "Instansi / komunitas", type: "text", group: "umum", required: false, options: [], hint: "" },
-  { label: "Pilih paket", type: "package", group: "umum", required: true, options: ["Early Bird | 500.000 | Berlaku sampai akhir bulan", "Reguler | 550.000 | Hanya pelatihan", "Paket Lengkap | 1.750.000 | Pelatihan + hotel 2 malam + transportasi"], hint: "" },
+  { label: "Pilih paket", type: "package", group: "umum", required: true, options: ["Early Bird | 500.000 | Berlaku sampai akhir bulan", "Reguler | 550.000 | Tiket event saja", "Paket Lengkap | 1.750.000 | Tiket event + hotel 2 malam + transportasi"], hint: "" },
   { label: "Ukuran kaos", type: "select", group: "umum", required: true, options: ["S", "M", "L", "XL", "XXL"], hint: "" },
   { label: "Barang yang dibawa", type: "textarea", group: "barang", required: false, options: [], hint: "Sebutkan jenis, merek, warna, atau ciri khusus" },
   { label: "Foto barang bawaan", type: "file", group: "barang", required: false, options: [], hint: "Agar panitia mudah mengenali barang Anda" },

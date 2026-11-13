@@ -11,7 +11,7 @@ export function RundownPicker({ event, base }: { event: Event; base: string }) {
   const approved = event._count.registrations;
   return (
     <div className="mx-auto max-w-3xl">
-      <Link href={`${base}/scan`} className="text-sm text-gray-600 hover:text-gray-900">← Pilih pelatihan lain</Link>
+      <Link href={`${base}/scan`} className="text-sm text-gray-600 hover:text-gray-900">← Pilih event lain</Link>
       <h1 className="mt-2 text-xl font-semibold text-gray-900">{event.name}</h1>
       <p className="text-sm text-gray-600">
         {event.location} · {fmtDateRange(event.startDate, event.endDate)}
@@ -20,7 +20,7 @@ export function RundownPicker({ event, base }: { event: Event; base: string }) {
       <p className="mt-4 text-sm font-medium text-gray-900">Pilih rundown yang akan dipindai</p>
 
       <ol className="mt-2 space-y-2">
-        {event.checkpoints.length === 0 && <li className="card p-5 text-sm text-gray-600">Pelatihan ini belum punya rundown.</li>}
+        {event.checkpoints.length === 0 && <li className="card p-5 text-sm text-gray-600">Event ini belum punya rundown.</li>}
         {event.checkpoints.map((c, i) =>
           c.scan ? (
             <li key={c.id}>

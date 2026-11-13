@@ -15,7 +15,7 @@ export function MemberProfile({ detail, backHref, isMe }: { detail: MemberDetail
     { label: "Hari hadir", value: fmtNum(new Set(attendance.map((a) => a.date)).size) },
     { label: "Total jam bertugas", value: fmtDuration(worked) },
     { label: "Peserta dipindai", value: fmtNum(scanCount) },
-    { label: "Pelatihan", value: fmtNum(events.length) },
+    { label: "Event", value: fmtNum(events.length) },
   ];
 
   return (
@@ -75,9 +75,9 @@ export function MemberProfile({ detail, backHref, isMe }: { detail: MemberDetail
           )}
         </section>
         <section className="card p-5">
-          <h2 className="font-semibold text-gray-900">Pelatihan yang dipegang</h2>
+          <h2 className="font-semibold text-gray-900">Event yang dipegang</h2>
           {events.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-600">{member.role === "superadmin" ? "Superadmin memegang semua pelatihan." : "Belum ada."}</p>
+            <p className="mt-2 text-sm text-gray-600">{member.role === "superadmin" ? "Superadmin memegang semua event." : "Belum ada."}</p>
           ) : (
             <ul className="mt-2 divide-y divide-gray-100 text-sm">
               {events.map((e) => (

@@ -83,7 +83,7 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0 flex-1">
             <label htmlFor="event-select" className="label text-xs uppercase tracking-wider text-gray-500">
-              Pilih Pelatihan / Event
+              Pilih Event / Acara
             </label>
             <div className="relative mt-1">
               <select
@@ -151,7 +151,7 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
         <div className="card p-4">
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <CalendarIcon width={16} height={16} className="text-gray-400" />
-            <span>Hari Pelatihan</span>
+            <span>Hari Event</span>
           </div>
           <p className="mt-1 text-2xl font-bold text-gray-900">{summary.totalDays} Hari</p>
           <p className="text-xs text-gray-500">Mulai s/d selesai</p>

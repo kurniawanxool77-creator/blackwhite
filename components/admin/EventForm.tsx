@@ -80,9 +80,9 @@ export function EventForm({ action, categories, event }: { action: Action; categ
         )}
       </Section>
 
-      <Section no={2} title="Informasi" hint="Tampil di halaman pelatihan dan hasil pencarian Google.">
+      <Section no={2} title="Informasi" hint="Tampil di halaman event dan hasil pencarian Google.">
         <div>
-          <label className="label" htmlFor="name">Nama event / pelatihan</label>
+          <label className="label" htmlFor="name">Nama event / acara</label>
           <input id="name" name="name" className="input" defaultValue={event?.name} placeholder="contoh: Semarang Fun Ride 2026" required />
         </div>
         <CategoryPicker categories={categories} defaultValue={event?.category ?? ""} />

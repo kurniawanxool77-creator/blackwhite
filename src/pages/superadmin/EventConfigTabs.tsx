@@ -127,7 +127,7 @@ export function EventConfigTabs({
             Tim Bertugas <span className="ml-2 text-xs font-normal text-gray-500">({assignedTeam.length} orang ditugaskan)</span>
           </h2>
           <p className="mt-0.5 text-xs text-gray-600">
-            Centang anggota tim yang bertugas pada pelatihan ini. Hanya tim terpilih yang memiliki akses scan tiket dan absensi di venue.
+            Centang anggota tim yang bertugas pada event ini. Hanya tim terpilih yang memiliki akses scan tiket dan absensi di venue.
           </p>
         </div>
         <TeamAssignForm eventId={event.id} team={team} />
@@ -162,7 +162,7 @@ export function EventConfigTabs({
         <div className="card p-4">
           <h2 className="text-base font-semibold text-gray-900">Rundown & Checkpoint QR Lapangan</h2>
           <p className="mt-0.5 text-xs text-gray-600">
-            Konfigurasi pos-pos pemindaian QR tiket peserta di venue: absensi masuk, konsumsi, pembagian kit pelatihan, dan antar-jemput.
+            Konfigurasi pos-pos pemindaian QR tiket peserta di venue: absensi masuk, konsumsi, pembagian kit event, dan antar-jemput.
           </p>
         </div>
         <CheckpointPanel
@@ -189,7 +189,7 @@ export function EventConfigTabs({
           <div>
             <h2 className="text-base font-semibold text-gray-900">Materi Pembelajaran, Kuis & Sertifikat</h2>
             <p className="mt-1 text-xs text-gray-600">
-              Atur modul materi video pelatihan, bank soal kuis, nilai kelulusan, dan penerbitan sertifikat digital otomatis.
+              Atur modul materi video event, bank soal kuis, nilai kelulusan, dan penerbitan sertifikat digital otomatis.
             </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               <span className="rounded bg-gray-100 px-2.5 py-1 font-medium text-gray-700">
@@ -214,7 +214,7 @@ export function EventConfigTabs({
         <div className="border-b border-gray-200 px-5 py-3.5">
           <h2 className="text-base font-semibold text-gray-900">Pengaturan & Info Event</h2>
           <p className="mt-0.5 text-xs text-gray-600">
-            Ubah rincian acara, kategori, mode pelatihan, tanggal pelaksanaan, harga, diskon, dan kuota.
+            Ubah rincian acara, kategori, mode event, tanggal pelaksanaan, harga, diskon, dan kuota.
           </p>
         </div>
         <div className="p-5">

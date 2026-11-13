@@ -26,7 +26,7 @@ export function ParticipantRundown({ reg, details, admin, locked }: Props) {
       </div>
       {locked && (
         <p className="border-b border-gray-200 bg-amber-50 px-5 py-3 text-sm text-amber-800">
-          Absen datang dulu di pelatihan ini untuk check-in manual atau membatalkan scan.
+          Absen datang dulu di event ini untuk check-in manual atau membatalkan scan.
         </p>
       )}
       {!approved && (

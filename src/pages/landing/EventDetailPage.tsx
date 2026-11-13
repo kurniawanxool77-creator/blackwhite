@@ -53,7 +53,7 @@ export function EventDetailPage() {
   const state = useApiData<PublicEventDetail>(slug ? `/api/public/events/${encodeURIComponent(slug)}` : null);
 
   return (
-    <DataGate state={state} notFoundTitle="Pelatihan tidak ditemukan" backTo="/event">
+    <DataGate state={state} notFoundTitle="Event tidak ditemukan" backTo="/event">
       {({ event, user, existing, seatsLeft, closed, shuttles, banks, fields }) => {
         const photos = parsePhotos(event.coverUrl, event.gallery);
         const days = durationDays(event.startDate, event.endDate);
@@ -61,7 +61,7 @@ export function EventDetailPage() {
         return (
           <div className="mx-auto max-w-6xl px-4 py-4 md:py-8">
             <Link to="/event" className="inline-flex min-h-9 items-center text-sm text-gray-600 hover:text-gray-900">
-              ← Semua pelatihan
+              ← Semua event
             </Link>
 
             <div className="mt-2 grid gap-6 md:mt-4 lg:grid-cols-3 lg:gap-8">
@@ -107,7 +107,7 @@ export function EventDetailPage() {
               </div>
 
               <aside className="card h-fit p-5 lg:sticky lg:top-24">
-                <h2 className="font-semibold text-gray-900">Daftar pelatihan</h2>
+                <h2 className="font-semibold text-gray-900">Daftar event</h2>
                 <PriceTag event={event} className="mt-2 text-lg" />
                 {event.registrationEnd && (
                   <p className="mt-1 text-xs text-gray-600">Pendaftaran sampai {fmtDate(event.registrationEnd)}, 23.59 WIB</p>

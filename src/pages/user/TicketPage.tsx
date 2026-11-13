@@ -161,7 +161,7 @@ export function TicketPage() {
                       {reg.status === "rejected"
                         ? `Alasan: ${reg.rejectReason || "Tidak memenuhi persyaratan kegiatan."}`
                         : reg.status === "approved"
-                          ? "Pelatihan ini tanpa QR. Kehadiran dicatat langsung oleh panitia di lokasi."
+                          ? "Event ini tanpa QR. Kehadiran dicatat langsung oleh panitia di lokasi."
                           : reg.event.useQr
                             ? "QR terbit setelah panitia memverifikasi data dan pembayaran Anda."
                             : "Menunggu verifikasi data dan pembayaran oleh panitia."}

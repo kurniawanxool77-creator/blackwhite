@@ -26,7 +26,7 @@ export function AttendancePanel({ date, items }: AttendanceTodayProps) {
       </div>
 
       {items.length === 0 ? (
-        <p className="p-5 text-sm text-gray-600">Tidak ada pelatihan yang Anda pegang yang berlangsung hari ini.</p>
+        <p className="p-5 text-sm text-gray-600">Tidak ada event yang Anda pegang yang berlangsung hari ini.</p>
       ) : (
         <ul className="divide-y divide-gray-100">
           {items.map(({ event, row }) => (

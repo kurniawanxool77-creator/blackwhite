@@ -10,10 +10,10 @@ export function ScanScreen({ events, role }: { events: Awaited<ReturnType<typeof
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="text-xl font-semibold text-gray-900">Scanner</h1>
-      <p className="mt-1 text-sm text-gray-600">Pilih pelatihan, lalu pilih item rundown yang akan dipindai.</p>
+      <p className="mt-1 text-sm text-gray-600">Pilih event, lalu pilih item rundown yang akan dipindai.</p>
       {events.length === 0 ? (
         <p className="card mt-4 p-6 text-sm text-gray-600">
-          Tidak ada pelatihan aktif{role === "scanner" ? " yang ditugaskan kepada Anda" : ""}. Pelatihan harus berstatus
+          Tidak ada event aktif{role === "scanner" ? " yang ditugaskan kepada Anda" : ""}. Event harus berstatus
           dibuka atau ditutup untuk bisa dipindai.
         </p>
       ) : (

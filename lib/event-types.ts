@@ -4,7 +4,7 @@ import type { FieldGroup, FieldType, FormField } from "./registration-form";
 // - "event": tatap muka/hybrid — formulir lengkap, rundown, QR di tiap pos.
 // - "course": pelatihan video — video 1, 2, 3, ... dibuka berurutan, kuis, lalu sertifikat. Tanpa QR.
 export const EVENT_TYPES = {
-  event: { label: "Event / pelatihan tatap muka", hint: "Peserta datang ke lokasi. Ada formulir pendaftaran, rundown, dan kehadiran lewat QR di tiap pos." },
+  event: { label: "Event / Acara tatap muka", hint: "Peserta datang ke lokasi. Ada formulir pendaftaran, rundown, dan kehadiran lewat QR di tiap pos." },
   course: { label: "Pelatihan video (online)", hint: "Peserta menonton video materi berurutan sampai selesai, mengerjakan kuis, lalu mendapat sertifikat." },
 } as const;
 
@@ -45,7 +45,7 @@ export type Activity = { label: string; hint: string; prefix: string; fields: Fo
 // Template kegiatan tatap muka: formulir, rundown, dan awalan nomor peserta yang cocok. Semua bisa diubah setelah dibuat.
 export const ACTIVITIES = {
   umum: {
-    label: "Pelatihan / workshop",
+    label: "Workshop / Kelas",
     hint: "Instansi, jabatan, ukuran baju, kontak darurat.",
     prefix: "PST",
     fields: [...INSTANSI, ...BAJU, ...DARURAT.slice(0, 2), SEHAT[1], ...SETUJU],
@@ -120,7 +120,7 @@ export const FIELD_PRESETS: { label: string; fields: Omit<FormField, "id">[] }[]
   { label: "Baju Pria/Wanita + ukuran", fields: BAJU },
   { label: "Shuttle (rute event)", fields: SHUTTLE },
   { label: "Penginapan", fields: INAP },
-  { label: "Paket + harga", fields: [F("x", "Pilih paket", "package", "umum", true, ["Reguler | 500.000 | Hanya pelatihan", "Paket Lengkap | 1.500.000 | Termasuk penginapan & shuttle"])] },
+  { label: "Paket + harga", fields: [F("x", "Pilih paket", "package", "umum", true, ["Reguler | 500.000 | Tiket event saja", "Paket Lengkap | 1.500.000 | Termasuk penginapan & shuttle"])] },
   { label: "Kontak darurat", fields: DARURAT },
   { label: "Kesehatan", fields: SEHAT },
   { label: "Sepeda (ciri + foto)", fields: ACTIVITIES.sepeda.fields.slice(0, 5) },

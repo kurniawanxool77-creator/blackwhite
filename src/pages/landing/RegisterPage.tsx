@@ -18,7 +18,7 @@ export function RegisterPage() {
   return (
     <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>
       <h1 className="text-2xl font-bold tracking-tight text-gray-900">Daftar akun peserta</h1>
-      <p className="mt-1 mb-6 text-sm text-gray-600">Satu akun untuk mendaftar semua pelatihan dan menyimpan QR tiket Anda.</p>
+      <p className="mt-1 mb-6 text-sm text-gray-600">Satu akun untuk mendaftar semua event dan menyimpan QR tiket Anda.</p>
       <RegisterForm callbackUrl={callbackUrl} />
       {googleEnabled && (
         <>

@@ -15,7 +15,7 @@ export function CategoryForm() {
     <form action={action} className="mt-4 space-y-3">
       <div>
         <label className="label" htmlFor="cat-name">Nama kategori</label>
-        <input id="cat-name" name="name" className="input" placeholder="contoh: Pelatihan K3" maxLength={60} required />
+        <input id="cat-name" name="name" className="input" placeholder="contoh: Event Olahraga" maxLength={60} required />
       </div>
       <div>
         <label className="label" htmlFor="cat-desc">Keterangan (opsional)</label>

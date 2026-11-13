@@ -125,7 +125,7 @@ export function AttendancePhotoModal({
             <div className="rounded-md border border-gray-200 bg-gray-50 p-3">
               <span className="flex items-center gap-1.5 text-xs text-gray-500 mb-1">
                 <MapPinIcon width={14} height={14} className="text-brand" />
-                Lokasi Pelatihan / Check-in
+                Lokasi Event / Check-in
               </span>
               <p className="font-semibold text-gray-900">{data.location || "Lokasi Acara"}</p>
               <p className="text-xs text-gray-500 mt-0.5">{data.dateLabel}</p>

@@ -37,7 +37,7 @@ export function UserLayout() {
                 className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               >
                 <CalendarIcon className="h-4 w-4 text-gray-500" />
-                <span>Pelatihan</span>
+                <span>Event</span>
               </Link>
             </nav>
           </div>

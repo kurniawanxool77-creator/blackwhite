@@ -51,7 +51,7 @@ export function AttendanceHistory({ rows, empty = "Belum ada absensi." }: { rows
         <thead>
           <tr>
             <th>Tanggal</th>
-            <th>Pelatihan</th>
+            <th>Event</th>
             <th>Datang</th>
             <th>Selesai</th>
             <th className="text-right">Durasi</th>

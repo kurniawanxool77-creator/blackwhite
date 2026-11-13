@@ -18,9 +18,9 @@ export function AdminEventsPage() {
         const dutySet = new Set(onDutyEventIds);
         return (
           <div className="space-y-5">
-            <PageHeader title="Event yang ditugaskan" description="Buka detail peserta, shuttle, atau scan QR per pelatihan." />
+            <PageHeader title="Event yang ditugaskan" description="Buka detail peserta, shuttle, atau scan QR per event." />
             {events.length === 0 ? (
-              <div className="card p-6 text-sm text-gray-600">Belum ada pelatihan aktif yang ditugaskan kepada Anda.</div>
+              <div className="card p-6 text-sm text-gray-600">Belum ada event aktif yang ditugaskan kepada Anda.</div>
             ) : (
               <ul className="space-y-3">
                 {events.map((e) => {

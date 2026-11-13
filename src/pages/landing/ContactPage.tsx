@@ -5,8 +5,8 @@ import { useAuth } from "@/src/lib/auth-client";
 
 const FAQS: FaqItem[] = [
   {
-    q: "Bagaimana cara mendaftar sebagai peserta kegiatan atau pelatihan?",
-    a: "Anda cukup membuka halaman Pelatihan, memilih acara yang sedang dibuka, lalu klik tombol Masuk atau Daftar Akun untuk mengisi formulir pendaftaran online secara mandiri.",
+    q: "Bagaimana cara mendaftar sebagai peserta kegiatan atau event?",
+    a: "Anda cukup membuka halaman Event, memilih acara yang sedang dibuka, lalu klik tombol Masuk atau Daftar Akun untuk mengisi formulir pendaftaran online secara mandiri.",
   },
   {
     q: "Bagaimana mekanisme absensi dan pembagian fasilitas melalui barcode?",
@@ -14,7 +14,7 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "Apakah saya bisa mengakses materi pembelajaran dan kuis secara online?",
-    a: "Ya. Pelatihan tertentu menyediakan materi video/modul yang dapat diakses kapan saja melalui dasbor peserta, dilengkapi ujian kuis untuk memenuhi syarat kelulusan.",
+    a: "Ya. Event tertentu menyediakan materi video/modul yang dapat diakses kapan saja melalui dasbor peserta, dilengkapi ujian kuis untuk memenuhi syarat kelulusan.",
   },
   {
     q: "Bagaimana cara mengunduh dan memverifikasi keaslian e-sertifikat?",
@@ -27,7 +27,7 @@ export function ContactPage() {
   const { contact, name } = site;
   const digits = contact.phone.replace(/\D/g, "");
   const waNum = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
-  const waUrl = waNum ? `https://wa.me/${waNum}?text=${encodeURIComponent(`Halo admin ${name}, saya ingin bertanya mengenai pelatihan / acara.`)}` : null;
+  const waUrl = waNum ? `https://wa.me/${waNum}?text=${encodeURIComponent(`Halo admin ${name}, saya ingin bertanya mengenai event / acara.`)}` : null;
   const mapsUrl = contact.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.address)}` : null;
 
   return (

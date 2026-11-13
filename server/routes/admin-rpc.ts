@@ -89,19 +89,19 @@ export async function handleAdminRpc(req: IncomingMessage, res: ServerResponse, 
       return sendJson(res, { result: { tone: "error", title: "Anda tidak ditugaskan di event ini" } }), true;
     }
     if (!checkpoint.event.useQr) {
-      return sendJson(res, { result: { tone: "error", title: "Pelatihan ini tanpa QR", detail: "Kehadiran ditandai manual dari halaman peserta." } }), true;
+      return sendJson(res, { result: { tone: "error", title: "Event ini tanpa QR", detail: "Kehadiran ditandai manual dari halaman peserta." } }), true;
     }
     if (!checkpoint.scan) {
       return sendJson(res, { result: { tone: "error", title: "Pos ini tidak memerlukan scan", detail: `"${checkpoint.name}" hanya agenda rundown.` } }), true;
     }
     if (admin.role === "scanner" && !(await isOnDuty(admin.id, checkpoint.eventId))) {
-      return sendJson(res, { result: { tone: "error", title: "Absen datang dulu", detail: "Fitur event terbuka setelah Anda absen datang di pelatihan ini." } }), true;
+      return sendJson(res, { result: { tone: "error", title: "Absen datang dulu", detail: "Fitur event terbuka setelah Anda absen datang di event ini." } }), true;
     }
     const { user, reg } = await findRegistrationByToken(token.trim(), checkpoint.eventId);
     if (!user) return sendJson(res, { result: { tone: "error", title: "QR tidak dikenal", detail: "Bukan QR peserta yang valid." } }), true;
     if (!reg) return sendJson(res, { result: { tone: "error", title: `${user.name} tidak terdaftar`, detail: `Tidak terdaftar di ${checkpoint.event.name}.`, photo: user.image } }), true;
     if (reg.status !== "approved") {
-      return sendJson(res, { result: { tone: "error", title: `${user.name} belum disetujui`, detail: "Pendaftaran di pelatihan ini belum disetujui atau ditolak.", photo: user.image } }), true;
+      return sendJson(res, { result: { tone: "error", title: `${user.name} belum disetujui`, detail: "Pendaftaran di event ini belum disetujui atau ditolak.", photo: user.image } }), true;
     }
     const details = readDetails(reg.details);
     if (!appliesTo(checkpoint, details)) {

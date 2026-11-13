@@ -117,7 +117,7 @@ export function AttendancePreviewModal({ report, open, onClose }: Props) {
 
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <div>
-                  <p className="text-xs text-gray-500 uppercase">Nama Acara / Pelatihan</p>
+                  <p className="text-xs text-gray-500 uppercase">Nama Acara / Event</p>
                   <p className="font-semibold text-gray-900">{event.name}</p>
                 </div>
                 <div>

@@ -22,7 +22,7 @@ export function SuperadminBannersPage() {
         <div className="space-y-4">
           <PageHeader
             title="Banner beranda"
-            description="Slide di bagian atas beranda: iklan pelatihan atau gambar saja. Urutan dari atas ke bawah = urutan tampil; berganti otomatis tiap 5 detik."
+            description="Slide di bagian atas beranda: iklan event atau gambar saja. Urutan dari atas ke bawah = urutan tampil; berganti otomatis tiap 5 detik."
           >
             <Drawer label="+ Tambah banner" title="Tambah banner">
               <BannerForm events={events} />
@@ -54,7 +54,7 @@ export function SuperadminBannersPage() {
                             <p className="font-medium text-gray-900">
                               {b.title}
                               <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-600">
-                                {b.caption ? "Iklan pelatihan" : "Gambar saja"}
+                                {b.caption ? "Iklan event" : "Gambar saja"}
                               </span>
                             </p>
                             {b.subtitle && <p className="text-xs text-gray-500">{b.subtitle}</p>}

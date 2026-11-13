@@ -65,7 +65,7 @@ export function SuperadminAttendancePage() {
                 <p className="mt-1 text-sm text-gray-600">
                   {mode !== "date"
                     ? "Kehadiran panitia terorganisir per event dari mulai sampai selesai acara, dilengkapi pratinjau rekap."
-                    : "Kehadiran panitia di pelatihan yang berlangsung pada tanggal kalender tertentu."}
+                    : "Kehadiran panitia di event yang berlangsung pada tanggal kalender tertentu."}
                 </p>
               </div>
               <div className="flex items-center rounded-md border border-gray-200 bg-white p-1 text-xs font-medium">
@@ -100,7 +100,7 @@ export function SuperadminAttendancePage() {
                 </div>
 
                 {dateEvents.length === 0 && (
-                  <p className="card p-6 text-center text-sm text-gray-600">Tidak ada pelatihan yang berlangsung pada tanggal {date}.</p>
+                  <p className="card p-6 text-center text-sm text-gray-600">Tidak ada event yang berlangsung pada tanggal {date}.</p>
                 )}
 
                 {dateEvents.map((e) => {

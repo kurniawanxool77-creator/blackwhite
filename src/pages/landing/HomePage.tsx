@@ -48,10 +48,10 @@ export function HomePage() {
                 <div>
                   <p className="hidden text-xs font-semibold tracking-wider text-brand uppercase md:block">Pendaftaran Terbuka</p>
                   <h2 className="text-base font-bold tracking-tight text-gray-900 md:mt-1 md:text-3xl">
-                    Pelatihan & Event Tersedia
+                    Event & Acara Tersedia
                   </h2>
                   <p className="mt-1 hidden text-sm text-gray-600 md:block">
-                    Pilih program pelatihan, lakukan pendaftaran, dan dapatkan QR e-pass resmi Anda.
+                    Pilih event atau acara, lakukan pendaftaran, dan dapatkan QR e-pass resmi Anda.
                   </p>
                 </div>
                 <Link to="/event" className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand hover:underline">

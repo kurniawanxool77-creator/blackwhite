@@ -109,7 +109,7 @@ export function UserAccountPage() {
               >
                 <div className="flex items-center gap-2.5">
                   <CalendarIcon className="h-4 w-4 text-brand" />
-                  <span>Katalog Agenda & Pelatihan</span>
+                  <span>Katalog Event & Acara</span>
                 </div>
                 <span className="text-gray-400">→</span>
               </Link>

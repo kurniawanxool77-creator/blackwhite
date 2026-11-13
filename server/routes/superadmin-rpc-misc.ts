@@ -37,7 +37,7 @@ async function readBanner(f: FormData) {
   if (caption) {
     const slug = str(f, "eventSlug");
     const event = slug ? await db.event.findUnique({ where: { slug }, select: { slug: true } }) : null;
-    if (slug && !event) return "Pelatihan tidak ditemukan.";
+    if (slug && !event) return "Event tidak ditemukan.";
     linkUrl = event ? `/event/${event.slug}` : "";
   } else if (linkUrl && !isLinkUrl(linkUrl)) {
     return "Tautan harus berupa alamat http(s) atau path internal seperti /event/nama-event.";

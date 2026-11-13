@@ -6,8 +6,7 @@ import { finalPrice, fmtRp } from "@/lib/format";
 import { CategoryPicker } from "./CategoryPicker";
 import { useDrawer } from "./Drawer";
 import { ChoiceCards, NumInput, Section } from "./EventFormParts";
-import { GalleryUpload } from "./GalleryUpload";
-import { ImageUpload } from "./ImageUpload";
+import { EventPhotosUpload } from "./EventPhotosUpload";
 
 type Action = (prev: string | null, f: FormData) => Promise<string | null>;
 type EventValues = {
@@ -91,8 +90,7 @@ export function EventForm({ action, categories, event }: { action: Action; categ
           <label className="label" htmlFor="description">Deskripsi</label>
           <textarea id="description" name="description" rows={5} className="input" defaultValue={event?.description} placeholder={"Tujuan kegiatan, siapa yang cocok ikut, fasilitas yang didapat, dan syarat peserta.\nPisahkan paragraf dengan baris kosong."} />
         </div>
-        <ImageUpload name="coverUrl" label="Foto sampul (opsional)" hint="Rasio 16:9, maks. 4 MB." defaultValue={event?.coverUrl} maxWidth={1200} />
-        <GalleryUpload defaultValue={event?.gallery} />
+        <EventPhotosUpload coverUrl={event?.coverUrl} gallery={event?.gallery} />
       </Section>
 
       <Section no={3} title="Jadwal & lokasi">

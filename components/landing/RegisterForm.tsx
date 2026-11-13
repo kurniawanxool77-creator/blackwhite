@@ -75,7 +75,9 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
 
   function buildSummary() {
     const fd = new FormData(form.current!);
-    const rows = [{ label: "Nomor WhatsApp", value: String(fd.get("phone") ?? "") }];
+    const rows: { label: string; value: string }[] = [];
+    const phoneVal = String(fd.get("phone") ?? "").trim();
+    if (phoneVal) rows.push({ label: "Nomor WhatsApp", value: phoneVal });
     for (const f of fields) {
       const v = String(fd.get(`f_${f.id}`) ?? "").trim();
       if (!v || f.type === "checkbox") continue;
@@ -129,15 +131,17 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
       </ol>
 
       <div data-step="data" className={current === "data" ? "space-y-4" : "hidden"}>
-        <div>
-          <label className="label" htmlFor="phone">Nomor WhatsApp<span className="text-red-600"> *</span></label>
-          <input id="phone" name="phone" className="input" inputMode="tel" autoComplete="tel" placeholder="08xxxxxxxxxx" required pattern="\+?[\d\s\-]{8,20}" title="Angka 8–20 digit, boleh diawali +" defaultValue={phone} />
-        </div>
         {fields.length === 0 && (
-          <div>
-            <label className="label" htmlFor="organization">Instansi (opsional)</label>
-            <input id="organization" name="organization" className="input" placeholder="Kosongkan jika perorangan" defaultValue={organization} />
-          </div>
+          <>
+            <div>
+              <label className="label" htmlFor="phone">Nomor WhatsApp<span className="text-red-600"> *</span></label>
+              <input id="phone" name="phone" className="input" inputMode="tel" autoComplete="tel" placeholder="08xxxxxxxxxx" required pattern="\+?[\d\s\-]{8,20}" title="Angka 8–20 digit, boleh diawali +" defaultValue={phone} />
+            </div>
+            <div>
+              <label className="label" htmlFor="organization">Instansi (opsional)</label>
+              <input id="organization" name="organization" className="input" placeholder="Kosongkan jika perorangan" defaultValue={organization} />
+            </div>
+          </>
         )}
         <RegistrationFields fields={dataFields} />
       </div>

@@ -92,10 +92,8 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
     const qArgs = parseUrl(req).searchParams.getAll("a");
     const argsRaw = formData.get("__args");
     const [eventId] = qArgs.length ? qArgs : argsRaw ? (JSON.parse(String(argsRaw)) as [string]) : [str(formData, "eventId")];
-    const phone = str(formData, "phone");
-    if (!PHONE_RE.test(phone)) return sendJson(res, { result: "Nomor WhatsApp tidak valid." }), true;
     const event = await db.event.findUnique({ where: { id: eventId } });
-    if (event?.status !== "open") return sendJson(res, { result: "Pendaftaran untuk event ini sudah ditutup." }), true;
+    if (!event || event.status !== "open") return sendJson(res, { result: "Pendaftaran untuk event ini sudah ditutup." }), true;
     if (registrationClosed(event)) return sendJson(res, { result: "Batas waktu pendaftaran sudah lewat." }), true;
     if (event.quota) {
       const approved = await db.registration.count({ where: { eventId, status: "approved" } });
@@ -105,8 +103,13 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
     if (existing?.status === "approved") {
       return sendJson(res, { result: "Anda sudah terdaftar dan disetujui di event ini." }), true;
     }
+    const formFields = parseFields(event.formFields);
+    const rawPhone = str(formData, "phone");
+    if (formFields.length === 0 && !PHONE_RE.test(rawPhone)) {
+      return sendJson(res, { result: "Nomor WhatsApp tidak valid." }), true;
+    }
     const routes = await shuttleOptions(eventId, existing?.id);
-    const read = readAnswers(parseFields(event.formFields), formData, routes);
+    const read = readAnswers(formFields, formData, routes);
     if (typeof read === "string") return sendJson(res, { result: read }), true;
     if (read.shuttleId && routes.find((r) => r.id === read.shuttleId)?.seatsLeft === 0) {
       return sendJson(res, { result: "Kursi shuttle di rute ini sudah penuh. Pilih rute lain." }), true;
@@ -121,8 +124,18 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
       return sendJson(res, { result: "Foto tidak ditemukan. Unggah ulang fotonya." }), true;
     }
     const details = JSON.stringify({ answers: read.answers, total, paymentProof, paymentProofUrl: total > 0 ? paymentProofUrl : "" });
+    const dynamicTel = read.answers.find((a) => a.type === "tel")?.value;
+    const phone = rawPhone || dynamicTel;
     const organization = str(formData, "organization");
-    await db.user.update({ where: { id: user.id }, data: { phone, ...(organization ? { organization } : {}) } });
+    if (phone || organization) {
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          ...(phone ? { phone } : {}),
+          ...(organization ? { organization } : {}),
+        },
+      });
+    }
     const reg = await db.registration.upsert({
       where: { userId_eventId: { userId: user.id, eventId } },
       update: { details, shuttleId: read.shuttleId, status: "pending", rejectReason: null, approvedAt: null, qrToken: null },

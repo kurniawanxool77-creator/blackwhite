@@ -33,7 +33,11 @@ type LastScan = { token: string; at: number; busy: boolean };
 
 function claim(last: LastScan, token: string) {
   const now = Date.now();
-  if (last.busy || (token === last.token && now - last.at < 1500)) return false;
+  if (last.busy) return false;
+  // Jika token sama persis: jeda 1.5 detik untuk cegah re-scan peserta yang sama berkali-kali saat HP masih di depan kamera
+  if (token === last.token && now - last.at < 1500) return false;
+  // Jika peserta berbeda: jeda sangat singkat (200ms) agar kamera dapat langsung membaca peserta berikutnya seketika
+  if (token !== last.token && now - last.at < 200) return false;
   Object.assign(last, { token, at: now, busy: true });
   return true;
 }
@@ -63,11 +67,35 @@ function normalizeToken(raw: string): string {
   return t;
 }
 
-function playScanSound(tone: "success" | "warning" | "error") {
+let sharedAudioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return null;
+    if (!sharedAudioCtx || sharedAudioCtx.state === "closed") {
+      sharedAudioCtx = new AudioCtx();
+    }
+    if (sharedAudioCtx.state === "suspended") {
+      sharedAudioCtx.resume().catch(() => {});
+    }
+    return sharedAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+export function playScanSound(tone: "success" | "warning" | "error") {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -75,33 +103,34 @@ function playScanSound(tone: "success" | "warning" | "error") {
     gain.connect(ctx.destination);
 
     if (tone === "success") {
+      // Suara bip scanner kasir / pos Zebra autentik: 2400Hz nada tinggi tajam & punchy (80ms)
       osc.type = "sine";
-      osc.frequency.setValueAtTime(880, now);
-      osc.frequency.setValueAtTime(1320, now + 0.07);
-      gain.gain.setValueAtTime(0.2, now);
+      osc.frequency.setValueAtTime(2400, now);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (tone === "warning") {
+      // Dua nada peringatan turun (sudah di-scan / double scan)
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.setValueAtTime(450, now + 0.08);
+      gain.gain.setValueAtTime(0.3, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
       osc.start(now);
       osc.stop(now + 0.22);
-    } else if (tone === "warning") {
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(660, now);
-      osc.frequency.setValueAtTime(440, now + 0.08);
-      gain.gain.setValueAtTime(0.2, now);
+    } else {
+      // Nada error dengung rendah (tidak terdaftar / invalid)
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.setValueAtTime(160, now + 0.12);
+      gain.gain.setValueAtTime(0.3, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
       osc.start(now);
       osc.stop(now + 0.28);
-    } else {
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.setValueAtTime(220, now + 0.1);
-      gain.gain.setValueAtTime(0.22, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-      osc.start(now);
-      osc.stop(now + 0.32);
     }
-    setTimeout(() => ctx.close().catch(() => {}), 450);
-  } catch {
-    // AudioContext blocked
+  } catch (e) {
+    console.warn("[playScanSound] audio error:", e);
   }
 }
 
@@ -131,14 +160,43 @@ export function Scanner({
   const last = useRef<LastScan>({ token: "", at: 0, busy: false });
   const lastSyncTimeRef = useRef<string>(initialServerTime || new Date().toISOString());
 
+  // Pastikan AudioContext aktif saat pengguna berinteraksi dengan layar
+  useEffect(() => {
+    const unlockAudio = () => {
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+    };
+    window.addEventListener("pointerdown", unlockAudio, { passive: true });
+    window.addEventListener("touchstart", unlockAudio, { passive: true });
+    window.addEventListener("click", unlockAudio, { passive: true });
+    window.addEventListener("keydown", unlockAudio, { passive: true });
+    unlockAudio();
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("touchstart", unlockAudio);
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+  }, []);
+
   // Indeks pencarian instan RAM (< 1ms)
   const rosterLookup = useMemo(() => {
     const map = new Map<string, RosterItem>();
     for (const item of roster) {
-      if (item.code) map.set(item.code.toLowerCase(), item);
+      if (item.code) {
+        map.set(item.code, item);
+        map.set(item.code.toLowerCase(), item);
+        map.set(item.code.toUpperCase(), item);
+      }
       map.set(item.id, item);
       for (const t of item.tokens) {
-        if (t) map.set(t, item);
+        if (t) {
+          map.set(t, item);
+          map.set(t.toLowerCase(), item);
+          map.set(t.toUpperCase(), item);
+        }
       }
     }
     return map;
@@ -200,75 +258,77 @@ export function Scanner({
 
   // Eksekusi Scan Super Cepat: Validasi Lokal (< 0.01 detik) + Sync Asinkron
   async function submit(rawToken: string) {
-    if (!rawToken || !checkpointId || !claim(last.current, rawToken)) return;
+    if (!rawToken || !checkpointId) return;
     const token = normalizeToken(rawToken);
+    if (!token || !claim(last.current, token)) return;
 
-    // 1. FAST LOCAL LOOKUP DALAM RAM (< 5ms)
-    const localMatch = rosterLookup.get(token) || rosterLookup.get(token.toLowerCase());
+    try {
+      // 1. FAST LOCAL LOOKUP DALAM RAM (< 1ms)
+      const localMatch = rosterLookup.get(token) || rosterLookup.get(token.toLowerCase());
 
-    if (localMatch) {
-      if (localMatch.scanned) {
-        // Umpan balik langsung: sudah pernah scan
-        playScanSound("warning");
-        setFlashColor("warning");
+      if (localMatch) {
+        if (localMatch.scanned) {
+          // Umpan balik langsung: sudah pernah scan
+          playScanSound("warning");
+          setFlashColor("warning");
+          setTimeout(() => setFlashColor(null), 800);
+          navigator.vibrate?.([60, 40, 60]);
+          setResult({
+            tone: "warning",
+            title: localMatch.code ? `${localMatch.code} · ${localMatch.name}` : localMatch.name,
+            detail: `Sudah di-scan pada ${localMatch.scannedAt ? fmtTime(new Date(localMatch.scannedAt)) : "hari ini"} oleh ${localMatch.scannedBy || "Panitia"}`,
+            photo: localMatch.image,
+          });
+          return;
+        }
+
+        // Umpan balik instan sukses (< 5ms)
+        playScanSound("success");
+        setFlashColor("success");
         setTimeout(() => setFlashColor(null), 800);
-        navigator.vibrate?.([60, 40, 60]);
+        navigator.vibrate?.(70);
+        setSessionCount((n) => n + 1);
+
+        const title = localMatch.code ? `${localMatch.code} · ${localMatch.name}` : localMatch.name;
+        const detail = localMatch.organization || localMatch.email || "Peserta Terdaftar";
+
         setResult({
-          tone: "warning",
-          title: localMatch.code ? `${localMatch.code} · ${localMatch.name}` : localMatch.name,
-          detail: `Sudah di-scan pada ${localMatch.scannedAt ? fmtTime(new Date(localMatch.scannedAt)) : "hari ini"} oleh ${localMatch.scannedBy || "Panitia"}`,
+          tone: "success",
+          title,
+          detail,
           photo: localMatch.image,
+          progress: "Tercatat",
         });
-        last.current.token = "";
+
+        // Update instan state lokal
+        const nowIso = new Date().toISOString();
+        setRoster((prev) =>
+          prev.map((p) =>
+            p.id === localMatch.id ? { ...p, scanned: true, scannedAt: nowIso, scannedBy: "Anda" } : p
+          )
+        );
+        setRecent((prev) => [
+          {
+            id: "local-" + Date.now(),
+            registrationId: localMatch.id,
+            userName: localMatch.name,
+            userCode: localMatch.code,
+            userImage: localMatch.image,
+            userOrg: localMatch.organization,
+            adminName: "Anda",
+            createdAt: nowIso,
+          },
+          ...prev.slice(0, 19),
+        ]);
+
+        // Kirim mutasi scan ke database di latar belakang
+        scanQr(checkpointId, token).catch((err) => {
+          console.error("[Scanner] Background scanQr error:", err);
+        });
         return;
       }
 
-      // Umpan balik instan sukses (< 10ms)
-      playScanSound("success");
-      setFlashColor("success");
-      setTimeout(() => setFlashColor(null), 800);
-      navigator.vibrate?.(70);
-      setSessionCount((n) => n + 1);
-
-      const title = localMatch.code ? `${localMatch.code} · ${localMatch.name}` : localMatch.name;
-      const detail = localMatch.organization || localMatch.email || "Peserta Terdaftar";
-
-      setResult({
-        tone: "success",
-        title,
-        detail,
-        photo: localMatch.image,
-        progress: "Tercatat",
-      });
-
-      // Update instan state lokal
-      const nowIso = new Date().toISOString();
-      setRoster((prev) =>
-        prev.map((p) =>
-          p.id === localMatch.id ? { ...p, scanned: true, scannedAt: nowIso, scannedBy: "Anda" } : p
-        )
-      );
-      setRecent((prev) => [
-        {
-          id: "local-" + Date.now(),
-          registrationId: localMatch.id,
-          userName: localMatch.name,
-          userCode: localMatch.code,
-          userImage: localMatch.image,
-          userOrg: localMatch.organization,
-          adminName: "Anda",
-          createdAt: nowIso,
-        },
-        ...prev.slice(0, 19),
-      ]);
-
-      // Kirim mutasi scan ke database di latar belakang
-      scanQr(checkpointId, token).catch(() => {});
-      return;
-    }
-
-    // 2. FALLBACK DATABASE JIKA TIDAK ADA DI DAFTAR PRELOAD (mis. tiket telat atau peserta beda pos)
-    try {
+      // 2. FALLBACK DATABASE JIKA TIDAK ADA DI DAFTAR PRELOAD (mis. tiket telat atau peserta beda pos)
       const res = await scanQr(checkpointId, token);
       setResult(res);
       setFlashColor(res.tone);
@@ -277,16 +337,27 @@ export function Scanner({
       navigator.vibrate?.(res.tone === "success" ? 70 : res.tone === "warning" ? [60, 40, 60] : [100, 50, 100]);
       if (res.tone === "success") {
         setSessionCount((n) => n + 1);
-      } else {
-        last.current.token = "";
+        setRecent((prev) => [
+          {
+            id: "fallback-" + Date.now(),
+            registrationId: token,
+            userName: res.title,
+            userCode: null,
+            userImage: res.photo ?? null,
+            userOrg: res.detail ?? null,
+            adminName: "Anda",
+            createdAt: new Date().toISOString(),
+          },
+          ...prev.slice(0, 19),
+        ]);
       }
     } catch {
       playScanSound("error");
-      last.current.token = "";
       setFlashColor("error");
       setTimeout(() => setFlashColor(null), 800);
       setResult({ tone: "error", title: "Gagal terhubung ke server", detail: "Periksa koneksi lalu scan ulang." });
     } finally {
+      // KRUSIAL: busy HARUS selalu dilepas agar scanner langsung siap membaca user berikutnya seketika!
       last.current.busy = false;
     }
   }
@@ -336,6 +407,18 @@ export function Scanner({
                   <span className={`h-1.5 w-1.5 rounded-full bg-emerald-500 ${isSyncing ? "animate-ping" : "animate-pulse"}`} />
                   Sync Aktif
                 </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ctx = getAudioContext();
+                    ctx?.resume().catch(() => {});
+                    playScanSound("success");
+                  }}
+                  className="inline-flex items-center gap-1 rounded bg-white px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-200 hover:bg-emerald-50 transition cursor-pointer"
+                  title="Klik untuk tes suara bip scanner"
+                >
+                  <span>🔊 Bip Siap</span>
+                </button>
               </div>
               <p className="mt-0.5 text-lg font-bold text-gray-900">
                 {checkpoint.number}. {checkpoint.name}

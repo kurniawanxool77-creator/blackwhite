@@ -10,7 +10,7 @@ export function LandingLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50/70">
-      <SiteHeader name={site.name} profile={visitorProfile} />
+      <SiteHeader name={site.name} profile={visitorProfile} logo={site.logoImage || "/logo.png"} />
       <main className="flex-1">
         <Outlet />
       </main>
@@ -19,8 +19,10 @@ export function LandingLayout() {
         <footer className="hidden border-t border-gray-200 bg-white md:block">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 text-sm text-gray-600 sm:grid-cols-3">
             <div>
-              <p className="font-bold text-gray-900">{site.name}</p>
-              <p className="mt-2.5 text-xs leading-relaxed text-gray-500">{site.tagline}</p>
+              <Link to="/" className="inline-block mb-3" aria-label={site.name}>
+                <img src={site.logoImage || "/logo.png"} alt={site.name} className="h-8 w-auto object-contain" />
+              </Link>
+              <p className="text-xs leading-relaxed text-gray-500">{site.tagline}</p>
             </div>
 
             <div>

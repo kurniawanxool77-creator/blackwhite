@@ -28,6 +28,11 @@ export function LoginPage() {
 
   return (
     <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>
+      <div className="mb-4">
+        <Link to="/" className="inline-block" aria-label={site.name}>
+          <img src={site.logoImage || "/logo.png"} alt={site.name} className="h-8 w-auto object-contain" />
+        </Link>
+      </div>
       <h1 className="text-2xl font-bold tracking-tight text-gray-900">Masuk</h1>
       <p className="mt-1 mb-6 text-sm text-gray-600">Untuk daftar event dan lihat tiket.</p>
       {oauthError && <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{oauthError}</p>}

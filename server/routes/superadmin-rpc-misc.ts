@@ -353,6 +353,7 @@ export async function handleSuperadminMiscRpc(req: IncomingMessage, res: ServerR
       heroImage: image(s("heroImage")),
       aboutImage: image(s("aboutImage")),
       loginImage: image(s("loginImage")),
+      logoImage: image(s("logoImage")) || "/logo.png",
       services: [0, 1, 2].map((i) => ({ title: s(`service${i}Title`), body: s(`service${i}Body`), image: image(s(`service${i}Image`)) })).filter((x) => x.title),
       steps: s("steps").split(/\r?\n/).map((x) => x.trim()).filter(Boolean),
       contact: { email: s("email"), phone: s("phone"), address: s("address") },

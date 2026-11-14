@@ -5,6 +5,7 @@ export type Site = {
   heroImage: string;
   aboutImage: string;
   loginImage: string;
+  logoImage?: string;
   services: { title: string; body: string; image?: string }[];
   steps: string[];
   contact: { email: string; phone: string; address: string };
@@ -36,6 +37,7 @@ export const DEFAULT_SITE: Site = {
   heroImage: "",
   aboutImage: "",
   loginImage: "",
+  logoImage: "/logo.png",
   services: [
     { title: "Pendaftaran & persetujuan", body: "Peserta mendaftar dengan akun Google, panitia menyetujui dari satu dasbor." },
     { title: "QR per checkpoint", body: "Satu QR per peserta dipindai di setiap titik acara, berurutan sesuai jadwal." },

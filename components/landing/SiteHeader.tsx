@@ -16,7 +16,7 @@ const LINKS = [
   { href: "/kontak", label: "Kontak" },
 ];
 
-export function SiteHeader({ name, profile }: { name: string; profile: ProfileInfo | null }) {
+export function SiteHeader({ name, profile, logo }: { name: string; profile: ProfileInfo | null; logo?: string }) {
   const pathname = usePathname();
   const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
@@ -31,8 +31,8 @@ export function SiteHeader({ name, profile }: { name: string; profile: ProfileIn
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center">
-          <span className="text-sm font-bold tracking-tight text-gray-900 sm:text-base">{name}</span>
+        <Link href="/" className="flex items-center gap-2.5" aria-label={name}>
+          <img src={logo || "/logo.png"} alt={name} className="h-7 w-auto object-contain sm:h-8" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Menu Halaman">

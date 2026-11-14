@@ -69,6 +69,7 @@ export function SiteForm({ site }: { site: Site }) {
       <section className="card space-y-4 p-5">
         <h2 className="font-semibold text-gray-900">Identitas & hero</h2>
         <Field label="Nama perusahaan / brand" name="name" value={site.name} />
+        <ImageUpload name="logoImage" label="Logo website / brand" hint="Logo horizontal untuk header navbar dan panel. Disarankan PNG transparan." defaultValue={site.logoImage || "/logo.png"} maxWidth={1000} />
         <Field label="Judul hero" name="tagline" value={site.tagline} rows={2} />
         <ImageUpload name="heroImage" label="Foto hero (tampil di samping judul)" hint="Disarankan 4:3." defaultValue={site.heroImage} maxWidth={1400} />
         <Field label="Tentang perusahaan" name="about" value={site.about} rows={4} />

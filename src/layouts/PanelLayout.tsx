@@ -45,7 +45,7 @@ export function PanelLayout({ role }: { role: "scanner" | "superadmin" }) {
   if (role === "scanner") {
     return (
       <>
-        <PanelFrame siteName={site.name} links={links} profile={profile}>
+        <PanelFrame siteName={site.name} links={links} profile={profile} logoImage={site.logoImage}>
           <AdminPwaPrompt />
           <div className="pb-16 md:pb-0">
             <Outlet />
@@ -57,7 +57,7 @@ export function PanelLayout({ role }: { role: "scanner" | "superadmin" }) {
   }
 
   return (
-    <PanelFrame siteName={site.name} links={links} profile={profile}>
+    <PanelFrame siteName={site.name} links={links} profile={profile} logoImage={site.logoImage}>
       <Outlet />
     </PanelFrame>
   );

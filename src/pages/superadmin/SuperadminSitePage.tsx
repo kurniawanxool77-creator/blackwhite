@@ -18,7 +18,7 @@ export function SuperadminSitePage() {
             </div>
             <Link to="/" target="_blank" className="btn btn-secondary btn-sm">Lihat halaman</Link>
           </div>
-          <SiteForm key={site.name + site.heroImage + site.aboutImage + site.loginImage} site={site} />
+          <SiteForm key={site.name + (site.logoImage ?? "") + site.heroImage + site.aboutImage + site.loginImage} site={site} />
         </div>
       )}
     </DataGate>

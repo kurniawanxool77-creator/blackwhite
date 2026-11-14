@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { Prisma } from "@prisma/client";
 import sharp from "sharp";
 import { isRunning, todayKeyJakarta } from "../../lib/checkin";
@@ -23,7 +25,30 @@ function allowFormUpload(userId: string) {
 }
 
 async function pngIcon(size: number, fontSize: number) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#15803d"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700" fill="#ffffff">BW</text></svg>`;
+  try {
+    const logoPath = path.resolve(process.cwd(), "public", "logo.png");
+    if (existsSync(logoPath)) {
+      const pad = Math.round(size * 0.12);
+      const innerW = size - pad * 2;
+      const logoBuf = await sharp(logoPath)
+        .resize(innerW, Math.round(innerW * 0.4), { fit: "inside" })
+        .toBuffer();
+      return sharp({
+        create: {
+          width: size,
+          height: size,
+          channels: 4,
+          background: { r: 255, g: 255, b: 255, alpha: 1 },
+        },
+      })
+        .composite([{ input: logoBuf, gravity: "center" }])
+        .png()
+        .toBuffer();
+    }
+  } catch (err) {
+    console.error("[pngIcon] fallback to svg:", err);
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#0f172a"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700" fill="#ffffff">BW</text></svg>`;
   return sharp(Buffer.from(svg)).png().toBuffer();
 }
 

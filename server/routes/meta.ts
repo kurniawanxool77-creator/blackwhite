@@ -259,10 +259,10 @@ export async function handleMeta(req: IncomingMessage, res: ServerResponse, path
       display: "standalone",
       orientation: "portrait",
       background_color: "#ffffff",
-      theme_color: "#15803d",
+      theme_color: "#000000",
       icons: [
-        { src: "/icon/192", sizes: "192x192", type: "image/png" },
-        { src: "/icon/512", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+        { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
       ],
     }, 200, { "Content-Type": "application/manifest+json; charset=utf-8" });
     return true;

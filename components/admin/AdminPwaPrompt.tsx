@@ -38,10 +38,10 @@ export function AdminPwaPrompt() {
   if (!show) return null;
 
   return (
-    <div className="mb-4 rounded-md border border-brand/20 bg-green-50/90 p-3 shadow-xs">
+    <div className="mb-4 rounded-md border border-gray-200 bg-white p-3 shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand text-white">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-900 text-white">
             <QrCodeIcon className="h-5 w-5" />
           </div>
           <div>
@@ -53,7 +53,7 @@ export function AdminPwaPrompt() {
           <button
             type="button"
             onClick={handleInstall}
-            className="btn btn-primary btn-sm flex items-center gap-1.5 text-xs py-1"
+            className="btn btn-sm bg-gray-900 text-white hover:bg-black border-gray-900 flex items-center gap-1.5 text-xs py-1"
           >
             <DownloadIcon className="h-3.5 w-3.5" />
             <span>Pasang WebApp</span>

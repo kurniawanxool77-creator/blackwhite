@@ -18,9 +18,14 @@ export function startOfTodayJakarta() {
 // Tanggal hari ini (YYYY-MM-DD) di Asia/Jakarta. Tanggal event disimpan sebagai tengah malam UTC dari tanggal kalendernya.
 export const todayKeyJakarta = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
 
-// Pelatihan sedang berlangsung: hari ini di antara tanggal mulai dan selesai (inklusif).
-export function isRunning(_e?: { startDate: Date; endDate: Date }) {
-  return true;
+// Event sedang berlangsung: status aktif dan hari ini di antara tanggal mulai dan selesai (inklusif).
+export function isRunning(e?: { startDate: Date; endDate: Date; status?: string }) {
+  if (!e) return false;
+  if (e.status === "draft" || e.status === "done" || e.status === "closed") return false;
+  const today = todayKeyJakarta();
+  const start = new Date(e.startDate).toISOString().slice(0, 10);
+  const end = new Date(e.endDate).toISOString().slice(0, 10);
+  return today >= start && today <= end;
 }
 
 // Sapaan sesuai jam di Jakarta.

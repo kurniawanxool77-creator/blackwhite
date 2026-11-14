@@ -1,6 +1,7 @@
 import type { Event, Lesson, Question, Registration, User } from "@prisma/client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { CertificatePreviewModal } from "@/components/admin/CertificatePreviewModal";
 import { Drawer } from "@/components/admin/Drawer";
 import { NumInput } from "@/components/admin/EventFormParts";
 import { LessonForm, QuestionForm } from "@/components/admin/LearningForms";
@@ -74,6 +75,7 @@ function LearningSettingsCard({ eventId, certificate, passScore }: { eventId: st
 
 export function SuperadminLearningPage() {
   const { id } = useParams();
+  const [previewOpen, setPreviewOpen] = useState(false);
   const state = useApiData<{ event: LearningEvent }>(id ? `/api/superadmin/events/${encodeURIComponent(id)}/learning` : null);
 
   return (
@@ -138,8 +140,11 @@ export function SuperadminLearningPage() {
               </section>
 
               <section className="card h-fit">
-                <div className="flex items-center justify-between gap-2 border-b border-gray-200 px-4 py-3">
-                  <h2 className="font-semibold text-gray-900">Kuis ({event.questions.length} soal)</h2>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-4 py-3">
+                  <div>
+                    <h2 className="font-semibold text-gray-900">Kuis ({event.questions.length} soal)</h2>
+                    <p className="text-[11px] text-gray-500">Evaluasi kelulusan: terbuka setelah seluruh ({event.lessons.length}) video materi selesai ditonton.</p>
+                  </div>
                   <Drawer label="+ Tambah soal" title="Tambah soal kuis" variant="secondary">
                     <QuestionForm action={addQuestion.bind(null, event.id)} />
                   </Drawer>
@@ -174,7 +179,17 @@ export function SuperadminLearningPage() {
 
             <section className="card">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
-                <h2 className="font-semibold text-gray-900">Sertifikat peserta</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-semibold text-gray-900">Sertifikat peserta</h2>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewOpen(true)}
+                    className="btn btn-secondary btn-sm"
+                    title="Pratinjau tampilan sertifikat"
+                  >
+                    👁 Preview Sertifikat
+                  </button>
+                </div>
                 {event.certificate && eligibleWaiting > 0 && (
                   <button type="button" onClick={() => issueAllEligible(event.id)} className="btn btn-primary btn-sm">
                     Terbitkan untuk {eligibleWaiting} peserta yang memenuhi syarat
@@ -256,6 +271,15 @@ export function SuperadminLearningPage() {
                 &quot;Terbitkan&quot; per peserta bisa dipakai sebagai pengecualian walau syarat belum terpenuhi. Setiap sertifikat bisa dicek keasliannya lewat nomornya.
               </p>
             </section>
+
+            <CertificatePreviewModal
+              open={previewOpen}
+              onClose={() => setPreviewOpen(false)}
+              eventName={event.name}
+              location={event.location}
+              startDate={event.startDate}
+              endDate={event.endDate}
+            />
           </div>
         );
       }}

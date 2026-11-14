@@ -25,23 +25,48 @@ const dayLabel = (date: string) =>
   dayStart(date).toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
 // Riwayat absensi: kartu ringkas di HP, tabel di layar lebar.
-export function AttendanceHistory({ rows, empty = "Belum ada absensi." }: { rows: Row[]; empty?: string }) {
+export function AttendanceHistory({
+  rows,
+  empty = "Belum ada absensi.",
+  onDelete,
+}: {
+  rows: Row[];
+  empty?: string;
+  onDelete?: (id: string, label: string) => Promise<void> | void;
+}) {
   return (
     <>
     <ul className="space-y-2 md:hidden">
       {rows.length === 0 && <li className="card p-4 text-center text-sm text-gray-500">{empty}</li>}
       {rows.map((r) => (
-        <li key={r.id} className="card flex items-center gap-3 p-3">
-          <SelfieThumb src={r.checkInPhoto} label="Foto absen datang" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-gray-900">{r.event.name}</p>
-            <p className="text-xs text-gray-600">{dayLabel(r.date)}</p>
+        <li key={r.id} className="card flex items-center justify-between gap-3 p-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <SelfieThumb src={r.checkInPhoto} label="Foto absen datang" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-gray-900">{r.event.name}</p>
+              <p className="text-xs text-gray-600">{dayLabel(r.date)}</p>
+            </div>
           </div>
-          <div className="text-right text-sm tabular-nums">
-            <p className="font-semibold text-gray-900">
-              {fmtTime(r.checkIn)} – {r.checkOut ? fmtTime(r.checkOut) : "…"}
-            </p>
-            <p className="text-xs text-gray-500">{r.checkOut ? fmtDuration(+r.checkOut - +r.checkIn) : "Belum selesai"}</p>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="text-right text-sm tabular-nums">
+              <p className="font-semibold text-gray-900">
+                {fmtTime(r.checkIn)} – {r.checkOut ? fmtTime(r.checkOut) : "…"}
+              </p>
+              <p className="text-xs text-gray-500">{r.checkOut ? fmtDuration(+r.checkOut - +r.checkIn) : "Belum selesai"}</p>
+            </div>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Hapus data absensi ${r.event.name} pada ${dayLabel(r.date)}?`)) {
+                    onDelete(r.id, `${r.event.name} (${dayLabel(r.date)})`);
+                  }
+                }}
+                className="btn btn-danger btn-sm"
+              >
+                Hapus
+              </button>
+            )}
           </div>
         </li>
       ))}
@@ -55,12 +80,13 @@ export function AttendanceHistory({ rows, empty = "Belum ada absensi." }: { rows
             <th>Datang</th>
             <th>Selesai</th>
             <th className="text-right">Durasi</th>
+            {onDelete && <th className="text-right">Aksi</th>}
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={5} className="text-center text-gray-500">{empty}</td>
+              <td colSpan={onDelete ? 6 : 5} className="text-center text-gray-500">{empty}</td>
             </tr>
           )}
           {rows.map((r) => (
@@ -86,6 +112,21 @@ export function AttendanceHistory({ rows, empty = "Belum ada absensi." }: { rows
                 )}
               </td>
               <td className="text-right whitespace-nowrap">{r.checkOut ? fmtDuration(+r.checkOut - +r.checkIn) : "-"}</td>
+              {onDelete && (
+                <td className="text-right whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Hapus data absensi ${r.event.name} pada ${dayLabel(r.date)}?`)) {
+                        onDelete(r.id, `${r.event.name} (${dayLabel(r.date)})`);
+                      }
+                    }}
+                    className="btn btn-danger btn-sm"
+                  >
+                    Hapus
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

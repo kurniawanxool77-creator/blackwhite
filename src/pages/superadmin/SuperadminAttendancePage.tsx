@@ -6,6 +6,7 @@ import type { EventAttendanceReport } from "@/lib/attendance";
 import { fmtDuration, fmtNum, fmtTime } from "@/lib/format";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { deleteAttendance } from "@/src/lib/actions/superadmin";
 
 type AttendancePagePayload = {
   mode: string;
@@ -128,11 +129,12 @@ export function SuperadminAttendancePage() {
                               <th>Selesai</th>
                               <th>Durasi</th>
                               <th>Status</th>
+                              <th className="text-right">Aksi</th>
                             </tr>
                           </thead>
                           <tbody>
                             {team.length === 0 && (
-                              <tr><td colSpan={5} className="py-4 text-center text-gray-500">Belum ada panitia yang ditugaskan.</td></tr>
+                              <tr><td colSpan={6} className="py-4 text-center text-gray-500">Belum ada panitia yang ditugaskan.</td></tr>
                             )}
                             {team.map((m) => {
                               const r = rowOf(m.id, e.id);
@@ -168,6 +170,24 @@ export function SuperadminAttendancePage() {
                                     {r?.checkOut ? fmtDuration(+new Date(r.checkOut) - +new Date(r.checkIn)) : "-"}
                                   </td>
                                   <td className={`font-medium ${st.cls}`}>{st.label}</td>
+                                  <td className="text-right whitespace-nowrap">
+                                    {r ? (
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          if (window.confirm(`Hapus data absensi ${m.name} pada ${date}? Data kehadiran dan foto selfie akan dihapus.`)) {
+                                            await deleteAttendance(r.id);
+                                          }
+                                        }}
+                                        className="btn btn-danger btn-sm"
+                                        title="Hapus data absensi ini"
+                                      >
+                                        Hapus
+                                      </button>
+                                    ) : (
+                                      <span className="text-gray-400">—</span>
+                                    )}
+                                  </td>
                                 </tr>
                               );
                             })}

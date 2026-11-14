@@ -20,6 +20,7 @@ type Props = {
   members: MemberAttendanceRow[];
   location: string;
   onOpen: (admin: MemberAttendanceRow["admin"], dayLabel: string, att: AttendanceRowData | null, status: string, tone: Tone) => void;
+  onDelete?: (attendanceId: string, adminName: string) => Promise<void> | void;
 };
 
 function dayStatus(r: AttendanceRowData | null, day: DayReport): [string, Tone] {
@@ -48,7 +49,7 @@ function PhotoTime({ photo, alt, time, note, onClick }: { photo: string | null; 
   );
 }
 
-export function AttendanceDayTable({ day, members, location, onOpen }: Props) {
+export function AttendanceDayTable({ day, members, location, onOpen, onDelete }: Props) {
   const presentCount = members.filter((m) => m.attendanceByDate[day.dateKey]).length;
 
   return (
@@ -141,10 +142,26 @@ export function AttendanceDayTable({ day, members, location, onOpen }: Props) {
                     <span className={`inline-block rounded border px-2 py-0.5 text-xs font-semibold ${TONE_CLASSES[statusTone]}`}>{statusLabel}</span>
                   </td>
                   <td className="text-right whitespace-nowrap">
-                    <button type="button" onClick={open} className="btn btn-secondary btn-sm" title="Lihat popup lokasi, foto, dan jam presensi">
-                      <EyeIcon width={14} height={14} />
-                      Preview
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button type="button" onClick={open} className="btn btn-secondary btn-sm" title="Lihat popup lokasi, foto, dan jam presensi">
+                        <EyeIcon width={14} height={14} />
+                        Preview
+                      </button>
+                      {r && onDelete && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Hapus data absensi ${admin.name} pada ${day.label}? Catatan presensi dan foto selfie akan dihapus.`)) {
+                              onDelete(r.id, admin.name);
+                            }
+                          }}
+                          className="btn btn-danger btn-sm"
+                          title="Hapus data absensi ini"
+                        >
+                          Hapus
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

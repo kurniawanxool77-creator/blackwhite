@@ -17,6 +17,7 @@ export function TeamMemberPage({ backHref }: { backHref: string }) {
           detail={detail}
           backHref={backHref}
           isMe={detail.member.id === user?.id}
+          canDeleteAttendance={user?.role === "superadmin"}
         />
       )}
     </DataGate>

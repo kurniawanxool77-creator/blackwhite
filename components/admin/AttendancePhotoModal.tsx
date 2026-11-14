@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ClockIcon, CloseIcon, MapPinIcon } from "@/components/ui/icons";
 
 export type AttendanceDetailPopupData = {
+  attendanceId?: string;
   adminName: string;
   adminPosition?: string;
   eventName: string;
@@ -26,9 +27,11 @@ export type AttendanceDetailPopupData = {
 export function AttendancePhotoModal({
   data,
   onClose,
+  onDelete,
 }: {
   data: AttendanceDetailPopupData | null;
   onClose: () => void;
+  onDelete?: (id: string) => Promise<void> | void;
 }) {
   useEffect(() => {
     if (!data) return;
@@ -198,7 +201,23 @@ export function AttendancePhotoModal({
         </div>
 
         {/* Footer Popup */}
-        <div className="border-t border-gray-200 px-5 py-3 flex justify-end">
+        <div className="border-t border-gray-200 px-5 py-3 flex items-center justify-between">
+          <div>
+            {data.attendanceId && onDelete && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (window.confirm(`Hapus data absensi ${data.adminName} pada ${data.dateLabel}? Catatan presensi dan foto selfie akan dihapus permanen.`)) {
+                    await onDelete(data.attendanceId!);
+                    onClose();
+                  }
+                }}
+                className="btn btn-danger btn-sm"
+              >
+                Hapus Absensi
+              </button>
+            )}
+          </div>
           <button type="button" onClick={onClose} className="btn btn-secondary btn-sm">
             Tutup
           </button>

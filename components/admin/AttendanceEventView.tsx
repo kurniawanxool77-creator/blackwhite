@@ -10,6 +10,7 @@ import type { AttendanceRowData, EventAttendanceReport } from "@/lib/attendance"
 import { AttendanceDayTable, TONE_CLASSES, type Tone } from "./AttendanceDayTable";
 import { AttendancePhotoModal, type AttendanceDetailPopupData } from "./AttendancePhotoModal";
 import { AttendancePreviewModal } from "./AttendancePreviewModal";
+import { deleteAttendance } from "@/src/lib/actions/superadmin";
 
 type EventOption = {
   id: string;
@@ -61,6 +62,7 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
     statusTone: Tone = "amber"
   ) => {
     setPopupData({
+      attendanceId: att?.id,
       adminName: admin.name,
       adminPosition: admin.position || "Tim",
       eventName: event.name,
@@ -313,7 +315,16 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
       {/* Rincian Kehadiran Per Hari (Tabel Detail dengan Popup Foto, Jam, Lokasi, dan Tombol Preview) */}
       <div className="space-y-4">
         {activeDays.map((day) => (
-          <AttendanceDayTable key={day.dateKey} day={day} members={members} location={event.location} onOpen={openDetailPopup} />
+          <AttendanceDayTable
+            key={day.dateKey}
+            day={day}
+            members={members}
+            location={event.location}
+            onOpen={openDetailPopup}
+            onDelete={async (id) => {
+              await deleteAttendance(id);
+            }}
+          />
         ))}
       </div>
 
@@ -328,6 +339,9 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
       <AttendancePhotoModal
         data={popupData}
         onClose={() => setPopupData(null)}
+        onDelete={async (id) => {
+          await deleteAttendance(id);
+        }}
       />
     </div>
   );

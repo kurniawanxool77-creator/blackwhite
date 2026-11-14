@@ -28,4 +28,6 @@ export const createTransaction = (_prev: string | null, f: FormData) => rpcFormM
 export const updateTransaction = (id: string, _prev: string | null, f: FormData) => rpcFormMessage("updateTransaction", f, id);
 export const deleteTransaction = async (id: string): Promise<void> => { await callRpc("deleteTransaction", id); };
 
+export const deleteAttendance = async (id: string): Promise<void> => { await callRpc("deleteAttendance", id); };
+
 export const saveSite = (_prev: string | null, f: FormData) => rpcFormMessage("saveSite", f);

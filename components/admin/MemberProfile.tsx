@@ -5,9 +5,20 @@ import { fmtDate, fmtDuration, fmtNum } from "@/lib/format";
 import type { MemberDetail } from "@/lib/team";
 import { AttendanceHistory } from "./AttendanceHistory";
 import { waNumber } from "./TeamMemberCard";
+import { deleteAttendance } from "@/src/lib/actions/superadmin";
 
 // Profil anggota tim ala HRIS: identitas, kontak, tugas, pelatihan yang dipegang, statistik, dan riwayat absensi.
-export function MemberProfile({ detail, backHref, isMe }: { detail: MemberDetail; backHref: string; isMe: boolean }) {
+export function MemberProfile({
+  detail,
+  backHref,
+  isMe,
+  canDeleteAttendance,
+}: {
+  detail: MemberDetail;
+  backHref: string;
+  isMe: boolean;
+  canDeleteAttendance?: boolean;
+}) {
   const { member, events, attendance, scanCount } = detail;
   const duties = member.duties ? member.duties.split("\n") : [];
   const worked = attendance.reduce((sum, a) => sum + (a.checkOut ? +a.checkOut - +a.checkIn : 0), 0);
@@ -93,7 +104,10 @@ export function MemberProfile({ detail, backHref, isMe }: { detail: MemberDetail
 
       <section>
         <h2 className="mb-2 text-base font-semibold text-gray-900">Riwayat absensi</h2>
-        <AttendanceHistory rows={attendance} />
+        <AttendanceHistory
+          rows={attendance}
+          onDelete={canDeleteAttendance ? deleteAttendance : undefined}
+        />
       </section>
     </div>
   );

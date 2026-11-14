@@ -66,6 +66,7 @@ export async function handleSuperadminMiscRpc(req: IncomingMessage, res: ServerR
     "saveArticle", "deleteArticle",
     "createBanner", "updateBanner", "toggleBanner", "moveBanner", "deleteBanner",
     "createTransaction", "updateTransaction", "deleteTransaction",
+    "deleteAttendance",
     "saveSite",
   ].includes(action)) return false;
 
@@ -335,6 +336,23 @@ export async function handleSuperadminMiscRpc(req: IncomingMessage, res: ServerR
     const [id] = await bodyArgs(req);
     const t = await db.transaction.delete({ where: { id: String(id) } });
     await audit(admin, "Hapus transaksi", `${t.label} · ${fmtRupiah(t.amount)}`);
+    return sendJson(res, { result: null }), true;
+  }
+
+  if (action === "deleteAttendance") {
+    const [id] = await bodyArgs(req);
+    const attendanceId = String(id ?? "").trim();
+    if (!attendanceId) return sendJson(res, { error: "ID absensi tidak valid.", throwError: true }, 400), true;
+    const att = await db.attendance.findUnique({
+      where: { id: attendanceId },
+      include: {
+        admin: { select: { name: true } },
+        event: { select: { name: true } },
+      },
+    });
+    if (!att) return sendJson(res, { error: "Data absensi tidak ditemukan.", throwError: true }, 404), true;
+    await db.attendance.delete({ where: { id: attendanceId } });
+    await audit(admin, "Hapus absensi tim", `${att.admin?.name ?? "Panitia"} · ${att.event?.name ?? "Event"} (${att.date})`);
     return sendJson(res, { result: null }), true;
   }
 

@@ -14,6 +14,6 @@ export function StaffLoginPage({ portal }: { portal: "admin" | "superadmin" }) {
     return <Navigate to="/superadmin/dashboard" replace />;
   }
 
-  return <LoginCard portal={portal} siteName={site.name} logoImage={site.logoImage} />;
+  return <LoginCard portal={portal} siteName={site.name} />;
 }
 

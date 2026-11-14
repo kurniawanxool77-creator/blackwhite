@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { Prisma } from "@prisma/client";
 import sharp from "sharp";
-import { isRunning, todayKeyJakarta } from "../../lib/checkin";
+import { todayKeyJakarta } from "../../lib/checkin";
 import { db, LIVE_KEY } from "../../lib/db";
 import { MAX_IMAGE_BYTES, sniffImageType, toAvatarWebp, toSelfieWebp, toWebp } from "../../lib/media";
 import { noticesFor } from "../../lib/notifications";
@@ -198,7 +198,6 @@ export async function handleMeta(req: IncomingMessage, res: ServerResponse, path
     if (file.size > MAX_IMAGE_BYTES) return sendJson(res, { error: "Ukuran foto maksimal 4 MB." }, 413), true;
     const event = await db.event.findFirst({ where: { id: eventId, status: { in: ["open", "closed"] }, admins: { some: { id: admin.id } } } });
     if (!event) return sendJson(res, { error: "Event tidak ditemukan atau tidak ditugaskan kepada Anda." }, 404), true;
-    if (!isRunning(event)) return sendJson(res, { error: "Absensi hanya bisa pada hari event berlangsung." }, 400), true;
     const date = todayKeyJakarta();
     const key = { adminId_eventId_date: { adminId: admin.id, eventId, date } };
     const existing = await db.attendance.findUnique({ where: key });

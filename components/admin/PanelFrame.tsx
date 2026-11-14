@@ -46,10 +46,10 @@ const ICONS = {
 };
 export type PanelLink = { href: string; label: string; icon: keyof typeof ICONS };
 
-type Props = { siteName: string; links: PanelLink[]; profile: ProfileInfo; logoImage?: string; children: React.ReactNode };
+type Props = { siteName: string; links: PanelLink[]; profile: ProfileInfo; children: React.ReactNode };
 
 // Tata letak panel ala HRIS: sidebar kiri (desktop) / laci menu (HP), top bar dengan profil di kanan atas.
-export function PanelFrame({ siteName, links, profile, logoImage, children }: Props) {
+export function PanelFrame({ siteName, links, profile, children }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false); // laci menu (HP)
   const [collapsed, setCollapsed] = useState(false); // sidebar disembunyikan (desktop)
@@ -67,8 +67,8 @@ export function PanelFrame({ siteName, links, profile, logoImage, children }: Pr
   }, [open]);
 
   const brand = (
-    <Link href={links[0]?.href ?? "/"} className="flex items-center gap-2.5 px-4 py-4" aria-label={siteName}>
-      <img src={logoImage || "/logo.png"} alt={siteName} className="h-8 w-auto max-w-[170px] object-contain" />
+    <Link href={links[0]?.href ?? "/"} className="flex items-center gap-2.5 px-4 py-4">
+      <span className="truncate text-sm font-bold tracking-tight text-gray-900">{siteName}</span>
     </Link>
   );
 

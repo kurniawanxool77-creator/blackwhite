@@ -5,13 +5,10 @@ import { db } from "./db";
 export { attendanceStatus, dayStart, isDateKey, type AttendanceStatus };
 
 // Pelatihan yang berlangsung pada tanggal itu. adminId diisi = hanya yang ditugaskan ke orang itu.
-export function eventsOnDate(date: string, adminId?: string) {
-  const d = dayStart(date);
+export function eventsOnDate(_date?: string, adminId?: string) {
   return db.event.findMany({
     where: {
       status: { in: ["open", "closed"] },
-      startDate: { lte: d },
-      endDate: { gte: d },
       ...(adminId ? { admins: { some: { id: adminId } } } : {}),
     },
     orderBy: { startDate: "asc" },

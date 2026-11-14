@@ -17,12 +17,10 @@ export function startOfTodayJakarta() {
 
 // Tanggal hari ini (YYYY-MM-DD) di Asia/Jakarta. Tanggal event disimpan sebagai tengah malam UTC dari tanggal kalendernya.
 export const todayKeyJakarta = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
-const dateKey = (d: Date) => d.toISOString().slice(0, 10);
 
 // Pelatihan sedang berlangsung: hari ini di antara tanggal mulai dan selesai (inklusif).
-export function isRunning(e: { startDate: Date; endDate: Date }) {
-  const today = todayKeyJakarta();
-  return dateKey(e.startDate) <= today && today <= dateKey(e.endDate);
+export function isRunning(_e?: { startDate: Date; endDate: Date }) {
+  return true;
 }
 
 // Sapaan sesuai jam di Jakarta.

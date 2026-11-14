@@ -17,11 +17,6 @@ export function RegisterPage() {
 
   return (
     <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>
-      <div className="mb-4">
-        <Link to="/" className="inline-block" aria-label={site.name}>
-          <img src={site.logoImage || "/logo.png"} alt={site.name} className="h-8 w-auto object-contain" />
-        </Link>
-      </div>
       <h1 className="text-2xl font-bold tracking-tight text-gray-900">Daftar akun peserta</h1>
       <p className="mt-1 mb-6 text-sm text-gray-600">Satu akun untuk mendaftar semua event dan menyimpan QR tiket Anda.</p>
       <RegisterForm callbackUrl={callbackUrl} />

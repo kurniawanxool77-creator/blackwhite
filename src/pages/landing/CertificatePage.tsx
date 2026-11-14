@@ -32,9 +32,7 @@ export function CertificatePage() {
 
           <article className="mx-auto aspect-[297/210] w-full max-w-4xl bg-white p-[3%] shadow-lg print:max-w-none print:shadow-none">
             <div className="flex h-full flex-col items-center justify-between border-[6px] border-double border-brand px-[6%] py-[4%] text-center">
-              <div className="flex flex-col items-center gap-1">
-                <img src={site.logoImage || "/logo.png"} alt={site.name} className="h-9 w-auto object-contain" />
-              </div>
+              <p className="text-sm font-bold tracking-tight text-gray-900 sm:text-base">{site.name}</p>
 
               <div>
                 <p className="text-[clamp(1.25rem,4vw,2.5rem)] font-bold tracking-[0.2em] text-brand">SERTIFIKAT</p>

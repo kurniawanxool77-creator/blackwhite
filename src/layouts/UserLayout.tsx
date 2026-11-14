@@ -20,8 +20,8 @@ export function UserLayout() {
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2" aria-label={site.name}>
-              <img src={site.logoImage || "/logo.png"} alt={site.name} className="h-7 w-auto object-contain sm:h-8" />
+            <Link to="/" className="flex items-center">
+              <span className="text-sm font-bold tracking-tight text-gray-900 sm:text-base">{site.name}</span>
             </Link>
 
             <nav className="hidden items-center gap-1 md:flex" aria-label="Navigasi Pengguna">

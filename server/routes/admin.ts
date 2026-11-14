@@ -7,6 +7,7 @@ import { db } from "../../lib/db";
 import { getEventDetail } from "../../lib/event-detail";
 import { getParticipant } from "../../lib/participant";
 import { answersIn, answersMatching, healthAlerts, readDetails } from "../../lib/registration-form";
+import { appliesTo } from "../../lib/rundown";
 import { scanEvent, scanEvents } from "../../lib/scan-flow";
 import { shuttleManifest } from "../../lib/shuttle";
 import { getMemberDetail } from "../../lib/team";
@@ -103,17 +104,119 @@ export async function handleAdmin(req: IncomingMessage, res: ServerResponse, pat
     if (!event || !checkpoint || !checkpoint.scan) {
       return sendJson(res, { error: "Pos scan tidak ditemukan." }, 404), true;
     }
-    const [onDuty, scannedCount, recent] = await Promise.all([
+    const [onDuty, recent, registrations, scans] = await Promise.all([
       admin.role === "superadmin" ? Promise.resolve(true) : isOnDuty(admin.id, event.id),
-      db.scan.count({ where: { checkpointId: checkpoint.id } }),
       db.scan.findMany({
         where: { checkpointId: checkpoint.id },
-        include: { registration: { include: { user: { select: SAFE_USER } } } },
+        include: { registration: { include: { user: { select: SAFE_USER } } }, admin: { select: { name: true } } },
         orderBy: { createdAt: "desc" },
-        take: 15,
+        take: 20,
+      }),
+      db.registration.findMany({
+        where: { eventId: event.id, status: "approved" },
+        select: {
+          id: true,
+          code: true,
+          qrToken: true,
+          details: true,
+          user: { select: { id: true, name: true, email: true, phone: true, organization: true, image: true, qrToken: true } },
+        },
+        orderBy: [{ code: "asc" }, { createdAt: "asc" }],
+      }),
+      db.scan.findMany({
+        where: { checkpointId: checkpoint.id },
+        select: { registrationId: true, createdAt: true, admin: { select: { name: true } } },
       }),
     ]);
-    sendJson(res, { event, checkpoint, onDuty, scannedCount, recent });
+
+    const scanMap = new Map(scans.map((s) => [s.registrationId, { at: s.createdAt.toISOString(), by: s.admin?.name ?? "Panitia" }]));
+
+    const roster = registrations
+      .map((r) => {
+        const details = readDetails(r.details);
+        const eligible = appliesTo(checkpoint, details);
+        const s = scanMap.get(r.id);
+        const tokens = [r.qrToken, r.user.qrToken].filter((t): t is string => Boolean(t));
+        return {
+          id: r.id,
+          code: r.code || "",
+          tokens,
+          name: r.user.name,
+          email: r.user.email,
+          phone: r.user.phone,
+          organization: r.user.organization,
+          image: r.user.image,
+          eligible,
+          scanned: !!s,
+          scannedAt: s?.at ?? null,
+          scannedBy: s?.by ?? null,
+        };
+      })
+      .filter((r) => r.eligible);
+
+    const scannedCount = roster.filter((r) => r.scanned).length;
+
+    sendJson(res, {
+      event,
+      checkpoint,
+      onDuty,
+      scannedCount,
+      totalEligible: roster.length,
+      roster,
+      recent: recent.map((r) => ({
+        id: r.id,
+        registrationId: r.registrationId,
+        userName: r.registration.user.name,
+        userCode: r.registration.code,
+        userImage: r.registration.user.image,
+        userOrg: r.registration.user.organization,
+        adminName: r.admin?.name ?? "Panitia",
+        createdAt: r.createdAt.toISOString(),
+      })),
+      serverTime: new Date().toISOString(),
+    });
+    return true;
+  }
+
+  const adminScanCpSync = method === "GET" ? matchPath("/api/admin/events/:id/scan/:cpId/sync", pathname) : null;
+  if (adminScanCpSync) {
+    const admin = await requireAdmin(req, res, "scanner");
+    if (!admin) return true;
+    const sp = parseUrl(req).searchParams;
+    const sinceRaw = sp.get("since");
+    const since = sinceRaw && !isNaN(new Date(sinceRaw).getTime()) ? new Date(sinceRaw) : new Date(Date.now() - 30_000);
+    const newScans = await db.scan.findMany({
+      where: {
+        checkpointId: adminScanCpSync.cpId,
+        createdAt: { gt: since },
+      },
+      select: {
+        id: true,
+        registrationId: true,
+        createdAt: true,
+        admin: { select: { name: true } },
+        registration: {
+          select: {
+            code: true,
+            user: { select: { name: true, image: true, organization: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    sendJson(res, {
+      serverTime: new Date().toISOString(),
+      scans: newScans.map((s) => ({
+        id: s.id,
+        registrationId: s.registrationId,
+        userName: s.registration.user.name,
+        userCode: s.registration.code,
+        userImage: s.registration.user.image,
+        userOrg: s.registration.user.organization,
+        adminName: s.admin?.name ?? "Panitia",
+        createdAt: s.createdAt.toISOString(),
+      })),
+    });
     return true;
   }
 

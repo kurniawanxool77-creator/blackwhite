@@ -162,7 +162,7 @@ export function EventDetailPage() {
                       </Link>
                       <p className="text-center text-xs text-gray-500">
                         Sudah punya akun?{" "}
-                        <Link to={`/login?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="font-medium text-green-700 hover:underline">
+                        <Link to={`/login?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="font-medium text-gray-900 hover:underline">
                           Masuk
                         </Link>
                       </p>

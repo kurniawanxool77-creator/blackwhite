@@ -83,7 +83,7 @@ export function SuperadminEventsPage() {
                                 {e.name}
                               </Link>
                               {running && (
-                                <span className="rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
+                                <span className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-700">
                                   Sedang berlangsung
                                 </span>
                               )}

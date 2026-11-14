@@ -87,7 +87,7 @@ export function SuperadminAdminsPage() {
                         )}
                       </td>
                       <td>
-                        <span className={a.active ? "text-green-700" : "text-gray-500"}>{a.active ? "Aktif" : "Nonaktif"}</span>
+                        <span className={a.active ? "text-gray-900 font-medium" : "text-gray-500"}>{a.active ? "Aktif" : "Nonaktif"}</span>
                         {a.lockedUntil && new Date(a.lockedUntil) > now && (
                           <p className="mt-1 text-xs text-amber-700">Terkunci sementara (salah password)</p>
                         )}

@@ -1,6 +1,5 @@
 import type { Checkpoint, Event, Registration, User } from "@prisma/client";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { AttendanceButton } from "@/components/admin/AttendanceButton";
 import { RegistrationTable } from "@/components/admin/RegistrationTable";
 import { ShuttlePanel } from "@/components/admin/ShuttlePanel";
 import { QrCodeIcon } from "@/components/ui/icons";
@@ -33,18 +32,9 @@ export function AdminEventDetailPage() {
 
   return (
     <DataGate state={state} notFoundTitle="Event tidak ditemukan" backTo="/admin/events">
-      {({ event, registrations, counts, routes, onDuty }) => {
+      {({ event, registrations, counts, routes, onDuty: _onDuty }) => {
         return (
           <div className="space-y-6">
-            {!onDuty && (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 p-4">
-                <div>
-                  <p className="font-semibold text-amber-900">Belum absen datang</p>
-                  <p className="text-xs text-amber-700">Absen datang dengan foto selfie untuk mulai bertugas dan memindai QR di event ini.</p>
-                </div>
-                <AttendanceButton eventId={event.id} type="in" className="btn btn-success btn-sm shrink-0" />
-              </div>
-            )}
             <div>
               <Link to="/admin/events" className="text-sm text-gray-500 hover:text-brand">← Event saya</Link>
               <div className="mt-2 flex flex-wrap items-start justify-between gap-3">

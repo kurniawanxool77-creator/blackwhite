@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { DutyGate } from "@/components/admin/DutyGate";
 import { Scanner, type RecentScanItem } from "@/components/scanner/Scanner";
 import type { RosterItem } from "@/components/scanner/ScannerRosterList";
 import type { scanEvent } from "@/lib/scan-flow";
@@ -25,11 +24,8 @@ export function EventScanCheckpointPage({ base }: { base: "/admin" | "/superadmi
 
   return (
     <DataGate state={state} notFoundTitle="Pos scan tidak ditemukan" backTo={`${base}/scan`}>
-      {({ event, checkpoint, onDuty, roster, recent, serverTime }) =>
-        base === "/admin" && !onDuty ? (
-          <DutyGate event={event} backHref={`${base}/events/${event.id}/scan`} />
-        ) : (
-          <Scanner
+      {({ event, checkpoint, onDuty: _onDuty, roster, recent, serverTime }) =>
+        <Scanner
             eventId={event.id}
             checkpoint={checkpoint}
             eventName={event.name}
@@ -38,7 +34,6 @@ export function EventScanCheckpointPage({ base }: { base: "/admin" | "/superadmi
             initialRecent={recent}
             initialServerTime={serverTime}
           />
-        )
       }
     </DataGate>
   );

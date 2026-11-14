@@ -37,7 +37,7 @@ type AttendancePagePayload = {
 
 function rowTone(r: AttendancePagePayload["dateRows"][number] | undefined) {
   if (!r) return { label: "Belum absen", cls: "text-amber-700" };
-  return r.checkOut ? { label: "Selesai", cls: "text-gray-600" } : { label: "Bertugas", cls: "text-green-700" };
+  return r.checkOut ? { label: "Selesai", cls: "text-gray-600" } : { label: "Bertugas", cls: "text-gray-900 font-medium" };
 }
 
 export function SuperadminAttendancePage() {
@@ -177,6 +177,7 @@ export function SuperadminAttendancePage() {
                                         onClick={async () => {
                                           if (window.confirm(`Hapus data absensi ${m.name} pada ${date}? Data kehadiran dan foto selfie akan dihapus.`)) {
                                             await deleteAttendance(r.id);
+                                            window.location.reload();
                                           }
                                         }}
                                         className="btn btn-danger btn-sm"

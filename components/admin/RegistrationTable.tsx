@@ -7,7 +7,7 @@ import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { DownloadIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
-import { fmtDateTime, fmtNum, REG_STATUS } from "@/lib/format";
+import { fmtDateTime, fmtNum, fmtRupiah, REG_STATUS } from "@/lib/format";
 import { healthAlerts, itemAnswers, readDetails } from "@/lib/registration-form";
 import { appliesTo } from "@/lib/rundown";
 
@@ -167,6 +167,7 @@ export function RegistrationTable({
               <th>Kontak</th>
               <th>Daftar</th>
               <th>Status</th>
+              <th>Bukti Bayar</th>
               <th>{hasScans ? "Pos QR Terpindai" : "Tiket & Akses"}</th>
               {!readOnly && <th className="text-right">Aksi</th>}
             </tr>
@@ -174,7 +175,7 @@ export function RegistrationTable({
           <tbody>
             {registrations.length === 0 && (
               <tr>
-                <td colSpan={readOnly ? 5 : 6} className="text-center text-gray-500 py-8">
+                <td colSpan={readOnly ? 6 : 7} className="text-center text-gray-500 py-8">
                   {q
                     ? "Tidak ada peserta yang cocok dengan kata kunci pencarian."
                     : filter === "pending"
@@ -192,6 +193,7 @@ export function RegistrationTable({
               const health = healthAlerts(d);
               const items = itemAnswers(d);
               const totalScans = checkpoints.filter((c) => c.scan && appliesTo(c, d)).length;
+              const hasProof = !!(d.paymentProof || d.paymentProofUrl);
               return (
                 <tr key={r.id}>
                   <td>
@@ -239,6 +241,38 @@ export function RegistrationTable({
                     <StatusBadge status={r.status} label={REG_STATUS[r.status]} />
                     {r.rejectReason && <p className="mt-1 text-xs text-gray-500">{r.rejectReason}</p>}
                   </td>
+                  <td>
+                    {hasProof ? (
+                      <div className="flex flex-col gap-1">
+                        {d.paymentProofUrl && (
+                          <a href={d.paymentProofUrl} target="_blank" rel="noreferrer" className="inline-block shrink-0">
+                            <img
+                              src={d.paymentProofUrl}
+                              alt="Bukti transfer"
+                              className="h-14 w-14 rounded border border-gray-200 object-cover hover:opacity-80 transition"
+                              title="Klik untuk perbesar"
+                            />
+                          </a>
+                        )}
+                        {d.paymentProof && (
+                          <p className="text-xs text-gray-700 font-mono leading-tight max-w-[8rem] break-all">
+                            {d.paymentProof}
+                          </p>
+                        )}
+                        {d.total != null && d.total > 0 && (
+                          <p className="text-xs font-semibold text-gray-900 tabular-nums">
+                            {fmtRupiah(d.total)}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">
+                        {d.total != null && d.total > 0 ? (
+                          <span className="text-amber-700 font-medium">{fmtRupiah(d.total)} · belum ada bukti</span>
+                        ) : "—"}
+                      </span>
+                    )}
+                  </td>
                   <td className="whitespace-nowrap text-xs">
                     {hasScans ? (
                       r.status === "approved" ? (
@@ -249,8 +283,8 @@ export function RegistrationTable({
                         "-"
                       )
                     ) : r.status === "approved" ? (
-                      <span className="inline-flex items-center gap-1 rounded bg-green-50 px-2 py-0.5 font-medium text-green-700 border border-green-200">
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      <span className="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-800 border border-gray-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray-600" />
                         Tiket Aktif
                       </span>
                     ) : (

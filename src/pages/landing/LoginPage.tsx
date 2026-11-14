@@ -40,7 +40,7 @@ export function LoginPage() {
       )}
       <p className="mt-6 text-center text-sm text-gray-600">
         Belum punya akun?{" "}
-        <Link to={`/daftar?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-green-700 hover:underline">
+        <Link to={`/daftar?callbackUrl=${encodeURIComponent(callbackUrl)}`} className="font-semibold text-gray-900 hover:underline">
           Daftar sekarang
         </Link>
       </p>

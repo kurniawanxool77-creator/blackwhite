@@ -323,6 +323,7 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
             onOpen={openDetailPopup}
             onDelete={async (id) => {
               await deleteAttendance(id);
+              window.location.reload();
             }}
           />
         ))}
@@ -341,6 +342,7 @@ export function AttendanceEventView({ events, report, selectedEventId }: Props) 
         onClose={() => setPopupData(null)}
         onDelete={async (id) => {
           await deleteAttendance(id);
+          window.location.reload();
         }}
       />
     </div>

@@ -31,7 +31,7 @@ export function AdminEventsPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <StatusBadge status={e.status} label={EVENT_STATUS[e.status] ?? e.status} />
                           {onDuty && (
-                            <span className="rounded bg-green-50 px-2 py-0.5 text-xs font-medium text-green-800">Sedang bertugas</span>
+                            <span className="rounded border border-gray-300 bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">Sedang bertugas</span>
                           )}
                         </div>
                         <Link to={`/admin/events/${e.id}`} className="mt-1.5 block font-semibold text-gray-900 hover:text-brand">

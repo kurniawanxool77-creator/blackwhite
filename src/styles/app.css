@@ -2,8 +2,8 @@
 
 @theme inline {
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --color-brand: #15803d;
-  --color-brand-dark: #14532d;
+  --color-brand: #111111;
+  --color-brand-dark: #000000;
 }
 
 body {
@@ -103,7 +103,7 @@ body {
     @apply bg-brand text-white hover:bg-brand-dark;
   }
   .btn-success {
-    @apply bg-green-700 text-white hover:bg-green-800;
+    @apply bg-gray-900 text-white hover:bg-black;
   }
   .btn-secondary {
     @apply border border-gray-300 bg-white text-gray-800 hover:bg-gray-50;

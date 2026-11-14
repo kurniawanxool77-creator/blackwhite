@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { DutyGate } from "@/components/admin/DutyGate";
 import { RundownPicker } from "@/components/scanner/RundownPicker";
 import type { scanEvent } from "@/lib/scan-flow";
 import { DataGate } from "@/src/components/RouteState";
@@ -16,12 +15,8 @@ export function EventScanPickPage({ base }: { base: "/admin" | "/superadmin" }) 
 
   return (
     <DataGate state={state} notFoundTitle="Event tidak ditemukan" backTo={`${base}/scan`}>
-      {({ event, onDuty }) =>
-        base === "/admin" && !onDuty ? (
-          <DutyGate event={event} backHref={`${base}/scan`} />
-        ) : (
-          <RundownPicker event={event} base={base} />
-        )
+      {({ event, onDuty: _onDuty }) =>
+        <RundownPicker event={event} base={base} />
       }
     </DataGate>
   );

@@ -34,7 +34,7 @@ export function AttendancePanel({ date, items }: AttendanceTodayProps) {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold text-gray-900">{event.name}</p>
-                  <p className={`mt-0.5 text-sm font-medium ${!row ? "text-amber-700" : row.checkOut ? "text-gray-600" : "text-green-700"}`}>
+                  <p className={`mt-0.5 text-sm font-medium ${!row ? "text-amber-700" : row.checkOut ? "text-gray-600" : "text-gray-900 font-semibold"}`}>
                     {!row && "Belum absen · fitur event terkunci"}
                     {row && !row.checkOut && `Bertugas sejak ${fmtTime(row.checkIn)}`}
                     {row?.checkOut && `Selesai ${fmtTime(row.checkOut)} · ${fmtDuration(+row.checkOut - +row.checkIn)}`}

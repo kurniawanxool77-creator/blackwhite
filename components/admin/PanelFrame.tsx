@@ -84,10 +84,10 @@ export function PanelFrame({ siteName, links, profile, children }: Props) {
             onClick={() => setOpen(false)}
             aria-current={on ? "page" : undefined}
             className={`flex min-h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors ${
-              on ? "bg-green-50 font-semibold text-brand" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+              on ? "bg-gray-100 font-semibold text-gray-900 border border-gray-200" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
             }`}
           >
-            <Icon width={18} height={18} className={on ? "text-brand" : "text-gray-500"} />
+            <Icon width={18} height={18} className={on ? "text-gray-900" : "text-gray-500"} />
             {l.label}
           </Link>
         );

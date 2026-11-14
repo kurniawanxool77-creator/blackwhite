@@ -57,7 +57,7 @@ export function SuperadminDashboardPage() {
             <Link to="/superadmin/keuangan" className="card grid grid-cols-2 gap-4 p-5 hover:border-brand sm:grid-cols-4">
               <div>
                 <p className="text-xs text-gray-600">Total pemasukan</p>
-                <p className="mt-1 text-lg font-semibold text-green-700 tabular-nums">{fmtRupiah(totalIncome)}</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900 tabular-nums">{fmtRupiah(totalIncome)}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-600">Pengeluaran</p>

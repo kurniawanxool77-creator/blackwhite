@@ -33,7 +33,7 @@ type FinancePayload = {
 };
 
 function Stat({ label, value, tone }: { label: string; value: number; tone?: "in" | "out" | "total" }) {
-  const color = tone === "out" ? "text-red-700" : tone === "total" ? (value < 0 ? "text-red-700" : "text-gray-900") : "text-green-700";
+  const color = tone === "out" ? "text-red-700" : tone === "total" ? (value < 0 ? "text-red-700" : "text-gray-900") : "text-gray-900";
   return (
     <div className="card p-4">
       <p className="text-xs font-medium text-gray-600">{label}</p>
@@ -150,7 +150,7 @@ export function SuperadminFinancePage() {
                           <p className="font-medium text-gray-900">{t.label}</p>
                           <p className="text-xs text-gray-500">{[t.event?.name ?? "Umum", t.note, `oleh ${t.adminName}`].filter(Boolean).join(" · ")}</p>
                         </td>
-                        <td className={`text-right font-semibold whitespace-nowrap tabular-nums ${t.type === "out" ? "text-red-700" : "text-green-700"}`}>
+                        <td className={`text-right font-semibold whitespace-nowrap tabular-nums ${t.type === "out" ? "text-red-700" : "text-gray-900"}`}>
                           {t.type === "out" ? "−" : "+"}{fmtRupiah(t.amount)}
                         </td>
                         <td>

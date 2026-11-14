@@ -121,18 +121,22 @@ export async function getEventAttendanceReport(eventId: string): Promise<EventAt
   });
   if (!event) return null;
 
-  const dateKeys = getEventDateKeys(event.startDate, event.endDate);
+  const scheduledDateKeys = getEventDateKeys(event.startDate, event.endDate);
   const rows = await db.attendance.findMany({
-    where: {
-      eventId: event.id,
-      date: { in: dateKeys },
-    },
+    where: { eventId: event.id },
     include: {
       admin: { select: { id: true, name: true, position: true, image: true, email: true } },
     },
+    orderBy: { checkIn: "asc" },
   });
 
   const today = todayKeyJakarta();
+  const recordedDateKeys = rows.map((r) => r.date);
+  const allDateKeysSet = new Set([...scheduledDateKeys, ...recordedDateKeys]);
+  if (scheduledDateKeys.includes(today)) {
+    allDateKeysSet.add(today);
+  }
+  const dateKeys = Array.from(allDateKeysSet).sort();
 
   // Gabungkan admin yang ditugaskan ke event + admin yang memiliki log absensi
   const adminMap = new Map<string, { id: string; name: string; position: string; image: string | null; email: string }>();
@@ -147,14 +151,19 @@ export async function getEventAttendanceReport(eventId: string): Promise<EventAt
   const days: DayReport[] = dateKeys.map((dateKey, idx) => {
     const d = dayStart(dateKey);
     const dayRows = rows.filter((r) => r.date === dateKey);
+    const isToday = dateKey === today;
+    const isPast = dateKey < today;
+    const isFuture = dateKey > today;
+    const dateFormatted = d.toLocaleDateString("id-ID", { day: "numeric", month: "short", timeZone: "UTC" });
+    const shortLabel = isToday ? `Hari Ini (${dateFormatted})` : `Hari ${idx + 1} (${dateFormatted})`;
     return {
       dateKey,
       dayNumber: idx + 1,
       label: d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }),
-      shortLabel: `Hari ${idx + 1} (${d.toLocaleDateString("id-ID", { day: "numeric", month: "short", timeZone: "UTC" })})`,
-      isToday: dateKey === today,
-      isPast: dateKey < today,
-      isFuture: dateKey > today,
+      shortLabel,
+      isToday,
+      isPast,
+      isFuture,
       presentCount: dayRows.length,
       totalTeamCount: admins.length,
     };

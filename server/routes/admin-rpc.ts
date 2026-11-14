@@ -18,7 +18,35 @@ async function canAccessEvent(admin: { id: string; role: string }, eventId: stri
   return (await db.event.count({ where: { id: eventId, admins: { some: { id: admin.id } } } })) > 0;
 }
 
-async function findRegistrationByToken(token: string, eventId: string) {
+function normalizeToken(raw: string): string {
+  let t = raw.trim();
+  if (!t) return "";
+  try {
+    if (t.includes("%")) t = decodeURIComponent(t);
+  } catch {
+    // Abaikan jika bukan format URI ter-encode yang valid
+  }
+  if (t.startsWith("http://") || t.startsWith("https://")) {
+    try {
+      const url = new URL(t);
+      const qToken = url.searchParams.get("token") || url.searchParams.get("t") || url.searchParams.get("code") || url.searchParams.get("q");
+      if (qToken) return qToken.trim();
+      const segments = url.pathname.split("/").filter(Boolean);
+      if (segments.length > 0) return segments[segments.length - 1].trim();
+    } catch {
+      // Abaikan jika string bukan format URL yang valid
+    }
+  }
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+    t = t.slice(1, -1).trim();
+  }
+  return t;
+}
+
+async function findRegistrationByToken(rawToken: string, eventId: string) {
+  const token = normalizeToken(rawToken);
+  if (!token) return { user: null, reg: null };
+
   const user = await db.user.findUnique({ where: { qrToken: token }, select: SAFE_USER });
   if (user) {
     const reg = await db.registration.findUnique({
@@ -28,15 +56,35 @@ async function findRegistrationByToken(token: string, eventId: string) {
     return { user, reg };
   }
   const legacy = await db.registration.findUnique({ where: { qrToken: token }, include: { user: { select: SAFE_USER } } });
-  if (!legacy) return { user: null, reg: null };
-  const reg =
-    legacy.eventId === eventId
-      ? legacy
-      : await db.registration.findUnique({
-          where: { userId_eventId: { userId: legacy.userId, eventId } },
-          include: { user: { select: SAFE_USER } },
-        });
-  return { user: legacy.user, reg };
+  if (legacy) {
+    const reg =
+      legacy.eventId === eventId
+        ? legacy
+        : await db.registration.findUnique({
+            where: { userId_eventId: { userId: legacy.userId, eventId } },
+            include: { user: { select: SAFE_USER } },
+          });
+    return { user: legacy.user, reg };
+  }
+
+  // Cari berdasarkan nomor peserta (misal: "PST-001"), id pendaftaran, email, atau no. HP
+  const regByCode = await db.registration.findFirst({
+    where: {
+      eventId,
+      OR: [
+        { code: { equals: token, mode: "insensitive" } },
+        { id: token },
+        { user: { email: { equals: token, mode: "insensitive" } } },
+        { user: { phone: token } },
+      ],
+    },
+    include: { user: { select: SAFE_USER } },
+  });
+  if (regByCode) {
+    return { user: regByCode.user, reg: regByCode };
+  }
+
+  return { user: null, reg: null };
 }
 
 export async function handleAdminRpc(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<boolean> {

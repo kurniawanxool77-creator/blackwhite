@@ -131,7 +131,7 @@ export async function handleSuperadminPages(req: IncomingMessage, res: ServerRes
     if (!admin) return true;
     const reg = await db.registration.findUnique({ where: { id: qrMatch.id } });
     if (reg?.status !== "approved") return sendText(res, "QR belum terbit", 404), true;
-    const png = await QRCode.toBuffer(await ensureUserQr(reg.userId), { width: 480, margin: 2 });
+    const png = await QRCode.toBuffer(await ensureUserQr(reg.userId), { width: 480, margin: 3, errorCorrectionLevel: "M" });
     sendBinary(res, new Uint8Array(png), "image/png", { "Cache-Control": "no-store" });
     return true;
   }

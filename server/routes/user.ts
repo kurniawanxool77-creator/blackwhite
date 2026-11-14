@@ -35,7 +35,9 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
       db.user.findUnique({ where: { id: user.id }, select: { name: true, image: true } }),
     ]);
     const needsQr = registrations.some((r) => r.status === "approved" && r.event.useQr);
-    const myQr = needsQr ? await QRCode.toDataURL(await ensureUserQr(user.id), { width: 360, margin: 1 }) : null;
+    const myQr = needsQr
+      ? await QRCode.toDataURL(await ensureUserQr(user.id), { width: 400, margin: 3, errorCorrectionLevel: "M" })
+      : null;
     sendJson(res, {
       greeting: greetingJakarta(),
       firstName: (user.name ?? "").split(" ")[0] || "Peserta",
@@ -100,7 +102,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
       return true;
     }
     const qr = reg.status === "approved" && reg.event.useQr
-      ? await QRCode.toDataURL(await ensureUserQr(user.id), { width: 340, margin: 1 })
+      ? await QRCode.toDataURL(await ensureUserQr(user.id), { width: 400, margin: 3, errorCorrectionLevel: "M" })
       : null;
     const banks = parseBanks((await getSite()).banks);
     sendJson(res, { reg, qr, banks });

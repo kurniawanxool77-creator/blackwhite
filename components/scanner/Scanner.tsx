@@ -13,12 +13,58 @@ type Props = {
 
 type LastScan = { token: string; at: number; busy: boolean };
 
-// Kamera membaca QR yang sama berkali-kali; abaikan token yang sama selama 3 detik.
+// Cegah scan ganda dalam 1.5 detik jika sukses
 function claim(last: LastScan, token: string) {
   const now = Date.now();
-  if (last.busy || (token === last.token && now - last.at < 3000)) return false;
+  if (last.busy || (token === last.token && now - last.at < 1500)) return false;
   Object.assign(last, { token, at: now, busy: true });
   return true;
+}
+
+// Suara umpan balik scanner instan berbasis Web Audio API (tanpa delay file audio)
+function playScanSound(tone: "success" | "warning" | "error") {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (tone === "success") {
+      // Nada lonceng sukses ganda (880Hz -> 1320Hz)
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.setValueAtTime(1320, now + 0.07);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    } else if (tone === "warning") {
+      // Nada peringatan kuning (660Hz -> 440Hz)
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(660, now);
+      osc.frequency.setValueAtTime(440, now + 0.08);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } else {
+      // Nada error penolakan (320Hz -> 220Hz)
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.setValueAtTime(220, now + 0.1);
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      osc.start(now);
+      osc.stop(now + 0.32);
+    }
+    setTimeout(() => ctx.close().catch(() => {}), 450);
+  } catch {
+    // AudioContext tidak didukung / diblokir kebijakan browser
+  }
 }
 
 const TONE = {
@@ -32,6 +78,7 @@ export function Scanner({ checkpoint, eventName, changeHref }: Props) {
   const checkpointId = checkpoint.id;
   const [sessionCount, setSessionCount] = useState(0);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [flashColor, setFlashColor] = useState<"success" | "warning" | "error" | null>(null);
   const [history, setHistory] = useState<(ScanResult & { at: string; checkpoint: string })[]>([]);
   const last = useRef<LastScan>({ token: "", at: 0, busy: false });
 
@@ -40,10 +87,22 @@ export function Scanner({ checkpoint, eventName, changeHref }: Props) {
     try {
       const res = await scanQr(checkpointId, token);
       setResult(res);
-      navigator.vibrate?.(res.tone === "success" ? 80 : [80, 60, 80]);
-      if (res.tone === "success") setSessionCount((n) => n + 1);
+      setFlashColor(res.tone);
+      setTimeout(() => setFlashColor(null), 800);
+      playScanSound(res.tone);
+      navigator.vibrate?.(res.tone === "success" ? 70 : res.tone === "warning" ? [60, 40, 60] : [100, 50, 100]);
+      if (res.tone === "success") {
+        setSessionCount((n) => n + 1);
+      } else {
+        // Pada warning atau ditolak, reset token agar operator bisa langsung scan ulang tanpa menunggu
+        last.current.token = "";
+      }
       setHistory((h) => [{ ...res, checkpoint: checkpoint.name, at: new Date().toLocaleTimeString("id-ID") }, ...h].slice(0, 10));
     } catch {
+      playScanSound("error");
+      last.current.token = "";
+      setFlashColor("error");
+      setTimeout(() => setFlashColor(null), 800);
       setResult({ tone: "error", title: "Gagal terhubung ke server", detail: "Periksa koneksi lalu scan ulang." });
     } finally {
       last.current.busy = false;
@@ -64,7 +123,17 @@ export function Scanner({ checkpoint, eventName, changeHref }: Props) {
           <Link href={changeHref} className="btn btn-secondary btn-sm">Ganti rundown</Link>
         </div>
 
-        <CameraScanner onDecode={submit} />
+        <div className={`relative rounded-md transition-all duration-200 ${
+          flashColor === "success"
+            ? "ring-4 ring-green-500"
+            : flashColor === "warning"
+            ? "ring-4 ring-amber-400"
+            : flashColor === "error"
+            ? "ring-4 ring-red-500"
+            : ""
+        }`}>
+          <CameraScanner onDecode={submit} />
+        </div>
 
         <form
           className="flex gap-2"
@@ -76,14 +145,14 @@ export function Scanner({ checkpoint, eventName, changeHref }: Props) {
             input.value = "";
           }}
         >
-          {/* Juga menerima scanner barcode USB/Bluetooth yang mengetik lalu menekan Enter. */}
-          <input name="token" className="input" placeholder="Input kode QR manual" autoComplete="off" autoFocus />
+          {/* Juga menerima scanner barcode USB/Bluetooth yang mengetik lalu menekan Enter, atau kode peserta PST-001 */}
+          <input name="token" className="input" placeholder="Scan barcode atau ketik kode peserta (mis: PST-001)" autoComplete="off" autoFocus />
           <button className="btn btn-primary">Proses</button>
         </form>
       </div>
 
       <div className="space-y-4">
-        <div className={`rounded-md border-2 p-6 ${result ? TONE[result.tone] : "border-dashed border-gray-300 bg-white text-gray-500"}`}>
+        <div className={`rounded-md border-2 p-6 transition-all duration-150 ${result ? TONE[result.tone] : "border-dashed border-gray-300 bg-white text-gray-500"}`}>
           {result ? (
             <div className="flex items-center gap-4">
               {result.photo !== undefined && (

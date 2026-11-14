@@ -43,12 +43,31 @@ body {
   }
 }
 
+@keyframes scanline {
+  0% {
+    top: 6%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 6%;
+    opacity: 0.8;
+  }
+}
+
 @utility animate-rise {
   animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @utility animate-pop {
   animation: pop 0.35s ease-out;
+}
+
+@utility animate-scanline {
+  animation: scanline 2.2s ease-in-out infinite;
 }
 
 @utility skeleton {

@@ -151,280 +151,145 @@ export async function handleSuperadminPages(req: IncomingMessage, res: ServerRes
       str.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&#39;", '"': "&quot;" }[c] ?? c));
 
     const code = reg.code ? escapeHtml(reg.code) : null;
-    const userName = escapeHtml(reg.user.name || "Peserta");
-    const userEmail = reg.user.email ? escapeHtml(reg.user.email) : null;
-    const userPhone = reg.user.phone ? escapeHtml(reg.user.phone) : null;
-    const userOrg = reg.user.organization ? escapeHtml(reg.user.organization) : null;
-    const eventName = escapeHtml(reg.event.name || "Event");
-    const eventLocation = reg.event.location ? escapeHtml(reg.event.location) : null;
 
     const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tiket - ${userName}${code ? ` (${code})` : ""}</title>
+  <title>${code ? `${code} - QR` : "QR Barcode"}</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #0b0f19;
-      color: #0f172a;
-      min-height: 100vh;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #0e0e0e;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px;
+      padding: 16px;
     }
     .ticket-card {
       background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.35), 0 8px 10px -6px rgba(0,0,0,0.35);
-      max-width: 400px;
-      width: 100%;
-      overflow: hidden;
-      border: 1px solid #1e293b;
-    }
-    .ticket-header {
-      background: #0f172a;
-      color: #ffffff;
-      padding: 18px 20px;
-      text-align: center;
-      border-bottom: 3px solid #16a34a;
-    }
-    .ticket-header h1 {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      line-height: 1.35;
-      color: #f8fafc;
-    }
-    .ticket-header .badge {
-      display: inline-block;
-      margin-top: 6px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 2px 8px;
+      padding: 26px 26px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6);
       border-radius: 4px;
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.3);
     }
-    .ticket-body {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .qr-frame {
-      background: #ffffff;
-      border: 2px solid #0f172a;
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-      width: 100%;
-      max-width: 300px;
-    }
-    .qr-frame img {
+    .qr-img {
       display: block;
-      width: 100%;
-      height: auto;
-      aspect-ratio: 1 / 1;
+      width: 380px;
+      height: 380px;
+      max-width: 80vw;
+      max-height: 80vw;
     }
     .code-box {
-      margin-top: 10px;
+      margin-top: 16px;
       width: 100%;
+      max-width: 380px;
+      border: 2.5px solid #0f172a;
+      border-radius: 8px;
       background: #f8fafc;
-      border: 2px solid #0f172a;
-      border-radius: 6px;
-      padding: 8px 12px;
+      padding: 10px 16px;
       text-align: center;
-    }
-    .code-label {
-      display: block;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      color: #64748b;
-      text-transform: uppercase;
-      margin-bottom: 2px;
+      box-sizing: border-box;
     }
     .code-text {
-      display: block;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 2px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 3px;
       color: #0f172a;
       line-height: 1.2;
     }
-    .participant-info {
-      margin-top: 16px;
-      width: 100%;
-      border-top: 1px dashed #cbd5e1;
-      padding-top: 14px;
-      text-align: left;
-    }
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 4px 0;
-      font-size: 12px;
-    }
-    .info-label {
-      color: #64748b;
-      font-weight: 500;
-    }
-    .info-value {
-      color: #0f172a;
-      font-weight: 700;
-      text-align: right;
-      max-width: 65%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .ticket-footer {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      padding: 12px 20px;
-      display: flex;
-      gap: 8px;
-    }
-    .btn {
-      flex: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.15s ease;
-      line-height: 1;
-    }
-    .btn-primary {
-      background: #0f172a;
-      color: #ffffff;
-      border-color: #0f172a;
-    }
-    .btn-primary:hover { background: #1e293b; }
-    .btn-secondary {
-      background: #ffffff;
-      color: #0f172a;
-      border-color: #cbd5e1;
-    }
-    .btn-secondary:hover { background: #f1f5f9; }
-    .btn-close {
-      flex: 0 0 auto;
-      background: transparent;
-      color: #64748b;
-      border-color: #cbd5e1;
-    }
-    .btn-close:hover { color: #0f172a; background: #f1f5f9; }
-
     @media print {
-      body {
+      html, body {
         background: #ffffff !important;
         padding: 0 !important;
-        display: block !important;
       }
       .ticket-card {
         box-shadow: none !important;
-        border: 2px solid #000000 !important;
-        max-width: 100% !important;
-        width: 360px !important;
-        margin: 20px auto !important;
-        page-break-inside: avoid;
-      }
-      .ticket-footer {
-        display: none !important;
-      }
-      .ticket-header {
-        background: #ffffff !important;
-        color: #000000 !important;
-        border-bottom: 2px solid #000000 !important;
-      }
-      .ticket-header h1 {
-        color: #000000 !important;
-      }
-      .ticket-header .badge {
-        color: #000000 !important;
-        border: 1px solid #000000 !important;
-        background: #f0f0f0 !important;
-      }
-      .qr-frame {
-        border-color: #000000 !important;
-      }
-      .code-box {
-        border-color: #000000 !important;
+        padding: 0 !important;
       }
     }
   </style>
 </head>
 <body>
-  <div class="ticket-card">
-    <div class="ticket-header">
-      <h1>${eventName}</h1>
-      <span class="badge">Tiket Resmi Peserta</span>
-    </div>
-    <div class="ticket-body">
-      <div class="qr-frame">
-        <img src="${qrDataUrl}" alt="QR Code Tiket" />
-        ${code ? `
-        <div class="code-box">
-          <span class="code-label">Nomor / Kode Peserta</span>
-          <span class="code-text">${code}</span>
-        </div>` : ""}
-      </div>
-      <div class="participant-info">
-        <div class="info-row">
-          <span class="info-label">Nama Peserta</span>
-          <span class="info-value">${userName}</span>
-        </div>
-        ${userEmail ? `
-        <div class="info-row">
-          <span class="info-label">Email</span>
-          <span class="info-value">${userEmail}</span>
-        </div>` : ""}
-        ${userPhone ? `
-        <div class="info-row">
-          <span class="info-label">No. Telepon / WA</span>
-          <span class="info-value">${userPhone}</span>
-        </div>` : ""}
-        ${userOrg ? `
-        <div class="info-row">
-          <span class="info-label">Komunitas / Instansi</span>
-          <span class="info-value">${userOrg}</span>
-        </div>` : ""}
-        ${eventLocation ? `
-        <div class="info-row">
-          <span class="info-label">Lokasi</span>
-          <span class="info-value">${eventLocation}</span>
-        </div>` : ""}
-        <div class="info-row">
-          <span class="info-label">Status</span>
-          <span class="info-value" style="color: #16a34a;">Disetujui / Aktif</span>
-        </div>
-      </div>
-    </div>
-    <div class="ticket-footer">
-      <button type="button" onclick="window.print()" class="btn btn-primary">Cetak Tiket</button>
-      <a href="${qrDataUrl}" download="qr-${code || 'tiket'}.png" class="btn btn-secondary">Unduh QR</a>
-      <button type="button" onclick="window.close()" class="btn btn-close" title="Tutup">Tutup</button>
-    </div>
+  <div class="ticket-card" id="card">
+    <img src="${qrDataUrl}" alt="QR Barcode" class="qr-img" id="qrImg" />
+    ${code ? `
+    <div class="code-box">
+      <div class="code-text">${code}</div>
+    </div>` : ""}
   </div>
+
+  <script>
+    (function() {
+      var code = ${JSON.stringify(code)};
+      if (!code) return;
+      var img = document.getElementById("qrImg");
+      function convertToImage() {
+        try {
+          var scale = 2;
+          var canvas = document.createElement("canvas");
+          var w = 440;
+          var h = 530;
+          canvas.width = w * scale;
+          canvas.height = h * scale;
+          var ctx = canvas.getContext("2d");
+          ctx.scale(scale, scale);
+
+          // Background putih
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, w, h);
+
+          // Gambar QR Barcode
+          ctx.drawImage(img, 40, 28, 360, 360);
+
+          // Box nomor
+          ctx.fillStyle = "#f8fafc";
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          if (typeof ctx.roundRect === "function") {
+            ctx.roundRect(40, 418, 360, 58, 8);
+          } else {
+            ctx.rect(40, 418, 360, 58);
+          }
+          ctx.fill();
+          ctx.stroke();
+
+          // Teks nomor / kode peserta
+          ctx.fillStyle = "#0f172a";
+          ctx.font = "bold 28px ui-monospace, monospace, Consolas, Courier";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(code, 220, 448);
+
+          var out = new Image();
+          out.src = canvas.toDataURL("image/png");
+          out.alt = "QR " + code;
+          out.style.display = "block";
+          out.style.maxWidth = "85vw";
+          out.style.maxHeight = "85vh";
+          out.style.boxShadow = "0 4px 24px rgba(0,0,0,0.6)";
+
+          var card = document.getElementById("card");
+          card.style.background = "transparent";
+          card.style.padding = "0";
+          card.style.boxShadow = "none";
+          card.innerHTML = "";
+          card.appendChild(out);
+        } catch (e) {
+          // fallback DOM tetap aktif jika canvas gagal
+        }
+      }
+      if (img.complete) convertToImage();
+      else img.onload = convertToImage;
+    })();
+  </script>
 </body>
 </html>`;
 

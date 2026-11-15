@@ -6,12 +6,19 @@ export function certificateStatus(input: {
   scans: number;
   needsAttendance: boolean;
   videos?: { total: number; done: number };
+  isCourse?: boolean;
 }): { eligible: boolean; reason: string } {
   if (!input.certificate) return { eligible: false, reason: "Event ini tidak memberikan sertifikat." };
   if (input.status !== "approved") return { eligible: false, reason: "Pendaftaran belum disetujui." };
-  if (input.videos && input.videos.done < input.videos.total) return { eligible: false, reason: `Selesaikan semua video (${input.videos.done}/${input.videos.total}).` };
-  if (input.needsAttendance && input.scans === 0) return { eligible: false, reason: "Belum tercatat hadir di event." };
-  if (input.questions > 0 && !input.passed) return { eligible: false, reason: "Selesaikan dan lulus kuis untuk mendapat sertifikat." };
+  if (input.videos && input.videos.total > 0 && input.videos.done < input.videos.total) {
+    return { eligible: false, reason: `Selesaikan semua materi video (${input.videos.done}/${input.videos.total}).` };
+  }
+  if (!input.isCourse && input.needsAttendance && input.scans === 0) {
+    return { eligible: false, reason: "Belum tercatat hadir di event." };
+  }
+  if (input.questions > 0 && !input.passed) {
+    return { eligible: false, reason: "Selesaikan dan lulus kuis untuk mendapat sertifikat." };
+  }
   return { eligible: true, reason: "Memenuhi syarat sertifikat." };
 }
 

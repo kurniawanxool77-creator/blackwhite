@@ -24,7 +24,16 @@ export function LearningPanel({ registrationId, status, certificateNo, event, le
   const done = new Set(doneLessonIds);
   const videos = { total: lessons.length, done: lessons.filter((l) => done.has(l.id)).length };
   const allVideosDone = videos.done === videos.total;
-  const cert = certificateStatus({ certificate: event.certificate, status, questions: questionCount, passed: Boolean(best?.passed), scans, needsAttendance: event.useQr && hasScanPoints, videos: course ? videos : undefined });
+  const cert = certificateStatus({
+    certificate: event.certificate,
+    status,
+    questions: questionCount,
+    passed: Boolean(best?.passed),
+    scans,
+    needsAttendance: !course && event.useQr && hasScanPoints,
+    videos: course ? videos : undefined,
+    isCourse: course,
+  });
   const pct = videos.total ? Math.round((videos.done / videos.total) * 100) : 0;
 
   return (
@@ -46,7 +55,14 @@ export function LearningPanel({ registrationId, status, certificateNo, event, le
             {course && approved && <p className="mt-2 text-xs text-gray-600">Tonton video berurutan sampai habis. Video berikutnya terbuka setelah video sebelumnya selesai.</p>}
           </div>
           {approved ? (
-            <CourseLessons registrationId={registrationId} sequential={course} lessons={lessons.map((l) => ({ ...l, done: done.has(l.id) }))} />
+            <CourseLessons
+              registrationId={registrationId}
+              sequential={course}
+              lessons={lessons.map((l) => ({ ...l, done: done.has(l.id) }))}
+              questionCount={questionCount}
+              certificateNo={certificateNo}
+              hasPassedQuiz={Boolean(best?.passed)}
+            />
           ) : (
             <p className="px-5 py-4 text-sm text-gray-600">Materi terbuka setelah pendaftaran disetujui.</p>
           )}

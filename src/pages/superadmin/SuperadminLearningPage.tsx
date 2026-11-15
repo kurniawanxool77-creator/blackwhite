@@ -93,8 +93,9 @@ export function SuperadminLearningPage() {
             questions: event.questions.length,
             passed: Boolean(best?.passed),
             scans: r._count.scans,
-            needsAttendance: event.useQr && needScans > 0,
+            needsAttendance: !course && event.useQr && needScans > 0,
             videos: course ? { done: doneVideos, total: event.lessons.length } : undefined,
+            isCourse: course,
           });
           return { r, best, status, doneVideos };
         });

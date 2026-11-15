@@ -193,7 +193,17 @@ export async function handleSuperadminLearningRpc(req: IncomingMessage, res: Ser
     for (const r of event.registrations) {
       const hasPoints = event.checkpoints.some((c) => appliesTo(c, readDetails(r.details)));
       const videos = event.type === "course" ? { total: event.lessons.length, done: event.lessons.filter((l) => r.progress.some((p) => p.lessonId === l.id)).length } : undefined;
-      const s = certificateStatus({ certificate: event.certificate, status: r.status, questions: event._count.questions, passed: r.attempts.length > 0, scans: r._count.scans, needsAttendance: event.useQr && hasPoints, videos });
+      const course = event.type === "course";
+      const s = certificateStatus({
+        certificate: event.certificate,
+        status: r.status,
+        questions: event._count.questions,
+        passed: r.attempts.length > 0,
+        scans: r._count.scans,
+        needsAttendance: !course && event.useQr && hasPoints,
+        videos,
+        isCourse: course,
+      });
       if (!s.eligible) continue;
       await issueCertificate(r.id);
       issued++;

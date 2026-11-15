@@ -51,8 +51,9 @@ export async function learningState(registrationId: string) {
     questions: reg.event._count.questions,
     passed: reg.attempts.length > 0,
     scans: reg._count.scans,
-    needsAttendance: reg.event.useQr && reg.event.checkpoints.length > 0,
+    needsAttendance: !course && reg.event.useQr && reg.event.checkpoints.length > 0,
     videos: course ? videos : undefined,
+    isCourse: course,
   });
   return { reg, course, done, videos, status };
 }

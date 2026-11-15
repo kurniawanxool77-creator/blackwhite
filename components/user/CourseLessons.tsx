@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { markLessonDone } from "@/src/lib/actions/user";
@@ -15,10 +16,16 @@ export function CourseLessons({
   registrationId,
   lessons,
   sequential,
+  questionCount = 0,
+  certificateNo = null,
+  hasPassedQuiz = false,
 }: {
   registrationId: string;
   lessons: Lesson[];
   sequential: boolean;
+  questionCount?: number;
+  certificateNo?: string | null;
+  hasPassedQuiz?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +39,7 @@ export function CourseLessons({
   const activeLesson = lessons[activeIndex] ?? lessons[0];
   const currentVidId = activeLesson ? youtubeId(activeLesson.videoUrl) : null;
   const completedCount = lessons.filter((l) => l.done).length;
+  const allVideosDone = completedCount === lessons.length;
 
   const finish = (lessonId: string) =>
     start(async () => {
@@ -97,8 +105,30 @@ export function CourseLessons({
                 </h3>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                {activeLesson.done ? (
-                  <span className="inline-flex items-center gap-1.5 rounded border border-gray-300 bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-800">
+                {allVideosDone ? (
+                  questionCount > 0 && !hasPassedQuiz ? (
+                    <Link
+                      href={`/tiket/${registrationId}/kuis`}
+                      className="btn btn-primary btn-sm flex items-center gap-1.5 font-semibold"
+                    >
+                      Lanjut ke Kuis / Ujian ({questionCount} Soal) →
+                    </Link>
+                  ) : certificateNo ? (
+                    <a
+                      href={`/sertifikat/${certificateNo}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary btn-sm flex items-center gap-1.5 font-semibold"
+                    >
+                      Lihat Sertifikat 🏆
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                      ✓ Semua Materi Selesai
+                    </span>
+                  )
+                ) : activeLesson.done ? (
+                  <span className="inline-flex items-center gap-1.5 rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
                     ✓ Selesai
                   </span>
                 ) : (
@@ -132,7 +162,7 @@ export function CourseLessons({
                     href={activeLesson.videoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline"
                   >
                     Tonton di YouTube ↗
                   </a>
@@ -147,9 +177,15 @@ export function CourseLessons({
           <div className="card overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
               <h3 className="text-sm font-bold text-gray-900">Daftar Materi Video</h3>
-              <p className="mt-0.5 text-xs text-gray-500">
-                {completedCount} dari {lessons.length} materi selesai
-              </p>
+              {allVideosDone ? (
+                <p className="mt-0.5 text-xs font-semibold text-emerald-700">
+                  ✓ Semua {lessons.length} materi telah selesai
+                </p>
+              ) : (
+                <p className="mt-0.5 text-xs text-gray-500">
+                  {completedCount} dari {lessons.length} materi selesai
+                </p>
+              )}
             </div>
 
             <ol className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
@@ -165,7 +201,7 @@ export function CourseLessons({
                       onClick={() => !isLocked && setActiveIndex(i)}
                       className={`w-full p-3.5 text-left transition flex items-start gap-3 ${
                         isActive
-                          ? "bg-gray-100 border-l-4 border-gray-900 font-medium"
+                          ? "bg-emerald-50/60 border-l-4 border-brand font-medium"
                           : isLocked
                           ? "cursor-not-allowed opacity-60 bg-gray-50/50"
                           : "hover:bg-gray-50 cursor-pointer"
@@ -175,11 +211,11 @@ export function CourseLessons({
                       <span
                         className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                           l.done
-                            ? "bg-gray-900 text-white"
+                            ? "bg-emerald-600 text-white"
                             : isLocked
-                            ? "border border-gray-300 bg-gray-200 text-gray-500"
+                            ? "border border-gray-300 bg-gray-100 text-gray-400"
                             : isActive
-                            ? "bg-gray-900 text-white"
+                            ? "bg-brand text-white"
                             : "border border-gray-300 bg-white text-gray-700"
                         }`}
                       >
@@ -191,13 +227,13 @@ export function CourseLessons({
                         </p>
                         <div className="mt-1 flex items-center gap-1.5">
                           {l.done ? (
-                            <span className="text-[10px] font-medium text-gray-600">Selesai</span>
+                            <span className="text-[10px] font-semibold text-emerald-700">✓ Selesai</span>
                           ) : isLocked ? (
                             <span className="text-[10px] font-medium text-amber-700 flex items-center gap-1">
                               🔒 Terkunci (selesaikan materi {i})
                             </span>
                           ) : isActive ? (
-                            <span className="text-[10px] font-semibold text-gray-900">Sedang dibuka</span>
+                            <span className="text-[10px] font-semibold text-brand">Sedang dibuka</span>
                           ) : (
                             <span className="text-[10px] text-gray-500">Siap ditonton</span>
                           )}

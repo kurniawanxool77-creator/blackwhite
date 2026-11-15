@@ -20,7 +20,7 @@ type Props = {
 
 type StepKey = "data" | "pilihan" | "bayar";
 
-export function RegisterForm({ eventId, phone, organization, price, autoApprove = false, fields, banks, routes }: Props) {
+export function RegisterForm({ eventId, phone: _phone, organization: _organization, price, autoApprove = false, fields, banks, routes }: Props) {
   const [error, action, pending] = useActionState(registerForEvent.bind(null, eventId), null);
   const form = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(0);
@@ -35,10 +35,12 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
   const choiceFields = fields.filter(isChoice);
   const agreeFields = fields.filter((f) => f.type === "checkbox");
   const paid = price > 0 || fields.some((f) => f.type === "package" && f.options.some((o) => parsePackage(o).price > 0));
+  const hasDataStep = dataFields.length > 0;
+  const hasChoiceStep = choiceFields.length > 0;
   const steps: { key: StepKey; title: string }[] = [
-    { key: "data", title: "Data diri" },
-    ...(choiceFields.length ? [{ key: "pilihan" as const, title: "Pilihan & paket" }] : []),
-    { key: "bayar", title: paid ? "Pembayaran" : "Konfirmasi" },
+    ...(hasDataStep ? [{ key: "data" as const, title: "Data diri" }] : []),
+    ...(hasChoiceStep ? [{ key: "pilihan" as const, title: "Pilihan & paket" }] : []),
+    { key: "bayar" as const, title: paid ? "Pembayaran" : "Konfirmasi" },
   ];
   const current = steps[step].key;
   const last = step === steps.length - 1;
@@ -76,8 +78,6 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
   function buildSummary() {
     const fd = new FormData(form.current!);
     const rows: { label: string; value: string }[] = [];
-    const phoneVal = String(fd.get("phone") ?? "").trim();
-    if (phoneVal) rows.push({ label: "Nomor WhatsApp", value: phoneVal });
     for (const f of fields) {
       const v = String(fd.get(`f_${f.id}`) ?? "").trim();
       if (!v || f.type === "checkbox") continue;
@@ -119,32 +119,24 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
       }}
       className="scroll-mt-24 space-y-4"
     >
-      <ol className="flex items-center gap-2 text-xs" aria-label="Langkah pendaftaran">
-        {steps.map((s, i) => (
-          <li key={s.key} className="flex min-w-0 flex-1 items-center gap-1.5" aria-current={i === step ? "step" : undefined}>
-            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${i < step ? "bg-brand text-white" : i === step ? "border-2 border-brand text-brand" : "border border-gray-300 text-gray-400"}`}>
-              {i < step ? "✓" : i + 1}
-            </span>
-            <span className={`truncate ${i === step ? "font-semibold text-gray-900" : "text-gray-500"}`}>{s.title}</span>
-          </li>
-        ))}
-      </ol>
+      {steps.length > 1 && (
+        <ol className="flex items-center gap-2 text-xs" aria-label="Langkah pendaftaran">
+          {steps.map((s, i) => (
+            <li key={s.key} className="flex min-w-0 flex-1 items-center gap-1.5" aria-current={i === step ? "step" : undefined}>
+              <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${i < step ? "bg-brand text-white" : i === step ? "border-2 border-brand text-brand" : "border border-gray-300 text-gray-400"}`}>
+                {i < step ? "✓" : i + 1}
+              </span>
+              <span className={`truncate ${i === step ? "font-semibold text-gray-900" : "text-gray-500"}`}>{s.title}</span>
+            </li>
+          ))}
+        </ol>
+      )}
 
-      <div data-step="data" className={current === "data" ? "space-y-4" : "hidden"}>
-        {fields.length === 0 && (
-          <>
-            <div>
-              <label className="label" htmlFor="phone">Nomor WhatsApp<span className="text-red-600"> *</span></label>
-              <input id="phone" name="phone" className="input" inputMode="tel" autoComplete="tel" placeholder="08xxxxxxxxxx" required pattern="\+?[\d\s\-]{8,20}" title="Angka 8–20 digit, boleh diawali +" defaultValue={phone} />
-            </div>
-            <div>
-              <label className="label" htmlFor="organization">Instansi (opsional)</label>
-              <input id="organization" name="organization" className="input" placeholder="Kosongkan jika perorangan" defaultValue={organization} />
-            </div>
-          </>
-        )}
-        <RegistrationFields fields={dataFields} />
-      </div>
+      {hasDataStep && (
+        <div data-step="data" className={current === "data" ? "space-y-4" : "hidden"}>
+          <RegistrationFields fields={dataFields} />
+        </div>
+      )}
 
       {choiceFields.length > 0 && (
         <div data-step="pilihan" className={current === "pilihan" ? "space-y-4" : "hidden"}>
@@ -153,17 +145,19 @@ export function RegisterForm({ eventId, phone, organization, price, autoApprove 
       )}
 
       <div data-step="bayar" className={current === "bayar" ? "space-y-4" : "hidden"}>
-        <div className="rounded-md border border-gray-200">
-          <p className="border-b border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900">Periksa data Anda</p>
-          <dl className="divide-y divide-gray-100 text-sm">
-            {summary.map((r) => (
-              <div key={r.label} className="flex justify-between gap-3 px-3 py-2">
-                <dt className="text-gray-600">{r.label}</dt>
-                <dd className="text-right font-medium break-words text-gray-900">{r.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
+        {summary.length > 0 && (
+          <div className="rounded-md border border-gray-200">
+            <p className="border-b border-gray-200 px-3 py-2 text-sm font-semibold text-gray-900">Periksa data Anda</p>
+            <dl className="divide-y divide-gray-100 text-sm">
+              {summary.map((r) => (
+                <div key={r.label} className="flex justify-between gap-3 px-3 py-2">
+                  <dt className="text-gray-600">{r.label}</dt>
+                  <dd className="text-right font-medium break-words text-gray-900">{r.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
 
         {total > 0 ? (
           <div className="space-y-3 rounded-md border border-gray-200 bg-gray-50 p-3.5">

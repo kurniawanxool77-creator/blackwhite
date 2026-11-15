@@ -105,7 +105,7 @@ export async function handlePublic(req: IncomingMessage, res: ServerResponse, pa
     }
     const formFields = parseFields(event.formFields);
     const rawPhone = str(formData, "phone");
-    if (formFields.length === 0 && !PHONE_RE.test(rawPhone)) {
+    if (rawPhone && !PHONE_RE.test(rawPhone)) {
       return sendJson(res, { result: "Nomor WhatsApp tidak valid." }), true;
     }
     const routes = await shuttleOptions(eventId, existing?.id);

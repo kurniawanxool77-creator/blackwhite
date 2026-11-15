@@ -1,6 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import QRCode from "qrcode";
-import sharp from "sharp";
 import { requireAdmin } from "../auth";
 import { matchPath, parseUrl, sendBinary, sendJson, sendText } from "../http";
 import { eventsOnDate, getEventAttendanceReport, isDateKey } from "../../lib/attendance";
@@ -137,54 +136,299 @@ export async function handleSuperadminPages(req: IncomingMessage, res: ServerRes
     if (!reg || reg.status !== "approved") return sendText(res, "QR belum terbit", 404), true;
 
     const qrToken = await ensureUserQr(reg.userId);
-    const qrPng = await QRCode.toBuffer(qrToken, { width: 440, margin: 2, errorCorrectionLevel: "M" });
+    const sp = parseUrl(req).searchParams;
 
-    const escapeXml = (str: string) =>
-      str.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c] ?? c));
-
-    const code = reg.code ? escapeXml(reg.code) : null;
-    const userName = escapeXml(reg.user.name || "Peserta");
-    const eventName = escapeXml(reg.event.name || "Event");
-
-    let textSvg: string;
-    let totalHeight: number;
-
-    if (code) {
-      totalHeight = 670;
-      textSvg = `
-        <svg width="520" height="190" xmlns="http://www.w3.org/2000/svg">
-          <rect x="70" y="15" width="380" height="52" rx="8" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/>
-          <text x="260" y="52" text-anchor="middle" font-family="monospace, Courier, sans-serif" font-size="28" font-weight="bold" letter-spacing="3" fill="#0f172a">${code}</text>
-          <text x="260" y="105" text-anchor="middle" font-family="sans-serif, system-ui" font-size="20" font-weight="bold" fill="#0f172a">${userName}</text>
-          <text x="260" y="136" text-anchor="middle" font-family="sans-serif, system-ui" font-size="14" font-weight="500" fill="#64748b">${eventName}</text>
-        </svg>
-      `;
-    } else {
-      totalHeight = 590;
-      textSvg = `
-        <svg width="520" height="110" xmlns="http://www.w3.org/2000/svg">
-          <text x="260" y="45" text-anchor="middle" font-family="sans-serif, system-ui" font-size="22" font-weight="bold" fill="#0f172a">${userName}</text>
-          <text x="260" y="78" text-anchor="middle" font-family="sans-serif, system-ui" font-size="14" font-weight="500" fill="#64748b">${eventName}</text>
-        </svg>
-      `;
+    // Format raw PNG jika diminta (misal ?format=png atau ?raw=1)
+    if (sp.get("format") === "png" || sp.get("raw") === "1") {
+      const qrPng = await QRCode.toBuffer(qrToken, { width: 440, margin: 2, errorCorrectionLevel: "M" });
+      sendBinary(res, new Uint8Array(qrPng), "image/png", { "Cache-Control": "no-store" });
+      return true;
     }
 
-    const png = await sharp({
-      create: {
-        width: 520,
-        height: totalHeight,
-        channels: 4,
-        background: { r: 255, g: 255, b: 255, alpha: 1 },
-      },
-    })
-      .composite([
-        { input: qrPng, top: 20, left: 40 },
-        { input: Buffer.from(textSvg), top: 465, left: 0 },
-      ])
-      .png()
-      .toBuffer();
+    const qrDataUrl = await QRCode.toDataURL(qrToken, { width: 360, margin: 2, errorCorrectionLevel: "M" });
 
-    sendBinary(res, new Uint8Array(png), "image/png", { "Cache-Control": "no-store" });
+    const escapeHtml = (str: string) =>
+      str.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&#39;", '"': "&quot;" }[c] ?? c));
+
+    const code = reg.code ? escapeHtml(reg.code) : null;
+    const userName = escapeHtml(reg.user.name || "Peserta");
+    const userEmail = reg.user.email ? escapeHtml(reg.user.email) : null;
+    const userPhone = reg.user.phone ? escapeHtml(reg.user.phone) : null;
+    const userOrg = reg.user.organization ? escapeHtml(reg.user.organization) : null;
+    const eventName = escapeHtml(reg.event.name || "Event");
+    const eventLocation = reg.event.location ? escapeHtml(reg.event.location) : null;
+
+    const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tiket - ${userName}${code ? ` (${code})` : ""}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0b0f19;
+      color: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .ticket-card {
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.35), 0 8px 10px -6px rgba(0,0,0,0.35);
+      max-width: 400px;
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+    .ticket-header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 18px 20px;
+      text-align: center;
+      border-bottom: 3px solid #16a34a;
+    }
+    .ticket-header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+      color: #f8fafc;
+    }
+    .ticket-header .badge {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .ticket-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .qr-frame {
+      background: #ffffff;
+      border: 2px solid #0f172a;
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      width: 100%;
+      max-width: 300px;
+    }
+    .qr-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+    .code-box {
+      margin-top: 10px;
+      width: 100%;
+      background: #f8fafc;
+      border: 2px solid #0f172a;
+      border-radius: 6px;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .code-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .code-text {
+      display: block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+    .participant-info {
+      margin-top: 16px;
+      width: 100%;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 14px;
+      text-align: left;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+    .info-label {
+      color: #64748b;
+      font-weight: 500;
+    }
+    .info-value {
+      color: #0f172a;
+      font-weight: 700;
+      text-align: right;
+      max-width: 65%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ticket-footer {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 20px;
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      line-height: 1;
+    }
+    .btn-primary {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .btn-primary:hover { background: #1e293b; }
+    .btn-secondary {
+      background: #ffffff;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+    .btn-secondary:hover { background: #f1f5f9; }
+    .btn-close {
+      flex: 0 0 auto;
+      background: transparent;
+      color: #64748b;
+      border-color: #cbd5e1;
+    }
+    .btn-close:hover { color: #0f172a; background: #f1f5f9; }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      .ticket-card {
+        box-shadow: none !important;
+        border: 2px solid #000000 !important;
+        max-width: 100% !important;
+        width: 360px !important;
+        margin: 20px auto !important;
+        page-break-inside: avoid;
+      }
+      .ticket-footer {
+        display: none !important;
+      }
+      .ticket-header {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-bottom: 2px solid #000000 !important;
+      }
+      .ticket-header h1 {
+        color: #000000 !important;
+      }
+      .ticket-header .badge {
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+        background: #f0f0f0 !important;
+      }
+      .qr-frame {
+        border-color: #000000 !important;
+      }
+      .code-box {
+        border-color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ticket-card">
+    <div class="ticket-header">
+      <h1>${eventName}</h1>
+      <span class="badge">Tiket Resmi Peserta</span>
+    </div>
+    <div class="ticket-body">
+      <div class="qr-frame">
+        <img src="${qrDataUrl}" alt="QR Code Tiket" />
+        ${code ? `
+        <div class="code-box">
+          <span class="code-label">Nomor / Kode Peserta</span>
+          <span class="code-text">${code}</span>
+        </div>` : ""}
+      </div>
+      <div class="participant-info">
+        <div class="info-row">
+          <span class="info-label">Nama Peserta</span>
+          <span class="info-value">${userName}</span>
+        </div>
+        ${userEmail ? `
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value">${userEmail}</span>
+        </div>` : ""}
+        ${userPhone ? `
+        <div class="info-row">
+          <span class="info-label">No. Telepon / WA</span>
+          <span class="info-value">${userPhone}</span>
+        </div>` : ""}
+        ${userOrg ? `
+        <div class="info-row">
+          <span class="info-label">Komunitas / Instansi</span>
+          <span class="info-value">${userOrg}</span>
+        </div>` : ""}
+        ${eventLocation ? `
+        <div class="info-row">
+          <span class="info-label">Lokasi</span>
+          <span class="info-value">${eventLocation}</span>
+        </div>` : ""}
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value" style="color: #16a34a;">Disetujui / Aktif</span>
+        </div>
+      </div>
+    </div>
+    <div class="ticket-footer">
+      <button type="button" onclick="window.print()" class="btn btn-primary">Cetak Tiket</button>
+      <a href="${qrDataUrl}" download="qr-${code || 'tiket'}.png" class="btn btn-secondary">Unduh QR</a>
+      <button type="button" onclick="window.close()" class="btn btn-close" title="Tutup">Tutup</button>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    sendText(res, html, 200, "text/html; charset=utf-8", { "Cache-Control": "no-store" });
     return true;
   }
 

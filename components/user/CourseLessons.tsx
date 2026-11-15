@@ -132,14 +132,14 @@ export function CourseLessons({
   if (items.length === 0) return null;
 
   return (
-    <div className="p-4 sm:p-5">
+    <div className="p-3 sm:p-5">
       {error && (
-        <p className="mb-4 rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-700">{error}</p>
+        <p className="mb-3 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">{error}</p>
       )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12">
         {/* Kolom Utama: Konten Aktif (Video Player / Kuis / Sertifikat) */}
-        <div className="space-y-4 lg:col-span-8">
+        <div className="space-y-3 sm:space-y-4 lg:col-span-8">
           {activeItem?.kind === "lesson" && activeItem.lesson && (
             <>
               {/* Box Pemutar Video */}
@@ -152,26 +152,26 @@ export function CourseLessons({
                     onEnded={() => !activeItem.lesson?.done && finishLesson(activeItem.lesson!.id)}
                   />
                 ) : (
-                  <div className="flex aspect-video w-full flex-col items-center justify-center bg-gray-900 text-center text-sm text-gray-400 p-6">
+                  <div className="flex aspect-video w-full flex-col items-center justify-center bg-gray-900 text-center text-xs text-gray-400 p-4 sm:p-6">
                     <p>Tautan video YouTube tidak valid untuk materi ini.</p>
                   </div>
                 )}
               </div>
 
               {/* Kartu Detail Materi */}
-              <div className="card p-4 sm:p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-4">
+              <div className="card p-3.5 sm:p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between border-b border-gray-100 pb-3 sm:pb-4">
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs font-semibold tracking-wider text-brand uppercase">
+                    <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-brand uppercase">
                       Materi {activeItem.number} dari {items.length}
                     </span>
-                    <h3 className="mt-1 text-lg font-bold text-gray-900 sm:text-xl">
+                    <h3 className="mt-0.5 text-sm sm:text-lg font-bold text-gray-900 leading-snug">
                       {activeItem.title}
                     </h3>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {activeItem.done ? (
-                      <span className="inline-flex items-center gap-1.5 rounded border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                      <span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                         ✓ Selesai
                       </span>
                     ) : (
@@ -179,7 +179,7 @@ export function CourseLessons({
                         type="button"
                         disabled={pending}
                         onClick={() => finishLesson(activeItem.lesson!.id)}
-                        className="btn btn-primary btn-sm"
+                        className="btn btn-primary btn-sm text-xs w-full sm:w-auto"
                       >
                         {pending ? "Menyimpan..." : "Tandai Selesai & Lanjut →"}
                       </button>
@@ -187,11 +187,11 @@ export function CourseLessons({
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <h4 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                <div className="mt-3 sm:mt-4">
+                  <h4 className="text-[10px] sm:text-xs font-semibold tracking-wider text-gray-500 uppercase">
                     Deskripsi & Catatan Materi
                   </h4>
-                  <div className="mt-2 text-sm leading-relaxed text-gray-800 whitespace-pre-line">
+                  <div className="mt-1.5 text-xs sm:text-sm leading-relaxed text-gray-700 whitespace-pre-line">
                     {activeItem.lesson.note || <span className="italic text-gray-400">Tidak ada catatan tambahan.</span>}
                   </div>
                 </div>
@@ -225,9 +225,9 @@ export function CourseLessons({
         {/* Kolom Pinggir: Daftar Urutan Kurikulum Pembelajaran */}
         <div className="lg:col-span-4">
           <div className="card overflow-hidden">
-            <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
-              <h3 className="text-sm font-bold text-gray-900">Kurikulum & Alur Belajar</h3>
-              <p className="mt-0.5 text-xs text-gray-500">
+            <div className="border-b border-gray-200 bg-gray-50 px-3.5 sm:px-4 py-2.5 sm:py-3">
+              <h3 className="text-xs sm:text-sm font-bold text-gray-900">Kurikulum & Alur Belajar</h3>
+              <p className="mt-0.5 text-[11px] sm:text-xs text-gray-500">
                 {items.filter((it) => it.done).length} dari {items.length} tahapan selesai
               </p>
             </div>
@@ -242,7 +242,7 @@ export function CourseLessons({
                       type="button"
                       disabled={it.locked}
                       onClick={() => !it.locked && setActiveId(it.id)}
-                      className={`w-full p-3.5 text-left transition flex items-start gap-3 ${
+                      className={`w-full p-2.5 sm:p-3 text-left transition flex items-start gap-2.5 sm:gap-3 ${
                         isActive
                           ? "bg-emerald-50/60 border-l-4 border-brand font-medium"
                           : it.locked
@@ -251,7 +251,7 @@ export function CourseLessons({
                       }`}
                     >
                       <span
-                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                        className={`mt-0.5 flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-full text-[10px] sm:text-xs font-bold ${
                           it.done
                             ? "bg-emerald-600 text-white"
                             : it.locked
@@ -264,20 +264,20 @@ export function CourseLessons({
                         {it.done ? "✓" : it.locked ? "🔒" : it.number}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className={`text-xs font-semibold leading-snug line-clamp-2 ${isActive ? "text-gray-900" : "text-gray-700"}`}>
+                        <p className={`text-[11px] sm:text-xs font-semibold leading-snug line-clamp-2 ${isActive ? "text-gray-900" : "text-gray-700"}`}>
                           {it.number}. {it.title}
                         </p>
-                        <div className="mt-1 flex items-center gap-1.5">
+                        <div className="mt-0.5 flex items-center gap-1.5">
                           {it.done ? (
-                            <span className="text-[10px] font-semibold text-emerald-700">✓ Selesai</span>
+                            <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-700">✓ Selesai</span>
                           ) : it.locked ? (
-                            <span className="text-[10px] font-medium text-amber-700">
+                            <span className="text-[9px] sm:text-[10px] font-medium text-amber-700">
                               🔒 Terkunci (selesaikan tahapan sebelumnya)
                             </span>
                           ) : isActive ? (
-                            <span className="text-[10px] font-semibold text-brand">Sedang dibuka</span>
+                            <span className="text-[9px] sm:text-[10px] font-semibold text-brand">Sedang dibuka</span>
                           ) : (
-                            <span className="text-[10px] text-gray-500">Siap dipelajari</span>
+                            <span className="text-[9px] sm:text-[10px] text-gray-500">Siap dipelajari</span>
                           )}
                         </div>
                       </div>

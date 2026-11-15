@@ -84,24 +84,24 @@ function TicketCard({
             </span>
           </div>
 
-          <div className="my-5 flex flex-col items-center">
-            <div className="rounded-md border border-gray-200 bg-white p-3 shadow-xs">
-              <img src={qr} alt="QR Tiket Presensi" className="h-56 w-56 max-w-full" />
+          <div className="my-4 sm:my-5 flex flex-col items-center">
+            <div className="rounded-md border border-gray-200 bg-white p-2.5 sm:p-3 shadow-xs">
+              <img src={qr} alt="QR Tiket Presensi" className="h-44 w-44 sm:h-56 sm:w-56 max-w-full" />
             </div>
-            <h2 className="mt-4 text-base font-bold text-gray-900">{reg.user.name}</h2>
+            <h2 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold text-gray-900">{reg.user.name}</h2>
             {reg.code && (
-              <p className="mt-1 rounded border border-gray-900 px-3 py-1 font-mono text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
+              <p className="mt-1 rounded border border-gray-900 px-2.5 py-0.5 sm:px-3 sm:py-1 font-mono text-base sm:text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
                 {reg.code}
               </p>
             )}
-            <p className="mt-0.5 text-xs text-gray-500">{reg.user.email}</p>
-            {reg.user.phone && <p className="mt-0.5 text-[11px] text-gray-400">{reg.user.phone}</p>}
+            <p className="mt-0.5 text-[11px] sm:text-xs text-gray-500">{reg.user.email}</p>
+            {reg.user.phone && <p className="mt-0.5 text-[10px] sm:text-[11px] text-gray-400">{reg.user.phone}</p>}
           </div>
 
           {showInstruction && (
-            <div className="rounded border border-green-100 bg-green-50/60 p-3 text-left text-xs text-green-900">
+            <div className="rounded border border-green-100 bg-green-50/60 p-2.5 sm:p-3 text-left text-[11px] sm:text-xs text-green-900">
               <p className="font-semibold">Petunjuk Pemindaian:</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-green-800">
+              <p className="mt-0.5 text-[10px] sm:text-[11px] leading-relaxed text-green-800">
                 Tunjukkan kode QR ini kepada petugas di setiap pos verifikasi. Gunakan tombol <strong>Layar Penuh</strong> agar scanner membaca barcode dengan cepat.
               </p>
             </div>
@@ -160,30 +160,30 @@ export function TicketPage() {
         const nextCp = reg.status === "approved" ? points.find((c) => !scannedAt.has(c.id)) : undefined;
 
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-900">
+              <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-gray-500 hover:text-gray-900">
                 ← Kembali ke Tiket Saya
               </Link>
-              <div className="mt-2 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+              <div className="mt-1.5 flex flex-col justify-between gap-2.5 sm:flex-row sm:items-center">
                 <div>
                   {reg.event.category && (
-                    <span className="text-[11px] font-semibold tracking-wider text-brand uppercase">
+                    <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand uppercase">
                       {reg.event.category}
                     </span>
                   )}
-                  <h1 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">{reg.event.name}</h1>
+                  <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-900">{reg.event.name}</h1>
                 </div>
                 <StatusBadge status={reg.status} label={REG_STATUS[reg.status] ?? reg.status} />
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-gray-600">
                 <div className="flex items-center gap-1.5">
-                  <CalendarIcon className="h-4 w-4 text-gray-400" />
+                  <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                   <span>{fmtDateRange(reg.event.startDate, reg.event.endDate)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <MapPinIcon className="h-4 w-4 text-gray-400" />
+                  <MapPinIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
                   <span>{reg.event.location}</span>
                 </div>
               </div>
@@ -271,25 +271,25 @@ export function TicketPage() {
               </div>
             ) : reg.event.type === "course" ? (
               /* Pelatihan Mandiri Online: Tanpa Rundown, Tampilkan Banner Status Pembelajaran */
-              <div className="card flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-800">
-                    <PlayIcon width={22} height={22} />
+              <div className="card flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-5">
+                <div className="flex items-center gap-2.5 sm:gap-3">
+                  <div className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-800">
+                    <PlayIcon width={18} height={18} />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-gray-900">
+                    <h2 className="text-xs sm:text-sm font-bold text-gray-900">
                       {reg.status === "approved" ? "Pelatihan Mandiri Online" : "Pendaftaran Sedang Ditinjau"}
                     </h2>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-[11px] sm:text-xs text-gray-500">
                       {reg.status === "approved"
-                        ? "Tonton video materi secara berurutan di bawah ini dan ikuti kuis evaluasi untuk menerbitkan sertifikat."
+                        ? "Tonton video materi berurutan di bawah ini dan ikuti kuis evaluasi untuk menerbitkan sertifikat."
                         : "Materi video dan kuis akan terbuka setelah pendaftaran disetujui oleh panitia."}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {reg.code && (
-                    <span className="font-mono text-xs font-bold text-gray-900 border border-gray-300 bg-white px-2.5 py-1 rounded">
+                    <span className="font-mono text-[11px] sm:text-xs font-bold text-gray-900 border border-gray-300 bg-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded">
                       No. Peserta: {reg.code}
                     </span>
                   )}

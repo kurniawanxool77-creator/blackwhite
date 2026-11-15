@@ -6,7 +6,7 @@ import { FormAnswers } from "@/components/ui/FormAnswers";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LearningPanel } from "@/components/user/LearningPanel";
 import { TicketActions } from "@/components/user/TicketActions";
-import { CalendarIcon, ClockIcon, MapPinIcon } from "@/components/ui/icons";
+import { CalendarIcon, ClockIcon, MapPinIcon, PlayIcon } from "@/components/ui/icons";
 import { finalPrice, fmtDateRange, fmtDateTime, fmtRupiah, REG_STATUS } from "@/lib/format";
 import { readDetails } from "@/lib/registration-form";
 import { appliesTo } from "@/lib/rundown";
@@ -32,6 +32,8 @@ type TicketPayload = {
   banks: BankAccount[];
 };
 
+type TicketReg = TicketPayload["reg"];
+
 function CancelTicketButton({ registrationId, eventName }: { registrationId: string; eventName: string }) {
   const [error, action, pending] = useActionState(async (_prev: string | null, _f: FormData) => {
     try {
@@ -53,6 +55,91 @@ function CancelTicketButton({ registrationId, eventName }: { registrationId: str
       </ConfirmSubmit>
       {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
     </form>
+  );
+}
+
+function TicketCard({
+  reg,
+  qr,
+  showInstruction = false,
+  className = "",
+}: {
+  reg: TicketReg;
+  qr: string | null;
+  showInstruction?: boolean;
+  className?: string;
+}) {
+  return (
+    <section className={`card flex flex-col items-center p-6 text-center ${className}`}>
+      {qr ? (
+        <div className="w-full">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3 text-left">
+            <div>
+              <p className="text-xs font-semibold text-gray-900">E-Pass Resmi Peserta</p>
+              <p className="text-[11px] text-gray-500">Tiket Terverifikasi Sistem</p>
+            </div>
+            <span className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+              QR Aktif
+            </span>
+          </div>
+
+          <div className="my-5 flex flex-col items-center">
+            <div className="rounded-md border border-gray-200 bg-white p-3 shadow-xs">
+              <img src={qr} alt="QR Tiket Presensi" className="h-56 w-56 max-w-full" />
+            </div>
+            <h2 className="mt-4 text-base font-bold text-gray-900">{reg.user.name}</h2>
+            {reg.code && (
+              <p className="mt-1 rounded border border-gray-900 px-3 py-1 font-mono text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
+                {reg.code}
+              </p>
+            )}
+            <p className="mt-0.5 text-xs text-gray-500">{reg.user.email}</p>
+            {reg.user.phone && <p className="mt-0.5 text-[11px] text-gray-400">{reg.user.phone}</p>}
+          </div>
+
+          {showInstruction && (
+            <div className="rounded border border-green-100 bg-green-50/60 p-3 text-left text-xs text-green-900">
+              <p className="font-semibold">Petunjuk Pemindaian:</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-green-800">
+                Tunjukkan kode QR ini kepada petugas di setiap pos verifikasi. Gunakan tombol <strong>Layar Penuh</strong> agar scanner membaca barcode dengan cepat.
+              </p>
+            </div>
+          )}
+
+          <TicketActions
+            qrDataUrl={qr}
+            eventName={reg.event.name}
+            eventSlug={reg.event.slug}
+            userName={reg.user.name}
+            location={reg.event.location}
+          />
+        </div>
+      ) : (
+        <div className="flex w-full flex-col items-center justify-center py-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-400">
+            <ClockIcon className="h-6 w-6 text-amber-600" />
+          </div>
+          <h2 className="mt-3 text-sm font-semibold text-gray-900">
+            {reg.status === "rejected" ? "Pendaftaran Ditolak" : reg.status === "approved" ? "Anda terdaftar" : "Menunggu Verifikasi Panitia"}
+          </h2>
+          {reg.code && (
+            <p className="mt-2 rounded border border-gray-900 px-3 py-1 font-mono text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
+              {reg.code}
+            </p>
+          )}
+          <p className="mt-2 max-w-xs text-xs text-gray-600">
+            {reg.status === "rejected"
+              ? `Alasan: ${reg.rejectReason || "Tidak memenuhi persyaratan kegiatan."}`
+              : reg.status === "approved"
+                ? "Event ini tanpa QR. Kehadiran dicatat langsung oleh panitia di lokasi."
+                : reg.event.useQr
+                  ? "QR terbit setelah panitia memverifikasi data dan pembayaran Anda."
+                  : "Menunggu verifikasi data dan pembayaran oleh panitia."}
+          </p>
+          {reg.status === "pending" && <CancelTicketButton registrationId={reg.id} eventName={reg.event.name} />}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -101,94 +188,24 @@ export function TicketPage() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-12">
-              <section className="card flex flex-col items-center p-6 text-center md:col-span-6 lg:col-span-5">
-                {qr ? (
-                  <div className="w-full">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3 text-left">
-                      <div>
-                        <p className="text-xs font-semibold text-gray-900">E-Pass Resmi Peserta</p>
-                        <p className="text-[11px] text-gray-500">Tiket Terverifikasi Sistem</p>
-                      </div>
-                      <span className="rounded bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                        QR Aktif
+            {/* Jika ada pos rundown / checkpoint: tampilkan grid tiket + rundown */}
+            {points.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-12">
+                <TicketCard reg={reg} qr={qr} showInstruction className="md:col-span-6 lg:col-span-5" />
+
+                <section className="card p-6 md:col-span-6 lg:col-span-7">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div>
+                      <h2 className="text-sm font-bold text-gray-900">Rundown & Pos Checkpoint</h2>
+                      <p className="text-[11px] text-gray-500">Progres kehadiran Anda di setiap rangkaian kegiatan</p>
+                    </div>
+                    {totalCp > 0 && (
+                      <span className="rounded bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-800">
+                        {doneCp} / {totalCp} Pos Selesai
                       </span>
-                    </div>
-
-                    <div className="my-5 flex flex-col items-center">
-                      <div className="rounded-md border border-gray-200 bg-white p-3 shadow-xs">
-                        <img src={qr} alt="QR Tiket Presensi" className="h-56 w-56 max-w-full" />
-                      </div>
-                      <h2 className="mt-4 text-base font-bold text-gray-900">{reg.user.name}</h2>
-                      {reg.code && (
-                        <p className="mt-1 rounded border border-gray-900 px-3 py-1 font-mono text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
-                          {reg.code}
-                        </p>
-                      )}
-                      <p className="mt-0.5 text-xs text-gray-500">{reg.user.email}</p>
-                      {reg.user.phone && <p className="mt-0.5 text-[11px] text-gray-400">{reg.user.phone}</p>}
-                    </div>
-
-                    <div className="rounded border border-green-100 bg-green-50/60 p-3 text-left text-xs text-green-900">
-                      <p className="font-semibold">Petunjuk Pemindaian:</p>
-                      <p className="mt-1 text-[11px] leading-relaxed text-green-800">
-                        Tunjukkan kode QR ini kepada petugas di setiap pos verifikasi. Gunakan tombol <strong>Layar Penuh</strong> agar scanner membaca barcode dengan cepat.
-                      </p>
-                    </div>
-
-                    <TicketActions
-                      qrDataUrl={qr}
-                      eventName={reg.event.name}
-                      eventSlug={reg.event.slug}
-                      userName={reg.user.name}
-                      location={reg.event.location}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex w-full flex-col items-center justify-center py-10">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-400">
-                      <ClockIcon className="h-7 w-7 text-amber-600" />
-                    </div>
-                    <h2 className="mt-4 text-sm font-semibold text-gray-900">
-                      {reg.status === "rejected" ? "Pendaftaran Ditolak" : reg.status === "approved" ? "Anda terdaftar" : "Menunggu Verifikasi Panitia"}
-                    </h2>
-                    {reg.code && (
-                      <p className="mt-2 rounded border border-gray-900 px-3 py-1 font-mono text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
-                        {reg.code}
-                      </p>
                     )}
-                    <p className="mt-2 max-w-xs text-xs text-gray-600">
-                      {reg.status === "rejected"
-                        ? `Alasan: ${reg.rejectReason || "Tidak memenuhi persyaratan kegiatan."}`
-                        : reg.status === "approved"
-                          ? "Event ini tanpa QR. Kehadiran dicatat langsung oleh panitia di lokasi."
-                          : reg.event.useQr
-                            ? "QR terbit setelah panitia memverifikasi data dan pembayaran Anda."
-                            : "Menunggu verifikasi data dan pembayaran oleh panitia."}
-                    </p>
-                    {reg.status === "pending" && <CancelTicketButton registrationId={reg.id} eventName={reg.event.name} />}
                   </div>
-                )}
-              </section>
 
-              <section className="card p-6 md:col-span-6 lg:col-span-7">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                  <div>
-                    <h2 className="text-sm font-bold text-gray-900">Rundown & Pos Checkpoint</h2>
-                    <p className="text-[11px] text-gray-500">Progres kehadiran Anda di setiap rangkaian kegiatan</p>
-                  </div>
-                  {totalCp > 0 && (
-                    <span className="rounded bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-800">
-                      {doneCp} / {totalCp} Pos Selesai
-                    </span>
-                  )}
-                </div>
-
-                {points.length === 0 ? (
-                  <p className="mt-6 text-xs text-gray-500">
-                    Penyelenggara belum menetapkan titik checkpoint untuk kegiatan ini.
-                  </p>
-                ) : (
                   <ol className="mt-6 space-y-3.5">
                     {points.map((c, i) => {
                       const at = scannedAt.get(c.id);
@@ -243,15 +260,49 @@ export function TicketPage() {
                       );
                     })}
                   </ol>
-                )}
 
-                {reg.status === "approved" && (
-                  <div className="mt-6 rounded border border-gray-200 bg-gray-50/60 p-3 text-xs text-gray-600">
-                    <span className="font-medium text-gray-900">Sinkronisasi Realtime:</span> Status tiket ini mengikuti pembaruan panitia secara otomatis.
+                  {reg.status === "approved" && (
+                    <div className="mt-6 rounded border border-gray-200 bg-gray-50/60 p-3 text-xs text-gray-600">
+                      <span className="font-medium text-gray-900">Sinkronisasi Realtime:</span> Status tiket ini mengikuti pembaruan panitia secara otomatis.
+                    </div>
+                  )}
+                </section>
+              </div>
+            ) : reg.event.type === "course" ? (
+              /* Pelatihan Mandiri Online: Tanpa Rundown, Tampilkan Banner Status Pembelajaran */
+              <div className="card flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-800">
+                    <PlayIcon width={22} height={22} />
                   </div>
-                )}
-              </section>
-            </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-900">
+                      {reg.status === "approved" ? "Pelatihan Mandiri Online" : "Pendaftaran Sedang Ditinjau"}
+                    </h2>
+                    <p className="text-xs text-gray-600">
+                      {reg.status === "approved"
+                        ? "Tonton video materi secara berurutan di bawah ini dan ikuti kuis evaluasi untuk menerbitkan sertifikat."
+                        : "Materi video dan kuis akan terbuka setelah pendaftaran disetujui oleh panitia."}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {reg.code && (
+                    <span className="font-mono text-xs font-bold text-gray-900 border border-gray-300 bg-white px-2.5 py-1 rounded">
+                      No. Peserta: {reg.code}
+                    </span>
+                  )}
+                  {reg.status === "pending" && (
+                    <CancelTicketButton registrationId={reg.id} eventName={reg.event.name} />
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Event Tatap Muka Tanpa Pos Checkpoint: Hanya Tampilkan Kartu Tiket / Status */
+              <div className="mx-auto max-w-lg w-full">
+                <TicketCard reg={reg} qr={qr} />
+              </div>
+            )}
 
             <div className="print:hidden space-y-6">
               <LearningPanel

@@ -3,21 +3,40 @@ import { AwardIcon, PlayIcon } from "@/components/ui/icons";
 import { certificateStatus } from "@/lib/certificate";
 import { CourseLessons } from "./CourseLessons";
 
+type Question = { id: string; text: string; options: string };
+
 type Props = {
   registrationId: string;
   status: string;
   certificateNo: string | null;
-  event: { type: string; certificate: boolean; passScore: number; useQr: boolean };
+  event: { name: string; type: string; certificate: boolean; passScore: number; useQr: boolean };
   lessons: { id: string; title: string; videoUrl: string; note: string }[];
+  questions?: Question[];
   doneLessonIds: string[];
   questionCount: number;
   best: { score: number; passed: boolean } | null;
   scans: number;
   hasScanPoints: boolean;
+  userName?: string;
 };
 
-// Bagian belajar di halaman tiket: video materi (berurutan untuk pelatihan video), kuis, dan sertifikat.
-export function LearningPanel({ registrationId, status, certificateNo, event, lessons, doneLessonIds, questionCount, best, scans, hasScanPoints }: Props) {
+// Bagian belajar di halaman tiket:
+// Untuk kursus mandiri (course), materi, kuis, dan sertifikat disatukan dalam alur 1 halaman berurutan.
+// Untuk event tatap muka/webinar, kuis dan sertifikat ditampilkan dalam panel terpisah.
+export function LearningPanel({
+  registrationId,
+  status,
+  certificateNo,
+  event,
+  lessons,
+  questions = [],
+  doneLessonIds,
+  questionCount,
+  best,
+  scans,
+  hasScanPoints,
+  userName = "",
+}: Props) {
   if (lessons.length === 0 && questionCount === 0 && !event.certificate) return null;
   const approved = status === "approved";
   const course = event.type === "course";
@@ -43,25 +62,33 @@ export function LearningPanel({ registrationId, status, certificateNo, event, le
           <div className="border-b border-gray-200 px-5 py-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 font-semibold text-gray-900">
-                <PlayIcon width={18} height={18} className="text-brand" /> Materi video
+                <PlayIcon width={18} height={18} className="text-brand" /> {course ? "Kurikulum Pembelajaran" : "Materi Video"}
               </h2>
-              {approved && <span className="text-sm font-medium text-gray-700 tabular-nums">{videos.done}/{videos.total} selesai</span>}
+              {approved && <span className="text-sm font-medium text-gray-700 tabular-nums">{videos.done}/{videos.total} materi selesai</span>}
             </div>
             {approved && (
               <div className="mt-2 h-1.5 overflow-hidden rounded bg-gray-100" role="progressbar" aria-valuemin={0} aria-valuemax={videos.total} aria-valuenow={videos.done} aria-label="Progres video">
                 <div className="h-full bg-brand transition-all" style={{ width: `${pct}%` }} />
               </div>
             )}
-            {course && approved && <p className="mt-2 text-xs text-gray-600">Tonton video berurutan sampai habis. Video berikutnya terbuka setelah video sebelumnya selesai.</p>}
+            {course && approved && (
+              <p className="mt-2 text-xs text-gray-600">
+                Pelajari materi berurutan sampai selesai. Kuis evaluasi dan sertifikat akan terbuka otomatis setelahnya.
+              </p>
+            )}
           </div>
           {approved ? (
             <CourseLessons
               registrationId={registrationId}
               sequential={course}
               lessons={lessons.map((l) => ({ ...l, done: done.has(l.id) }))}
-              questionCount={questionCount}
+              questions={questions}
+              passScore={event.passScore}
+              best={best}
+              certificate={event.certificate}
               certificateNo={certificateNo}
-              hasPassedQuiz={Boolean(best?.passed)}
+              eventName={event.name}
+              userName={userName}
             />
           ) : (
             <p className="px-5 py-4 text-sm text-gray-600">Materi terbuka setelah pendaftaran disetujui.</p>
@@ -69,7 +96,8 @@ export function LearningPanel({ registrationId, status, certificateNo, event, le
         </section>
       )}
 
-      {(questionCount > 0 || event.certificate) && (
+      {/* Bagian Kuis & Sertifikat terpisah HANYA jika event non-course (tatap muka / webinar) */}
+      {!course && (questionCount > 0 || event.certificate) && (
         <section className="card divide-y divide-gray-100">
           {questionCount > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">

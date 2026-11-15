@@ -90,6 +90,7 @@ export async function handleUser(req: IncomingMessage, res: ServerResponse, path
           include: {
             checkpoints: { where: { scan: true }, orderBy: { order: "asc" } },
             lessons: { orderBy: { order: "asc" } },
+            questions: { orderBy: { order: "asc" }, select: { id: true, text: true, options: true } },
             _count: { select: { questions: true } },
           },
         },

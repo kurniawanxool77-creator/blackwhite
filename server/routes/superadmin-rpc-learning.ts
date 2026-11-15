@@ -21,10 +21,13 @@ function readLesson(f: FormData) {
 
 function readQuestion(f: FormData) {
   const text = str(f, "text").slice(0, 500);
-  const options = str(f, "options").split("\n").map((o) => o.trim().slice(0, 200)).filter(Boolean).slice(0, 6);
+  let options = f.getAll("opt").map((o) => String(o).trim().slice(0, 200)).filter(Boolean).slice(0, 6);
+  if (options.length === 0) {
+    options = str(f, "options").split("\n").map((o) => o.trim().slice(0, 200)).filter(Boolean).slice(0, 6);
+  }
   const answer = digits(f, "answer") - 1;
   if (!text) return "Pertanyaan wajib diisi.";
-  if (options.length < 2) return "Isi minimal 2 pilihan jawaban (satu per baris).";
+  if (options.length < 2) return "Isi minimal 2 pilihan jawaban.";
   if (answer < 0 || answer >= options.length) return `Jawaban benar harus nomor 1 sampai ${options.length}.`;
   return { text, options: JSON.stringify(options), answer };
 }

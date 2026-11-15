@@ -23,6 +23,7 @@ type TicketPayload = {
     event: Event & {
       checkpoints: Checkpoint[];
       lessons: Lesson[];
+      questions: { id: string; text: string; options: string }[];
       _count: { questions: number };
     };
     attempts: { score: number; passed: boolean }[];
@@ -311,11 +312,13 @@ export function TicketPage() {
                 certificateNo={reg.certificateNo}
                 event={reg.event}
                 lessons={reg.event.lessons}
+                questions={reg.event.questions}
                 doneLessonIds={reg.progress.map((p) => p.lessonId)}
                 questionCount={reg.event._count.questions}
                 best={reg.attempts[0] ?? null}
                 scans={reg.scans.length}
                 hasScanPoints={points.length > 0}
+                userName={reg.user.name}
               />
 
               <FormAnswers answers={details.answers} />

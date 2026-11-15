@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useDrawer } from "./Drawer";
 
 type Action = (prev: string | null, f: FormData) => Promise<string | null>;
@@ -43,25 +43,133 @@ export function LessonForm({ action, lesson }: { action: Action; lesson?: { titl
   );
 }
 
-// question diisi = mode ubah. options satu per baris; answer = nomor jawaban benar (mulai 1).
+// question diisi = mode ubah. Pilihan jawaban terstruktur per baris dengan radio kunci jawaban.
 export function QuestionForm({ action, question }: { action: Action; question?: { text: string; options: string[]; answer: number } }) {
   const { form, error, run, pending } = useSavingForm(action);
+  const [options, setOptions] = useState<string[]>(
+    question?.options && question.options.length >= 2
+      ? question.options
+      : ["", "", "", ""]
+  );
+  const [answerIdx, setAnswerIdx] = useState<number>(question?.answer ?? 0);
+
+  const updateOpt = (i: number, val: string) => {
+    setOptions((prev) => {
+      const copy = [...prev];
+      copy[i] = val;
+      return copy;
+    });
+  };
+
+  const addOpt = () => {
+    if (options.length < 6) {
+      setOptions((prev) => [...prev, ""]);
+    }
+  };
+
+  const removeOpt = (i: number) => {
+    if (options.length > 2) {
+      setOptions((prev) => prev.filter((_, idx) => idx !== i));
+      if (answerIdx === i) setAnswerIdx(0);
+      else if (answerIdx > i) setAnswerIdx((prev) => prev - 1);
+    }
+  };
+
   return (
-    <form ref={form} action={run} className="mt-4 space-y-3">
+    <form ref={form} action={run} className="mt-4 space-y-4">
       <div>
         <label className="label" htmlFor="q-text">Pertanyaan</label>
-        <textarea id="q-text" name="text" className="input" rows={3} defaultValue={question?.text} required maxLength={500} />
+        <textarea
+          id="q-text"
+          name="text"
+          className="input"
+          rows={3}
+          defaultValue={question?.text}
+          placeholder="Tuliskan pertanyaan soal..."
+          required
+          maxLength={500}
+        />
       </div>
+
       <div>
-        <label className="label" htmlFor="q-options">Pilihan jawaban (satu per baris, 2–6)</label>
-        <textarea id="q-options" name="options" className="input" rows={5} defaultValue={question?.options.join("\n")} placeholder={"Keselamatan dan Kesehatan Kerja\nKebersihan, Keamanan, Ketertiban"} required />
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="label mb-0">Pilihan Jawaban</label>
+          <span className="text-[11px] text-gray-500">Pilih bulatan untuk kunci jawaban benar</span>
+        </div>
+
+        <div className="space-y-2">
+          {options.map((opt, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const isCorrect = answerIdx === i;
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-2 p-1.5 rounded-md border transition ${
+                  isCorrect
+                    ? "border-brand bg-emerald-50/50"
+                    : "border-gray-200 bg-white"
+                }`}
+              >
+                <label
+                  className="flex items-center gap-1.5 pl-1.5 cursor-pointer shrink-0"
+                  title="Tandai sebagai kunci jawaban benar"
+                >
+                  <input
+                    type="radio"
+                    name="answer_radio"
+                    checked={isCorrect}
+                    onChange={() => setAnswerIdx(i)}
+                    className="h-4 w-4 accent-brand cursor-pointer"
+                  />
+                  <span className={`text-xs font-bold w-4 text-center ${isCorrect ? "text-brand" : "text-gray-500"}`}>
+                    {letter}.
+                  </span>
+                </label>
+
+                <input
+                  type="text"
+                  name="opt"
+                  value={opt}
+                  onChange={(e) => updateOpt(i, e.target.value)}
+                  placeholder={`Isi pilihan ${letter}...`}
+                  className="input min-h-8 text-xs sm:min-h-8 sm:py-1 flex-1 border-0 bg-transparent focus:ring-0 focus:border-0 shadow-none px-1"
+                  required
+                />
+
+                {options.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => removeOpt(i)}
+                    className="flex h-7 w-7 items-center justify-center rounded text-gray-400 hover:bg-gray-100 hover:text-red-600 text-xs shrink-0"
+                    title="Hapus pilihan ini"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {options.length < 6 && (
+          <button
+            type="button"
+            onClick={addOpt}
+            className="mt-2 text-xs font-semibold text-brand hover:underline inline-flex items-center gap-1"
+          >
+            + Tambah Pilihan Jawaban
+          </button>
+        )}
+
+        {/* Hidden inputs for form submission compatibility */}
+        <input type="hidden" name="answer" value={answerIdx + 1} />
+        <input type="hidden" name="options" value={options.join("\n")} />
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="text-sm text-gray-700" htmlFor="q-answer">Jawaban benar nomor</label>
-        <input id="q-answer" name="answer" className="input w-20" inputMode="numeric" defaultValue={question ? question.answer + 1 : 1} required />
-      </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      <button className="btn btn-primary w-full" disabled={pending}>{pending ? "Menyimpan..." : question ? "Simpan perubahan" : "Tambah soal"}</button>
+
+      {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-2.5">{error}</p>}
+      <button className="btn btn-primary w-full" disabled={pending}>
+        {pending ? "Menyimpan..." : question ? "Simpan perubahan" : "Tambah soal"}
+      </button>
     </form>
   );
 }

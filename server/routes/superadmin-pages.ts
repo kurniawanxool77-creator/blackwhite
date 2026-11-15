@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import QRCode from "qrcode";
+import sharp from "sharp";
 import { requireAdmin } from "../auth";
 import { matchPath, parseUrl, sendBinary, sendJson, sendText } from "../http";
 import { eventsOnDate, getEventAttendanceReport, isDateKey } from "../../lib/attendance";
@@ -129,9 +130,60 @@ export async function handleSuperadminPages(req: IncomingMessage, res: ServerRes
   if (qrMatch) {
     const admin = await requireAdmin(req, res, "superadmin");
     if (!admin) return true;
-    const reg = await db.registration.findUnique({ where: { id: qrMatch.id } });
-    if (reg?.status !== "approved") return sendText(res, "QR belum terbit", 404), true;
-    const png = await QRCode.toBuffer(await ensureUserQr(reg.userId), { width: 480, margin: 3, errorCorrectionLevel: "M" });
+    const reg = await db.registration.findUnique({
+      where: { id: qrMatch.id },
+      include: { user: true, event: true },
+    });
+    if (!reg || reg.status !== "approved") return sendText(res, "QR belum terbit", 404), true;
+
+    const qrToken = await ensureUserQr(reg.userId);
+    const qrPng = await QRCode.toBuffer(qrToken, { width: 440, margin: 2, errorCorrectionLevel: "M" });
+
+    const escapeXml = (str: string) =>
+      str.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c] ?? c));
+
+    const code = reg.code ? escapeXml(reg.code) : null;
+    const userName = escapeXml(reg.user.name || "Peserta");
+    const eventName = escapeXml(reg.event.name || "Event");
+
+    let textSvg: string;
+    let totalHeight: number;
+
+    if (code) {
+      totalHeight = 670;
+      textSvg = `
+        <svg width="520" height="190" xmlns="http://www.w3.org/2000/svg">
+          <rect x="70" y="15" width="380" height="52" rx="8" fill="#f8fafc" stroke="#0f172a" stroke-width="2.5"/>
+          <text x="260" y="52" text-anchor="middle" font-family="monospace, Courier, sans-serif" font-size="28" font-weight="bold" letter-spacing="3" fill="#0f172a">${code}</text>
+          <text x="260" y="105" text-anchor="middle" font-family="sans-serif, system-ui" font-size="20" font-weight="bold" fill="#0f172a">${userName}</text>
+          <text x="260" y="136" text-anchor="middle" font-family="sans-serif, system-ui" font-size="14" font-weight="500" fill="#64748b">${eventName}</text>
+        </svg>
+      `;
+    } else {
+      totalHeight = 590;
+      textSvg = `
+        <svg width="520" height="110" xmlns="http://www.w3.org/2000/svg">
+          <text x="260" y="45" text-anchor="middle" font-family="sans-serif, system-ui" font-size="22" font-weight="bold" fill="#0f172a">${userName}</text>
+          <text x="260" y="78" text-anchor="middle" font-family="sans-serif, system-ui" font-size="14" font-weight="500" fill="#64748b">${eventName}</text>
+        </svg>
+      `;
+    }
+
+    const png = await sharp({
+      create: {
+        width: 520,
+        height: totalHeight,
+        channels: 4,
+        background: { r: 255, g: 255, b: 255, alpha: 1 },
+      },
+    })
+      .composite([
+        { input: qrPng, top: 20, left: 40 },
+        { input: Buffer.from(textSvg), top: 465, left: 0 },
+      ])
+      .png()
+      .toBuffer();
+
     sendBinary(res, new Uint8Array(png), "image/png", { "Cache-Control": "no-store" });
     return true;
   }

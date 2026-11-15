@@ -89,15 +89,20 @@ function TicketCard({
           </div>
 
           <div className="my-4 sm:my-5 flex flex-col items-center">
-            <div className="rounded-md border border-gray-200 bg-white p-2.5 sm:p-3 shadow-xs">
+            <div className="rounded-md border border-gray-200 bg-white p-2.5 sm:p-3 shadow-xs flex flex-col items-center">
               <img src={qr} alt="QR Tiket Presensi" className="h-44 w-44 sm:h-56 sm:w-56 max-w-full" />
+              {reg.code && (
+                <div className="mt-2.5 w-full border-t border-gray-100 pt-2 text-center">
+                  <span
+                    className="inline-block rounded border border-gray-900 bg-gray-50 px-3 py-1 font-mono text-base sm:text-xl font-bold tracking-widest text-gray-900"
+                    aria-label="Nomor peserta"
+                  >
+                    {reg.code}
+                  </span>
+                </div>
+              )}
             </div>
             <h2 className="mt-3 sm:mt-4 text-sm sm:text-base font-bold text-gray-900">{reg.user.name}</h2>
-            {reg.code && (
-              <p className="mt-1 rounded border border-gray-900 px-2.5 py-0.5 sm:px-3 sm:py-1 font-mono text-base sm:text-lg font-bold tracking-wider text-gray-900" aria-label="Nomor peserta">
-                {reg.code}
-              </p>
-            )}
             <p className="mt-0.5 text-[11px] sm:text-xs text-gray-500">{reg.user.email}</p>
             {reg.user.phone && <p className="mt-0.5 text-[10px] sm:text-[11px] text-gray-400">{reg.user.phone}</p>}
           </div>
@@ -113,6 +118,7 @@ function TicketCard({
 
           <TicketActions
             qrDataUrl={qr}
+            code={reg.code}
             eventName={reg.event.name}
             eventSlug={reg.event.slug}
             userName={reg.user.name}

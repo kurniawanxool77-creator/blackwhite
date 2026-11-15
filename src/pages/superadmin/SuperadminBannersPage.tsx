@@ -79,9 +79,17 @@ export function SuperadminBannersPage() {
                           <form action={async () => { await toggleBanner(b.id); }}>
                             <button className="btn btn-secondary btn-sm">{b.active ? "Sembunyikan" : "Tampilkan"}</button>
                           </form>
-                          <form action={async () => { await deleteBanner(b.id); }}>
-                            <ConfirmSubmit message={`Hapus banner "${b.title}"?`} className="btn btn-danger btn-sm">Hapus</ConfirmSubmit>
-                          </form>
+                          <ConfirmSubmit
+                            message={`Hapus banner "${b.title}"?`}
+                            title="Hapus Banner"
+                            confirmText="Ya, Hapus"
+                            loadingText="Menghapus..."
+                            successMessage={`Banner "${b.title}" berhasil dihapus.`}
+                            onConfirm={() => deleteBanner(b.id)}
+                            className="btn btn-danger btn-sm"
+                          >
+                            Hapus
+                          </ConfirmSubmit>
                         </div>
                       </td>
                     </tr>

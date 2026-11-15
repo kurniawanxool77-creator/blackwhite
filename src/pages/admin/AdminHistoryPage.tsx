@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/admin/PageHeader";
+import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { fmtDateTime } from "@/lib/format";
 import { DataGate } from "@/src/components/RouteState";
 import { undoScan } from "@/src/lib/actions/admin";
@@ -18,11 +19,6 @@ export function AdminHistoryPage() {
   const [searchParams] = useSearchParams();
   const mine = searchParams.get("oleh") === "saya";
   const state = useApiData<{ scans: ScanHistoryRow[] }>(mine ? "/api/admin/riwayat?oleh=saya" : "/api/admin/riwayat");
-
-  async function handleUndo(scanId: string, name: string) {
-    if (!window.confirm(`Batalkan scan untuk ${name}?`)) return;
-    await undoScan(scanId);
-  }
 
   return (
     <DataGate state={state}>
@@ -70,9 +66,17 @@ export function AdminHistoryPage() {
                       <td className="text-xs text-gray-600">{s.admin.name}</td>
                       <td className="text-right">
                         {s.canUndo && (
-                          <button type="button" onClick={() => handleUndo(s.id, s.registration.user.name)} className="btn btn-danger btn-sm text-xs">
+                          <ConfirmSubmit
+                            message={`Batalkan scan untuk ${s.registration.user.name}?`}
+                            title="Batalkan Scan"
+                            confirmText="Ya, Batalkan Scan"
+                            loadingText="Membatalkan..."
+                            successMessage={`Scan untuk ${s.registration.user.name} berhasil dibatalkan.`}
+                            onConfirm={() => undoScan(s.id)}
+                            className="btn btn-danger btn-sm text-xs"
+                          >
                             Batalkan
-                          </button>
+                          </ConfirmSubmit>
                         )}
                       </td>
                     </tr>

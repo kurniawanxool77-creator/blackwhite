@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { EyeIcon, MapPinIcon } from "@/components/ui/icons";
 import { fmtDuration, fmtNum, fmtTime } from "@/lib/format";
@@ -148,18 +149,18 @@ export function AttendanceDayTable({ day, members, location, onOpen, onDelete }:
                         Preview
                       </button>
                       {r && onDelete && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (window.confirm(`Hapus data absensi ${admin.name} pada ${day.label}? Catatan presensi dan foto selfie akan dihapus.`)) {
-                              onDelete(r.id, admin.name);
-                            }
-                          }}
+                        <ConfirmSubmit
+                          message={`Hapus data absensi ${admin.name} pada ${day.label}? Catatan presensi dan foto selfie akan dihapus.`}
+                          title={`Hapus Data Absensi ${admin.name}`}
+                          confirmText="Ya, Hapus"
+                          loadingText="Menghapus..."
+                          successMessage={`Data absensi ${admin.name} berhasil dihapus.`}
+                          onConfirm={() => onDelete(r.id, admin.name)}
                           className="btn btn-danger btn-sm"
-                          title="Hapus data absensi ini"
+                          titleAttr="Hapus data absensi ini"
                         >
                           Hapus
-                        </button>
+                        </ConfirmSubmit>
                       )}
                     </div>
                   </td>

@@ -6,6 +6,7 @@ import { Drawer } from "@/components/admin/Drawer";
 import { NumInput } from "@/components/admin/EventFormParts";
 import { LessonForm, QuestionForm } from "@/components/admin/LearningForms";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
+import { showToast } from "@/components/ui/Toast";
 import { certificateStatus } from "@/lib/certificate";
 import { fmtDate } from "@/lib/format";
 import { parseOptions } from "@/lib/certificate";
@@ -44,9 +45,12 @@ function LearningSettingsCard({ eventId, certificate, passScore }: { eventId: st
   const [state, action, pending] = useActionState(async (_prev: { ok: boolean; msg: string } | null, f: FormData) => {
     try {
       await saveLearningSettings(eventId, f);
+      showToast.success("Pengaturan kelulusan & sertifikat berhasil disimpan.");
       return { ok: true, msg: "Pengaturan tersimpan." };
     } catch (err) {
-      return { ok: false, msg: err instanceof Error ? err.message : "Gagal menyimpan pengaturan." };
+      const msg = err instanceof Error ? err.message : "Gagal menyimpan pengaturan.";
+      showToast.error(msg);
+      return { ok: false, msg };
     }
   }, null);
 
@@ -62,7 +66,13 @@ function LearningSettingsCard({ eventId, certificate, passScore }: { eventId: st
           <label className="label text-xs" htmlFor="passScore">Nilai lulus (%)</label>
           <NumInput id="passScore" max={100} defaultValue={String(passScore)} className="input w-24" />
         </div>
-        <button className="btn btn-primary btn-sm" disabled={pending}>
+        <button className="btn btn-primary btn-sm inline-flex items-center gap-1.5" disabled={pending}>
+          {pending && (
+            <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          )}
           {pending ? "Menyimpan..." : "Simpan pengaturan"}
         </button>
       </form>
@@ -76,6 +86,33 @@ function LearningSettingsCard({ eventId, certificate, passScore }: { eventId: st
 export function SuperadminLearningPage() {
   const { id } = useParams();
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [issuingId, setIssuingId] = useState<string | null>(null);
+  const [issuingAll, setIssuingAll] = useState(false);
+
+  async function handleIssueOne(regId: string, name: string) {
+    setIssuingId(regId);
+    try {
+      await issueOne(regId);
+      showToast.success(`Sertifikat ${name} berhasil diterbitkan.`);
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : "Gagal menerbitkan sertifikat.");
+    } finally {
+      setIssuingId(null);
+    }
+  }
+
+  async function handleIssueAll(eventId: string) {
+    setIssuingAll(true);
+    try {
+      await issueAllEligible(eventId);
+      showToast.success("Semua sertifikat yang memenuhi syarat berhasil diterbitkan.");
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : "Gagal menerbitkan sertifikat.");
+    } finally {
+      setIssuingAll(false);
+    }
+  }
+
   const state = useApiData<{ event: LearningEvent }>(id ? `/api/superadmin/events/${encodeURIComponent(id)}/learning` : null);
 
   return (
@@ -133,7 +170,17 @@ export function SuperadminLearningPage() {
                         </Drawer>
                         <button type="button" onClick={() => moveLesson(l.id, "up")} className="btn btn-secondary btn-sm" disabled={i === 0} aria-label="Naikkan">↑</button>
                         <button type="button" onClick={() => moveLesson(l.id, "down")} className="btn btn-secondary btn-sm" disabled={i === event.lessons.length - 1} aria-label="Turunkan">↓</button>
-                        <button type="button" onClick={() => deleteLesson(l.id)} className="btn btn-danger btn-sm">Hapus</button>
+                        <ConfirmSubmit
+                          message={`Hapus materi video "${l.title}"?`}
+                          title="Hapus Materi Video"
+                          confirmText="Ya, Hapus"
+                          loadingText="Menghapus..."
+                          successMessage={`Materi "${l.title}" berhasil dihapus.`}
+                          onConfirm={() => deleteLesson(l.id)}
+                          className="btn btn-danger btn-sm"
+                        >
+                          Hapus
+                        </ConfirmSubmit>
                       </div>
                     </li>
                   ))}
@@ -162,7 +209,17 @@ export function SuperadminLearningPage() {
                           </Drawer>
                           <button type="button" onClick={() => moveQuestion(q.id, "up")} className="btn btn-secondary btn-sm" disabled={i === 0} aria-label="Naikkan">↑</button>
                           <button type="button" onClick={() => moveQuestion(q.id, "down")} className="btn btn-secondary btn-sm" disabled={i === event.questions.length - 1} aria-label="Turunkan">↓</button>
-                          <button type="button" onClick={() => deleteQuestion(q.id)} className="btn btn-danger btn-sm">Hapus</button>
+                          <ConfirmSubmit
+                            message={`Hapus soal nomor ${i + 1}: "${q.text}"?`}
+                            title="Hapus Soal Kuis"
+                            confirmText="Ya, Hapus"
+                            loadingText="Menghapus..."
+                            successMessage="Soal kuis berhasil dihapus."
+                            onConfirm={() => deleteQuestion(q.id)}
+                            className="btn btn-danger btn-sm"
+                          >
+                            Hapus
+                          </ConfirmSubmit>
                         </div>
                       </div>
                       <ol className="mt-1.5 space-y-0.5 pl-4 text-xs">
@@ -192,8 +249,19 @@ export function SuperadminLearningPage() {
                   </button>
                 </div>
                 {event.certificate && eligibleWaiting > 0 && (
-                  <button type="button" onClick={() => issueAllEligible(event.id)} className="btn btn-primary btn-sm">
-                    Terbitkan untuk {eligibleWaiting} peserta yang memenuhi syarat
+                  <button
+                    type="button"
+                    disabled={issuingAll}
+                    onClick={() => handleIssueAll(event.id)}
+                    className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+                  >
+                    {issuingAll && (
+                      <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                    )}
+                    {issuingAll ? "Menerbitkan..." : `Terbitkan untuk ${eligibleWaiting} peserta yang memenuhi syarat`}
                   </button>
                 )}
               </div>
@@ -249,17 +317,32 @@ export function SuperadminLearningPage() {
                         </td>
                         <td className="text-right whitespace-nowrap">
                           {r.certificateNo ? (
-                            <form action={async () => { await revokeCertificate(r.id); }}>
-                              <ConfirmSubmit message={`Cabut sertifikat ${r.user.name}?`} className="btn btn-danger btn-sm">Cabut</ConfirmSubmit>
-                            </form>
+                            <ConfirmSubmit
+                              message={`Cabut sertifikat ${r.user.name}?`}
+                              title="Cabut Sertifikat"
+                              confirmText="Ya, Cabut"
+                              loadingText="Mencabut..."
+                              successMessage={`Sertifikat ${r.user.name} berhasil dicabut.`}
+                              onConfirm={() => revokeCertificate(r.id)}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Cabut
+                            </ConfirmSubmit>
                           ) : event.certificate ? (
                             <button
                               type="button"
-                              onClick={() => issueOne(r.id)}
-                              className="btn btn-secondary btn-sm"
+                              disabled={issuingId === r.id}
+                              onClick={() => handleIssueOne(r.id, r.user.name)}
+                              className="btn btn-secondary btn-sm inline-flex items-center gap-1.5"
                               title={status.eligible ? "" : `Belum memenuhi syarat: ${status.reason}`}
                             >
-                              Terbitkan
+                              {issuingId === r.id && (
+                                <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                </svg>
+                              )}
+                              {issuingId === r.id ? "Menerbitkan..." : "Terbitkan"}
                             </button>
                           ) : null}
                         </td>

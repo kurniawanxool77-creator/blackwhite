@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { showToast } from "@/components/ui/Toast";
 import { FIELD_PRESETS } from "@/lib/event-types";
 import { fmtNum } from "@/lib/format";
 import { FIELD_GROUPS, type FieldGroup, type FormField } from "@/lib/registration-form";
@@ -11,7 +12,15 @@ type Action = (prev: string | null, formData: FormData) => Promise<string | null
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 export function FormBuilder({ action, defaultValue }: { action: Action; defaultValue: FormField[] }) {
-  const [message, formAction, pending] = useActionState(action, null);
+  const [message, formAction, pending] = useActionState(async (prev: string | null, formData: FormData) => {
+    const res = await action(prev, formData);
+    if (!res) {
+      showToast.success("Formulir pendaftaran berhasil disimpan.");
+    } else {
+      showToast.error(res);
+    }
+    return res;
+  }, null);
   const [fields, setFields] = useState(defaultValue);
   const [groupFilter, setGroupFilter] = useState<"all" | FieldGroup>("all");
   const [showPresets, setShowPresets] = useState(defaultValue.length === 0);
@@ -125,7 +134,13 @@ export function FormBuilder({ action, defaultValue }: { action: Action; defaultV
           <button type="button" className="btn btn-secondary btn-sm" onClick={add}>
             + Tambah isian
           </button>
-          <button className="btn btn-primary btn-sm" disabled={pending}>
+          <button className="btn btn-primary btn-sm inline-flex items-center gap-1.5" disabled={pending}>
+            {pending && (
+              <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            )}
             {pending ? "Menyimpan..." : "Simpan formulir"}
           </button>
         </div>
@@ -215,7 +230,15 @@ export function FormBuilder({ action, defaultValue }: { action: Action; defaultV
       {visible.length > 4 && (
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
           <button type="button" className="btn btn-secondary" onClick={add}>+ Tambah isian</button>
-          <button className="btn btn-primary" disabled={pending}>{pending ? "Menyimpan..." : "Simpan formulir"}</button>
+          <button className="btn btn-primary inline-flex items-center gap-1.5" disabled={pending}>
+            {pending && (
+              <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+            )}
+            {pending ? "Menyimpan..." : "Simpan formulir"}
+          </button>
         </div>
       )}
 

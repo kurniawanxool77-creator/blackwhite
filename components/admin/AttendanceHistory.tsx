@@ -1,3 +1,4 @@
+import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { dayStart } from "@/lib/schedule";
 import { fmtDuration, fmtTime } from "@/lib/format";
 
@@ -55,17 +56,17 @@ export function AttendanceHistory({
               <p className="text-xs text-gray-500">{r.checkOut ? fmtDuration(+r.checkOut - +r.checkIn) : "Belum selesai"}</p>
             </div>
             {onDelete && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm(`Hapus data absensi ${r.event.name} pada ${dayLabel(r.date)}?`)) {
-                    onDelete(r.id, `${r.event.name} (${dayLabel(r.date)})`);
-                  }
-                }}
+              <ConfirmSubmit
+                message={`Hapus data absensi ${r.event.name} pada ${dayLabel(r.date)}?`}
+                title="Hapus Data Absensi"
+                confirmText="Ya, Hapus"
+                loadingText="Menghapus..."
+                successMessage={`Data absensi ${r.event.name} berhasil dihapus.`}
+                onConfirm={() => onDelete(r.id, `${r.event.name} (${dayLabel(r.date)})`)}
                 className="btn btn-danger btn-sm"
               >
                 Hapus
-              </button>
+              </ConfirmSubmit>
             )}
           </div>
         </li>
@@ -114,17 +115,17 @@ export function AttendanceHistory({
               <td className="text-right whitespace-nowrap">{r.checkOut ? fmtDuration(+r.checkOut - +r.checkIn) : "-"}</td>
               {onDelete && (
                 <td className="text-right whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm(`Hapus data absensi ${r.event.name} pada ${dayLabel(r.date)}?`)) {
-                        onDelete(r.id, `${r.event.name} (${dayLabel(r.date)})`);
-                      }
-                    }}
+                  <ConfirmSubmit
+                    message={`Hapus data absensi ${r.event.name} pada ${dayLabel(r.date)}?`}
+                    title="Hapus Data Absensi"
+                    confirmText="Ya, Hapus"
+                    loadingText="Menghapus..."
+                    successMessage={`Data absensi ${r.event.name} berhasil dihapus.`}
+                    onConfirm={() => onDelete(r.id, `${r.event.name} (${dayLabel(r.date)})`)}
                     className="btn btn-danger btn-sm"
                   >
                     Hapus
-                  </button>
+                  </ConfirmSubmit>
                 </td>
               )}
             </tr>

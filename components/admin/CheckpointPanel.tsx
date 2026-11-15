@@ -1,4 +1,5 @@
 import type { Checkpoint } from "@prisma/client";
+import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { addCheckpoint, deleteCheckpoint, moveCheckpoint, setCheckpointAudience, sortRundown, toggleCheckpointScan, updateCheckpoint } from "@/src/lib/actions/events";
 import { dayKey, fmtWhen } from "@/lib/schedule";
 import { Drawer } from "./Drawer";
@@ -182,7 +183,17 @@ export function CheckpointPanel({ eventId, eligible, checkpoints, fields, defaul
                       <button formAction={moveCheckpoint.bind(null, c.id, "up")} className="btn btn-secondary btn-sm" disabled={i === 0} aria-label="Naikkan">↑</button>
                       <button formAction={moveCheckpoint.bind(null, c.id, "down")} className="btn btn-secondary btn-sm" disabled={i === checkpoints.length - 1} aria-label="Turunkan">↓</button>
                       {c._count.scans === 0 && (
-                        <button formAction={deleteCheckpoint.bind(null, c.id)} className="btn btn-danger btn-sm">Hapus</button>
+                        <ConfirmSubmit
+                          message={`Hapus item rundown "${c.name}"?`}
+                          title="Hapus Item Rundown"
+                          confirmText="Ya, Hapus"
+                          loadingText="Menghapus..."
+                          successMessage={`Item "${c.name}" berhasil dihapus.`}
+                          onConfirm={() => deleteCheckpoint(c.id)}
+                          className="btn btn-danger btn-sm"
+                        >
+                          Hapus
+                        </ConfirmSubmit>
                       )}
                     </form>
                     </div>

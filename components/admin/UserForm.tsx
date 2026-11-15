@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { showToast } from "@/components/ui/Toast";
 import { GoogleIcon } from "@/components/ui/icons";
 import { useDrawer } from "./Drawer";
 
@@ -28,10 +29,13 @@ export function UserForm({ user, action }: Props) {
   const [state, formAction, pending] = useActionState(async (_prev: unknown, f: FormData) => {
     try {
       await action(null, f);
+      showToast.success(isEdit ? "Data akun berhasil diperbarui." : "User baru berhasil ditambahkan.");
       drawer?.close();
       return null;
     } catch (err) {
-      return err instanceof Error ? err.message : "Terjadi kesalahan.";
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan.";
+      showToast.error(msg);
+      return msg;
     }
   }, null);
 
@@ -180,7 +184,13 @@ export function UserForm({ user, action }: Props) {
       </div>
 
       <div className="pt-2">
-        <button type="submit" disabled={pending} className="btn btn-primary w-full">
+        <button type="submit" disabled={pending} className="btn btn-primary w-full inline-flex items-center justify-center gap-1.5">
+          {pending && (
+            <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          )}
           {pending ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah User"}
         </button>
       </div>

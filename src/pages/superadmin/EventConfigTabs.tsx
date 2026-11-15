@@ -248,11 +248,17 @@ export function EventConfigTabs({
               Menghapus event akan menghapus seluruh data pendaftaran, riwayat scan, dan sertifikat terkait secara permanen.
             </p>
             <div className="mt-3">
-              <form action={async () => { await deleteEvent(event.id); }}>
-                <ConfirmSubmit message={`Hapus event "${event.name}"? Tindakan ini tidak dapat dibatalkan.`} className="btn btn-danger btn-sm">
-                  Hapus Event Ini
-                </ConfirmSubmit>
-              </form>
+              <ConfirmSubmit
+                message={`Hapus event "${event.name}"? Tindakan ini tidak dapat dibatalkan.`}
+                title={`Hapus Event "${event.name}"`}
+                confirmText="Ya, Hapus Event"
+                loadingText="Menghapus..."
+                successMessage={`Event "${event.name}" berhasil dihapus.`}
+                onConfirm={() => deleteEvent(event.id)}
+                className="btn btn-danger btn-sm"
+              >
+                Hapus Event Ini
+              </ConfirmSubmit>
             </div>
           </div>
         </div>

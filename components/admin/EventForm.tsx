@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { showToast } from "@/components/ui/Toast";
 import { ACTIVITIES, EVENT_TYPES, isEventType, SHUTTLE_FIELD_ID, type ActivityKey, type EventType } from "@/lib/event-types";
 import { finalPrice, fmtRp } from "@/lib/format";
 import { CategoryPicker } from "./CategoryPicker";
@@ -38,7 +39,12 @@ export function EventForm({ action, categories, event }: { action: Action; categ
   const drawer = useDrawer();
   const [message, formAction, pending] = useActionState(async (prev: string | null, f: FormData) => {
     const result = await action(prev, f);
-    if (result === "Tersimpan.") drawer?.close(); // berhasil diubah: tutup panel
+    if (result === "Tersimpan.") {
+      showToast.success(event ? "Perubahan event berhasil disimpan." : "Event baru berhasil dibuat.");
+      drawer?.close(); // berhasil diubah: tutup panel
+    } else if (result && result !== "Tersimpan.") {
+      showToast.error(result);
+    }
     return result;
   }, null);
   const creating = !event;
@@ -233,7 +239,13 @@ export function EventForm({ action, categories, event }: { action: Action; categ
       )}
 
       {message && <p className={`text-sm ${message === "Tersimpan." ? "text-green-700" : "text-red-700"}`}>{message}</p>}
-      <button className="btn btn-primary w-full" disabled={pending}>
+      <button className="btn btn-primary w-full inline-flex items-center justify-center gap-1.5" disabled={pending}>
+        {pending && (
+          <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+        )}
         {pending ? "Menyimpan..." : event ? "Simpan perubahan" : "Buat event"}
       </button>
     </form>

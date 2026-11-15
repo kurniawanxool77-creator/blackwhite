@@ -50,9 +50,13 @@ function CancelTicketButton({ registrationId, eventName }: { registrationId: str
       <ConfirmSubmit
         disabled={pending}
         message={`Apakah Anda yakin ingin membatalkan pendaftaran di ${eventName}?`}
+        title="Batalkan Pendaftaran"
+        confirmText="Ya, Batalkan"
+        loadingText="Membatalkan..."
+        successMessage="Pendaftaran Anda berhasil dibatalkan."
         className="btn btn-danger btn-sm text-xs"
       >
-        {pending ? "Membatalkan..." : "Batalkan Pendaftaran"}
+        Batalkan Pendaftaran
       </ConfirmSubmit>
       {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
     </form>

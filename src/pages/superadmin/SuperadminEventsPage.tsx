@@ -117,11 +117,17 @@ export function SuperadminEventsPage() {
                               <Link to={`/superadmin/events/${e.id}`} className="btn btn-primary btn-sm">
                                 Kelola
                               </Link>
-                              <form action={async () => { await deleteEvent(e.id); }}>
-                                <ConfirmSubmit message={deleteMessage(e.name, totalReg)} className="btn btn-danger btn-sm">
-                                  Hapus
-                                </ConfirmSubmit>
-                              </form>
+                              <ConfirmSubmit
+                                message={deleteMessage(e.name, totalReg)}
+                                title={`Hapus Event "${e.name}"`}
+                                confirmText="Ya, Hapus Event"
+                                loadingText="Menghapus..."
+                                successMessage={`Event "${e.name}" berhasil dihapus.`}
+                                onConfirm={() => deleteEvent(e.id)}
+                                className="btn btn-danger btn-sm"
+                              >
+                                Hapus
+                              </ConfirmSubmit>
                             </div>
                           </td>
                         </tr>

@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { LiveSync } from "@/components/ui/LiveSync";
+import { ToastContainer } from "@/components/ui/Toast";
 import { ErrorBoundary, NotFoundCard, PageLoader } from "@/src/components/RouteState";
 import { LandingLayout } from "@/src/layouts/LandingLayout";
 import { PanelLayout } from "@/src/layouts/PanelLayout";
@@ -69,6 +70,7 @@ export function App() {
     <BrowserRouter>
       <AuthProvider>
         <LiveSync />
+        <ToastContainer />
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>

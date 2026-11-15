@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useNavigate } from "react-router-dom";
 import { approveRegistrations, deleteRegistration, rejectRegistration } from "@/src/lib/actions/events";
 import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
+import { showToast } from "@/components/ui/Toast";
 import { DownloadIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -48,6 +49,34 @@ export function RegistrationTable({
   const navigate = useNavigate();
   const [search, setSearch] = useState(q ?? "");
   const [prevQ, setPrevQ] = useState(q ?? "");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+
+  async function handleApprove(regId: string, name: string) {
+    setApprovingId(regId);
+    try {
+      await approveRegistrations(eventId, [regId]);
+      showToast.success(`Pendaftaran ${name} berhasil disetujui.`);
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : "Gagal menyetujui pendaftaran.");
+    } finally {
+      setApprovingId(null);
+    }
+  }
+
+  async function handleReject(e: React.FormEvent<HTMLFormElement>, regId: string, name: string) {
+    e.preventDefault();
+    setRejectingId(regId);
+    try {
+      const f = new FormData(e.currentTarget);
+      await rejectRegistration(regId, f);
+      showToast.success(`Pendaftaran ${name} ditolak.`);
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : "Gagal menolak pendaftaran.");
+    } finally {
+      setRejectingId(null);
+    }
+  }
   if (prevQ !== (q ?? "")) {
     setPrevQ(q ?? "");
     setSearch(q ?? "");
@@ -303,24 +332,50 @@ export function RegistrationTable({
                           </a>
                         )}
                         {r.status !== "approved" && (
-                          <form action={approveRegistrations.bind(null, eventId, [r.id])}>
-                            <button className="btn btn-primary btn-sm">Setujui</button>
-                          </form>
+                          <button
+                            type="button"
+                            disabled={approvingId === r.id}
+                            onClick={() => handleApprove(r.id, r.user.name)}
+                            className="btn btn-primary btn-sm inline-flex items-center gap-1.5"
+                          >
+                            {approvingId === r.id && (
+                              <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                            )}
+                            {approvingId === r.id ? "Menyetujui..." : "Setujui"}
+                          </button>
                         )}
                         {r.status !== "rejected" && (
-                          <form action={rejectRegistration.bind(null, r.id)} className="flex gap-1">
+                          <form onSubmit={(e) => handleReject(e, r.id, r.user.name)} className="flex gap-1">
                             <input name="reason" placeholder="Alasan" className="input w-28 py-1 text-xs" />
-                            <button className="btn btn-danger btn-sm">Tolak</button>
+                            <button
+                              type="submit"
+                              disabled={rejectingId === r.id}
+                              className="btn btn-danger btn-sm inline-flex items-center gap-1.5"
+                            >
+                              {rejectingId === r.id && (
+                                <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                </svg>
+                              )}
+                              {rejectingId === r.id ? "Menolak..." : "Tolak"}
+                            </button>
                           </form>
                         )}
-                        <form action={deleteRegistration.bind(null, r.id)}>
-                          <ConfirmSubmit
-                            message={`Hapus pendaftaran ${r.user.name}? Riwayat scan, nilai kuis, dan sertifikatnya ikut terhapus.`}
-                            className="btn btn-secondary btn-sm text-red-700 hover:bg-red-50"
-                          >
-                            Hapus
-                          </ConfirmSubmit>
-                        </form>
+                        <ConfirmSubmit
+                          message={`Hapus pendaftaran ${r.user.name}? Riwayat scan, nilai kuis, dan sertifikatnya ikut terhapus.`}
+                          title={`Hapus Pendaftaran ${r.user.name}`}
+                          confirmText="Ya, Hapus"
+                          loadingText="Menghapus..."
+                          successMessage={`Pendaftaran ${r.user.name} berhasil dihapus.`}
+                          onConfirm={() => deleteRegistration(r.id)}
+                          className="btn btn-secondary btn-sm text-red-700 hover:bg-red-50"
+                        >
+                          Hapus
+                        </ConfirmSubmit>
                       </div>
                     </td>
                   )}

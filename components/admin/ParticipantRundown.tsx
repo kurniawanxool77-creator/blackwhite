@@ -62,14 +62,31 @@ export function ParticipantRundown({ reg, details, admin, locked }: Props) {
                 </p>
               </div>
               {scan && !locked && canUndoScan(admin, scan) && (
-                <form action={undoScan.bind(null, scan.id)}>
-                  <ConfirmSubmit message={`Batalkan check-in ${reg.user.name} di "${c.name}"?`} className="btn btn-danger btn-sm">Batalkan</ConfirmSubmit>
-                </form>
+                <ConfirmSubmit
+                  message={`Batalkan check-in ${reg.user.name} di "${c.name}"?`}
+                  title="Batalkan Check-in"
+                  confirmText="Ya, Batalkan"
+                  loadingText="Membatalkan..."
+                  successMessage={`Check-in ${reg.user.name} berhasil dibatalkan.`}
+                  onConfirm={() => undoScan(scan.id)}
+                  className="btn btn-danger btn-sm"
+                >
+                  Batalkan
+                </ConfirmSubmit>
               )}
               {c.scan && !scan && approved && !locked && (
-                <form action={manualCheckin.bind(null, reg.id, c.id)}>
-                  <ConfirmSubmit message={`Tandai ${reg.user.name} hadir di "${c.name}"?`} className="btn btn-secondary btn-sm">Tandai hadir</ConfirmSubmit>
-                </form>
+                <ConfirmSubmit
+                  message={`Tandai ${reg.user.name} hadir di "${c.name}"?`}
+                  title="Tandai Kehadiran"
+                  confirmText="Ya, Tandai Hadir"
+                  loadingText="Menyimpan..."
+                  successMessage={`Kehadiran ${reg.user.name} berhasil dicatat.`}
+                  variant="primary"
+                  onConfirm={() => manualCheckin(reg.id, c.id)}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Tandai hadir
+                </ConfirmSubmit>
               )}
             </li>
           );

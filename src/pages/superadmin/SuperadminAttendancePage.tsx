@@ -1,6 +1,7 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AttendanceEventView } from "@/components/admin/AttendanceEventView";
 import { SelfieThumb } from "@/components/admin/AttendanceHistory";
+import { ConfirmSubmit } from "@/components/ui/ConfirmSubmit";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import type { EventAttendanceReport } from "@/lib/attendance";
 import { fmtDuration, fmtNum, fmtTime } from "@/lib/format";
@@ -172,19 +173,20 @@ export function SuperadminAttendancePage() {
                                   <td className={`font-medium ${st.cls}`}>{st.label}</td>
                                   <td className="text-right whitespace-nowrap">
                                     {r ? (
-                                      <button
-                                        type="button"
-                                        onClick={async () => {
-                                          if (window.confirm(`Hapus data absensi ${m.name} pada ${date}? Data kehadiran dan foto selfie akan dihapus.`)) {
-                                            await deleteAttendance(r.id);
-                                            window.location.reload();
-                                          }
+                                      <ConfirmSubmit
+                                        message={`Hapus data absensi ${m.name} pada ${date}? Data kehadiran dan foto selfie akan dihapus.`}
+                                        title={`Hapus Data Absensi ${m.name}`}
+                                        confirmText="Ya, Hapus"
+                                        loadingText="Menghapus..."
+                                        successMessage={`Data absensi ${m.name} berhasil dihapus.`}
+                                        onConfirm={async () => {
+                                          await deleteAttendance(r.id);
                                         }}
                                         className="btn btn-danger btn-sm"
-                                        title="Hapus data absensi ini"
+                                        titleAttr="Hapus data absensi ini"
                                       >
                                         Hapus
-                                      </button>
+                                      </ConfirmSubmit>
                                     ) : (
                                       <span className="text-gray-400">—</span>
                                     )}

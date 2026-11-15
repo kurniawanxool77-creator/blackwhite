@@ -87,9 +87,17 @@ export function ShuttlePanel({ eventId, routes, defaultDate, detailBase, readOnl
                             <RouteFields r={r} defaultDate={defaultDate} />
                           </DrawerForm>
                         </Drawer>
-                        <form action={deleteShuttle.bind(null, r.id)}>
-                          <ConfirmSubmit message={`Hapus rute ${r.origin} → ${r.destination}?${taken ? ` ${taken} penumpang menjadi tanpa shuttle.` : ""}`} className="btn btn-danger btn-sm">Hapus</ConfirmSubmit>
-                        </form>
+                        <ConfirmSubmit
+                          message={`Hapus rute ${r.origin} → ${r.destination}?${taken ? ` ${taken} penumpang menjadi tanpa shuttle.` : ""}`}
+                          title="Hapus Rute Shuttle"
+                          confirmText="Ya, Hapus Rute"
+                          loadingText="Menghapus..."
+                          successMessage={`Rute ${r.origin} → ${r.destination} berhasil dihapus.`}
+                          onConfirm={() => deleteShuttle(r.id)}
+                          className="btn btn-danger btn-sm"
+                        >
+                          Hapus
+                        </ConfirmSubmit>
                       </>
                     )}
                   </div>

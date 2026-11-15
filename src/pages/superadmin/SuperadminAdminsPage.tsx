@@ -130,14 +130,17 @@ export function SuperadminAdminsPage() {
                           </Drawer>
                           {a.id !== me?.id && (
                             a._count.scans === 0 ? (
-                              <form action={async () => { await deleteAdmin(a.id); }}>
-                                <ConfirmSubmit
-                                  message={`Hapus akun ${a.name} (${a.email})? Tindakan ini tidak bisa dibatalkan.`}
-                                  className="btn btn-danger btn-sm"
-                                >
-                                  Hapus
-                                </ConfirmSubmit>
-                              </form>
+                              <ConfirmSubmit
+                                message={`Hapus akun ${a.name} (${a.email})? Tindakan ini tidak bisa dibatalkan.`}
+                                title={`Hapus Anggota Tim "${a.name}"`}
+                                confirmText="Ya, Hapus Akun"
+                                loadingText="Menghapus..."
+                                successMessage={`Akun tim "${a.name}" berhasil dihapus.`}
+                                onConfirm={() => deleteAdmin(a.id)}
+                                className="btn btn-danger btn-sm"
+                              >
+                                Hapus
+                              </ConfirmSubmit>
                             ) : (
                               <span className="self-center px-1 text-xs text-gray-400" title="Sudah pernah memindai peserta; riwayatnya disimpan. Nonaktifkan lewat Ubah.">
                                 Punya riwayat scan

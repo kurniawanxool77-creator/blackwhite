@@ -199,14 +199,17 @@ export function SuperadminUsersPage() {
                             <Drawer label="Ubah" title={`Ubah Akun ${u.name}`} variant="secondary">
                               <UserForm user={{ ...u, emailVerified: Boolean(u.emailVerified) }} action={updateUser.bind(null, u.id)} />
                             </Drawer>
-                            <form action={async () => { await deleteUser(u.id); }}>
-                              <ConfirmSubmit
-                                message={`Hapus akun ${u.name} (${u.email})? Tindakan ini tidak bisa dibatalkan.`}
-                                className="btn btn-danger btn-sm"
-                              >
-                                Hapus
-                              </ConfirmSubmit>
-                            </form>
+                            <ConfirmSubmit
+                              message={`Hapus akun ${u.name} (${u.email})? Tindakan ini tidak bisa dibatalkan.`}
+                              title={`Hapus Akun "${u.name}"`}
+                              confirmText="Ya, Hapus Akun"
+                              loadingText="Menghapus..."
+                              successMessage={`Akun "${u.name}" berhasil dihapus.`}
+                              onConfirm={() => deleteUser(u.id)}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Hapus
+                            </ConfirmSubmit>
                           </div>
                         </td>
                       </tr>

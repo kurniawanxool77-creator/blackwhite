@@ -66,14 +66,17 @@ export function SuperadminCategoriesPage() {
                               {used > 0 && <p className="text-xs text-gray-500">Ganti nama juga memperbarui {fmtNum(used)} event.</p>}
                             </DrawerForm>
                           </Drawer>
-                          <form action={async () => { await deleteCategory(c.id); }}>
-                            <ConfirmSubmit
-                              message={used ? `Hapus kategori "${c.name}"? ${used} event akan menjadi "Tanpa kategori" (event tidak ikut terhapus).` : `Hapus kategori "${c.name}"?`}
-                              className="btn btn-danger btn-sm"
-                            >
-                              Hapus
-                            </ConfirmSubmit>
-                          </form>
+                          <ConfirmSubmit
+                            message={used ? `Hapus kategori "${c.name}"? ${used} event akan menjadi "Tanpa kategori" (event tidak ikut terhapus).` : `Hapus kategori "${c.name}"?`}
+                            title={`Hapus Kategori "${c.name}"`}
+                            confirmText="Ya, Hapus"
+                            loadingText="Menghapus..."
+                            successMessage={`Kategori "${c.name}" berhasil dihapus.`}
+                            onConfirm={() => deleteCategory(c.id)}
+                            className="btn btn-danger btn-sm"
+                          >
+                            Hapus
+                          </ConfirmSubmit>
                         </div>
                       </td>
                     </tr>

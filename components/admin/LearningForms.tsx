@@ -1,19 +1,23 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
+import { showToast } from "@/components/ui/Toast";
 import { useDrawer } from "./Drawer";
 
 type Action = (prev: string | null, f: FormData) => Promise<string | null>;
 
 // Form yang dikosongkan dan panelnya ditutup setelah berhasil disimpan.
-function useSavingForm(action: Action) {
+function useSavingForm(action: Action, successMsg = "Data berhasil disimpan.") {
   const drawer = useDrawer();
   const form = useRef<HTMLFormElement>(null);
   const [error, run, pending] = useActionState(async (prev: string | null, f: FormData) => {
     const result = await action(prev, f);
     if (!result) {
       form.current?.reset();
+      showToast.success(successMsg);
       drawer?.close();
+    } else {
+      showToast.error(result);
     }
     return result;
   }, null);
@@ -22,7 +26,10 @@ function useSavingForm(action: Action) {
 
 // lesson diisi = mode ubah (action sudah terikat ke id materi).
 export function LessonForm({ action, lesson }: { action: Action; lesson?: { title: string; videoUrl: string; note: string } }) {
-  const { form, error, run, pending } = useSavingForm(action);
+  const { form, error, run, pending } = useSavingForm(
+    action,
+    lesson ? "Materi video berhasil diperbarui." : "Materi video berhasil ditambahkan."
+  );
   return (
     <form ref={form} action={run} className="mt-4 space-y-3">
       <div>
@@ -38,14 +45,25 @@ export function LessonForm({ action, lesson }: { action: Action; lesson?: { titl
         <textarea id="l-note" name="note" className="input" rows={3} defaultValue={lesson?.note} maxLength={500} />
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <button className="btn btn-primary w-full" disabled={pending}>{pending ? "Menyimpan..." : lesson ? "Simpan perubahan" : "Tambah materi"}</button>
+      <button className="btn btn-primary w-full inline-flex items-center justify-center gap-1.5" disabled={pending}>
+        {pending && (
+          <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+        )}
+        {pending ? "Menyimpan..." : lesson ? "Simpan perubahan" : "Tambah materi"}
+      </button>
     </form>
   );
 }
 
 // question diisi = mode ubah. Pilihan jawaban terstruktur per baris dengan radio kunci jawaban.
 export function QuestionForm({ action, question }: { action: Action; question?: { text: string; options: string[]; answer: number } }) {
-  const { form, error, run, pending } = useSavingForm(action);
+  const { form, error, run, pending } = useSavingForm(
+    action,
+    question ? "Soal kuis berhasil diperbarui." : "Soal kuis berhasil ditambahkan."
+  );
   const [options, setOptions] = useState<string[]>(
     question?.options && question.options.length >= 2
       ? question.options
@@ -167,7 +185,13 @@ export function QuestionForm({ action, question }: { action: Action; question?: 
       </div>
 
       {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded p-2.5">{error}</p>}
-      <button className="btn btn-primary w-full" disabled={pending}>
+      <button className="btn btn-primary w-full inline-flex items-center justify-center gap-1.5" disabled={pending}>
+        {pending && (
+          <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+          </svg>
+        )}
         {pending ? "Menyimpan..." : question ? "Simpan perubahan" : "Tambah soal"}
       </button>
     </form>

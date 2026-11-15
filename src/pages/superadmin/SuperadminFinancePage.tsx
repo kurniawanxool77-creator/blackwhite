@@ -321,11 +321,17 @@ export function SuperadminFinancePage() {
                                 }}
                               />
                             </Drawer>
-                            <form action={async () => { await deleteTransaction(t.id); }}>
-                              <ConfirmSubmit message={`Hapus transaksi "${t.label}"?`} className="btn btn-danger btn-sm">
-                                Hapus
-                              </ConfirmSubmit>
-                            </form>
+                            <ConfirmSubmit
+                              message={`Hapus transaksi "${t.label}"?`}
+                              title="Hapus Transaksi"
+                              confirmText="Ya, Hapus"
+                              loadingText="Menghapus..."
+                              successMessage={`Transaksi "${t.label}" berhasil dihapus.`}
+                              onConfirm={() => deleteTransaction(t.id)}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Hapus
+                            </ConfirmSubmit>
                           </div>
                         </td>
                       </tr>

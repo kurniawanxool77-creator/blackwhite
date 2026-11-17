@@ -47,7 +47,7 @@ export function SiteHeader({ name, profile }: { name: string; profile: ProfileIn
           <ProfileMenu profile={profile} />
         ) : AUTH_PAGES.includes(pathname) ? null : (
           // Satu pintu: halaman Masuk (Google / email); daftar akun ada di sana.
-          <Link href="/login" className="btn btn-primary hidden font-semibold md:inline-flex">
+          <Link href={pathname && pathname !== "/" ? `/login?callbackUrl=${encodeURIComponent(pathname)}` : "/login"} className="btn btn-primary hidden font-semibold md:inline-flex">
             <LoginIcon width={18} height={18} strokeWidth={2.2} />
             Masuk
           </Link>

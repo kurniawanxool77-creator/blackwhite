@@ -25,10 +25,11 @@ export function MobileTabBar() {
         <ul className="grid grid-cols-5">
           {TABS.map(({ href, label, Icon, active }) => {
             const on = active(pathname);
+            const targetHref = href === "/akun" && pathname.startsWith("/event/") ? `/login?callbackUrl=${encodeURIComponent(pathname)}` : href;
             return (
               <li key={href}>
                 <Link
-                  href={href}
+                  href={targetHref}
                   aria-current={on ? "page" : undefined}
                   className={`relative flex h-15 flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors active:bg-gray-50 ${
                     on ? "text-brand font-semibold" : "text-gray-500"

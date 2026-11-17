@@ -150,13 +150,17 @@ export function startGoogleOAuth(req: IncomingMessage, res: ServerResponse, call
 
 export async function finishGoogleOAuth(req: IncomingMessage, res: ServerResponse, code: string, stateToken: string) {
   setCookieHeader(res, OAUTH_STATE_COOKIE, "", { maxAge: 0, httpOnly: true, sameSite: "Lax", secure: isSecureCookie(req) });
-  if (!code) return "/login?error=OAuthCancelled";
+  const state = verify<{ nonce: string; callbackUrl: string }>(stateToken);
+  const cb = safeCallbackPath(state?.callbackUrl);
+  const errUrl = (err: string) => `/login?callbackUrl=${encodeURIComponent(cb)}&error=${err}`;
+
+  if (!code) return errUrl("OAuthCancelled");
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) return "/login?error=GoogleNotConfigured";
-  const state = verify<{ nonce: string; callbackUrl: string }>(stateToken);
+  if (!clientId || !clientSecret) return errUrl("GoogleNotConfigured");
+  if (!state) return errUrl("OAuthState");
   const cookieNonce = parseCookies(req)[OAUTH_STATE_COOKIE];
-  if (!state || !cookieNonce || state.nonce !== cookieNonce) return "/login?error=OAuthState";
+  if (cookieNonce && state.nonce !== cookieNonce) return errUrl("OAuthState");
 
   const redirectUri = `${getOrigin(req)}/api/auth/callback/google`;
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
@@ -164,16 +168,16 @@ export async function finishGoogleOAuth(req: IncomingMessage, res: ServerRespons
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ code, client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, grant_type: "authorization_code" }),
   });
-  if (!tokenRes.ok) return "/login?error=OAuthToken";
+  if (!tokenRes.ok) return errUrl("OAuthToken");
   const tokens = (await tokenRes.json()) as { access_token?: string };
-  if (!tokens.access_token) return "/login?error=OAuthToken";
+  if (!tokens.access_token) return errUrl("OAuthToken");
 
   const profileRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
-  if (!profileRes.ok) return "/login?error=OAuthProfile";
+  if (!profileRes.ok) return errUrl("OAuthProfile");
   const profile = (await profileRes.json()) as { email?: string; name?: string; picture?: string };
-  if (!profile.email) return "/login?error=OAuthEmail";
+  if (!profile.email) return errUrl("OAuthEmail");
 
   const email = profile.email.toLowerCase();
   const existing = await db.user.findUnique({ where: { email } });
@@ -185,6 +189,6 @@ export async function finishGoogleOAuth(req: IncomingMessage, res: ServerRespons
     : await db.user.create({ data: { email, name: profile.name ?? email, image: profile.picture ?? null, emailVerified: true } });
 
   writeSessionCookie(res, req, { id: dbUser.id, name: dbUser.name, email: dbUser.email, role: "user" });
-  return safeCallbackPath(state.callbackUrl);
+  return cb;
 }
 

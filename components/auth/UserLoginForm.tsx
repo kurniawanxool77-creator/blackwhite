@@ -18,6 +18,7 @@ export function UserLoginForm({ callbackUrl }: { callbackUrl: string }) {
       const form = new FormData(e.currentTarget);
       const res = await signIn("user", { email: form.get("email"), password: form.get("password"), redirect: false });
       if (res?.ok) {
+        if (typeof window !== "undefined") sessionStorage.removeItem("bw_last_event");
         router.replace(callbackUrl);
         router.refresh();
         return;

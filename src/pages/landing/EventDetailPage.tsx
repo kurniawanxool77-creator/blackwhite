@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Checkpoint, Event, Registration } from "@prisma/client";
 import { Link, useParams } from "react-router-dom";
 import { GoogleSignInButton } from "@/components/auth/AuthButtons";
@@ -14,7 +15,7 @@ import type { ShuttleOption } from "@/lib/shuttle";
 import type { BankAccount } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
-import { useAuth } from "@/src/lib/auth-client";
+import { signIn, useAuth } from "@/src/lib/auth-client";
 
 type PublicEventDetail = {
   event: Event & {
@@ -49,14 +50,31 @@ function parsePhotos(coverUrl: string | null, rawGallery: string | null): string
 
 export function EventDetailPage() {
   const { slug } = useParams();
-  const { googleEnabled } = useAuth();
+  const { user: authUser, googleEnabled, refreshSession } = useAuth();
   const state = useApiData<PublicEventDetail>(slug ? `/api/public/events/${encodeURIComponent(slug)}` : null);
+
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginPending, setLoginPending] = useState(false);
+
+  useEffect(() => {
+    if (slug) {
+      try {
+        sessionStorage.setItem("bw_last_event", `/event/${slug}`);
+      } catch {
+        // ignore
+      }
+    }
+  }, [slug]);
 
   return (
     <DataGate state={state} notFoundTitle="Event tidak ditemukan" backTo="/event">
       {({ event, user, existing, seatsLeft, closed, shuttles, banks, fields }) => {
         const photos = parsePhotos(event.coverUrl, event.gallery);
         const days = durationDays(event.startDate, event.endDate);
+        const activeUser = user || (authUser?.role === "user" ? { id: authUser.id, name: authUser.name, email: authUser.email, phone: null, organization: null } : null);
 
         return (
           <div className="mx-auto max-w-6xl px-4 py-4 md:py-8">
@@ -135,17 +153,90 @@ export function EventDetailPage() {
                     <p className="text-sm text-gray-600">Pendaftaran sudah ditutup.</p>
                   ) : seatsLeft === 0 ? (
                     <p className="text-sm text-gray-600">Kuota sudah penuh.</p>
-                  ) : user ? (
+                  ) : activeUser ? (
                     <RegisterForm
                       eventId={event.id}
-                      phone={user.phone ?? ""}
-                      organization={user.organization ?? ""}
+                      phone={activeUser.phone ?? ""}
+                      organization={activeUser.organization ?? ""}
                       price={finalPrice(event)}
                       autoApprove={event.autoApprove}
                       fields={fields}
                       banks={banks}
                       routes={shuttles}
                     />
+                  ) : showLogin ? (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setLoginPending(true);
+                        setLoginError("");
+                        try {
+                          const res = await signIn("user", { email: loginEmail, password: loginPassword, redirect: false });
+                          if (res.ok) {
+                            setShowLogin(false);
+                            await refreshSession();
+                            state.refresh();
+                          } else {
+                            setLoginError(res.error || "Email atau password salah.");
+                          }
+                        } catch {
+                          setLoginError("Gagal terhubung ke server.");
+                        } finally {
+                          setLoginPending(false);
+                        }
+                      }}
+                      className="space-y-3 rounded-md border border-gray-200 bg-gray-50 p-3.5 text-left"
+                    >
+                      <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                        <p className="text-xs font-bold text-gray-900">Masuk Akun Peserta</p>
+                        <button
+                          type="button"
+                          onClick={() => { setShowLogin(false); setLoginError(""); }}
+                          className="text-xs text-gray-500 hover:text-gray-900"
+                        >
+                          ✕ Batal
+                        </button>
+                      </div>
+                      <div>
+                        <label className="label text-[11px]" htmlFor="inline-email">Email</label>
+                        <input
+                          id="inline-email"
+                          type="email"
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          required
+                          placeholder="nama@email.com"
+                          className="input text-xs"
+                          autoFocus
+                        />
+                      </div>
+                      <div>
+                        <label className="label text-[11px]" htmlFor="inline-password">Password</label>
+                        <input
+                          id="inline-password"
+                          type="password"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          required
+                          placeholder="••••••••"
+                          className="input text-xs"
+                        />
+                      </div>
+                      {loginError && <p className="text-xs text-red-600">{loginError}</p>}
+                      <button
+                        type="submit"
+                        disabled={loginPending}
+                        className="btn btn-primary w-full text-xs"
+                      >
+                        {loginPending ? "Memverifikasi..." : "Masuk & Lanjut Daftar"}
+                      </button>
+                      <p className="text-center text-[11px] text-gray-500">
+                        Belum punya akun?{" "}
+                        <Link to={`/daftar?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="font-semibold text-brand hover:underline">
+                          Daftar sekarang
+                        </Link>
+                      </p>
+                    </form>
                   ) : (
                     <div className="space-y-3">
                       {googleEnabled && (
@@ -162,9 +253,13 @@ export function EventDetailPage() {
                       </Link>
                       <p className="text-center text-xs text-gray-500">
                         Sudah punya akun?{" "}
-                        <Link to={`/login?callbackUrl=${encodeURIComponent(`/event/${event.slug}`)}`} className="font-medium text-gray-900 hover:underline">
+                        <button
+                          type="button"
+                          onClick={() => setShowLogin(true)}
+                          className="font-medium text-gray-900 hover:underline"
+                        >
                           Masuk
-                        </Link>
+                        </button>
                       </p>
                     </div>
                   )}

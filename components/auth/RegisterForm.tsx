@@ -23,6 +23,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl: string }) {
         return;
       }
       const res = await signIn("user", { email: form.get("email"), password: form.get("password"), redirect: false });
+      if (res?.ok && typeof window !== "undefined") sessionStorage.removeItem("bw_last_event");
       router.replace(res?.ok ? callbackUrl : "/login");
       router.refresh();
     } catch (err) {

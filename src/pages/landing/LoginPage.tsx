@@ -18,13 +18,18 @@ const OAUTH_ERRORS: Record<string, string> = {
 export function LoginPage() {
   const { loading, user, site, googleEnabled } = useAuth();
   const [searchParams] = useSearchParams();
-  const rawCallback = searchParams.get("callbackUrl") || "/dashboard";
+  const savedEvent = typeof window !== "undefined" ? sessionStorage.getItem("bw_last_event") : null;
+  const paramCallback = searchParams.get("callbackUrl");
+  const rawCallback = (paramCallback && paramCallback !== "/dashboard") ? paramCallback : (savedEvent || paramCallback || "/dashboard");
   const callbackUrl = rawCallback.startsWith("/") && !rawCallback.startsWith("//") ? rawCallback : "/dashboard";
   const errCode = searchParams.get("error");
   const oauthError = errCode ? (OAUTH_ERRORS[errCode] ?? "Login dengan Google gagal. Silakan coba lagi.") : null;
 
   if (loading) return <PageLoader />;
-  if (user?.role === "user") return <Navigate to={callbackUrl} replace />;
+  if (user?.role === "user") {
+    if (typeof window !== "undefined") sessionStorage.removeItem("bw_last_event");
+    return <Navigate to={callbackUrl} replace />;
+  }
 
   return (
     <AuthSplit image={site.loginImage || site.heroImage} caption={site.tagline}>

@@ -16,6 +16,7 @@ import type { BankAccount } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
 import { signIn, useAuth } from "@/src/lib/auth-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 type PublicEventDetail = {
   event: Event & {
@@ -52,6 +53,50 @@ export function EventDetailPage() {
   const { slug } = useParams();
   const { user: authUser, googleEnabled, refreshSession } = useAuth();
   const state = useApiData<PublicEventDetail>(slug ? `/api/public/events/${encodeURIComponent(slug)}` : null);
+
+  const event = state.data?.event ?? null;
+  const isClosed = state.data?.closed ?? false;
+
+  useSeo({
+    title: event ? event.name : "Detail Event",
+    description: event?.description ? event.description.slice(0, 155) : undefined,
+    image: event?.coverUrl || undefined,
+    url: slug ? `/event/${slug}` : undefined,
+    type: "event",
+    jsonLd: event
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Event",
+          name: event.name,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          eventStatus: isClosed ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
+          eventAttendanceMode:
+            event.type === "course"
+              ? "https://schema.org/OnlineEventAttendanceMode"
+              : "https://schema.org/OfflineEventAttendanceMode",
+          location: {
+            "@type": "Place",
+            name: event.location,
+            address: event.location,
+          },
+          image: event.coverUrl ? [event.coverUrl] : undefined,
+          description: event.description,
+          offers: {
+            "@type": "Offer",
+            price: event.price,
+            priceCurrency: "IDR",
+            availability: isClosed ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+            url: `https://www.e-blackwhite.site/event/${event.slug}`,
+          },
+          organizer: {
+            "@type": "Organization",
+            name: "BlackWhite Event",
+            url: "https://www.e-blackwhite.site",
+          },
+        }
+      : undefined,
+  });
 
   const [showLogin, setShowLogin] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");

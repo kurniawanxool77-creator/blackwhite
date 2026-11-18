@@ -5,6 +5,7 @@ import { fmtDate, fmtDateRange } from "@/lib/format";
 import type { Site } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 type CertPayload = {
   reg: Registration & { user: { name: string }; event: Event };
@@ -14,6 +15,13 @@ type CertPayload = {
 export function CertificatePage() {
   const { no } = useParams();
   const state = useApiData<CertPayload>(no ? `/api/public/certificate/${encodeURIComponent(no)}` : null);
+
+  const cert = state.data;
+  useSeo({
+    title: cert ? `Verifikasi Sertifikat #${no}` : "Verifikasi Sertifikat",
+    description: cert ? `Verifikasi keaslian sertifikat resmi ${cert.reg.user.name} untuk event ${cert.reg.event.name}.` : undefined,
+    url: no ? `/sertifikat/${no}` : undefined,
+  });
 
   return (
     <DataGate state={state} notFoundTitle="Sertifikat tidak ditemukan" backTo="/">

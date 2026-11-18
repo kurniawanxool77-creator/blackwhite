@@ -4,12 +4,38 @@ import { ArticleCard } from "@/components/ui/ArticleCard";
 import { fmtDate } from "@/lib/format";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 export function ArticlePage() {
   const { slug } = useParams();
   const state = useApiData<{ article: Article; others: Article[] }>(
     slug ? `/api/public/blog/${encodeURIComponent(slug)}` : null,
   );
+
+  const article = state.data?.article ?? null;
+  useSeo({
+    title: article ? article.title : "Artikel",
+    description: article?.excerpt || (article?.content ? article.content.slice(0, 155) : undefined),
+    image: article?.coverUrl || undefined,
+    url: slug ? `/blog/${slug}` : undefined,
+    type: "article",
+    jsonLd: article
+      ? {
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          headline: article.title,
+          image: article.coverUrl ? [article.coverUrl] : undefined,
+          datePublished: article.publishedAt,
+          author: [
+            {
+              "@type": "Organization",
+              name: "BlackWhite Event",
+              url: "https://www.e-blackwhite.site",
+            },
+          ],
+        }
+      : undefined,
+  });
 
   return (
     <DataGate state={state} notFoundTitle="Artikel tidak ditemukan" backTo="/blog">

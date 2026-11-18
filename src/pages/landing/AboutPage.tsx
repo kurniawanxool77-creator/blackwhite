@@ -3,9 +3,15 @@ import { About } from "@/components/landing/About";
 import { Hero } from "@/components/landing/Hero";
 import { Services } from "@/components/landing/Services";
 import { useAuth } from "@/src/lib/auth-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 export function AboutPage() {
   const { site } = useAuth();
+  useSeo({
+    title: `Tentang Kami — ${site.name}`,
+    description: site.tagline || `Informasi mengenai platform ${site.name}, sistem registrasi event modern dengan barcode QR di Indonesia.`,
+    url: "/tentang",
+  });
   return (
     <>
       <Hero site={site} />

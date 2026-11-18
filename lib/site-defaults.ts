@@ -30,18 +30,18 @@ export const parseBanks = (lines: string[]): BankAccount[] =>
   lines.map(splitBankLine).filter((b) => Boolean(b.bank && b.number));
 
 export const DEFAULT_SITE: Site = {
-  name: "BlackWhite",
-  tagline: "Event dan kegiatan dengan pendaftaran online dan absensi QR",
+  name: "BlackWhite Event",
+  tagline: "Platform pendaftaran event online, e-tiket barcode QR, dan absensi kegiatan",
   about:
-    "Kami membantu penyelenggara event mengelola peserta secara tertib: pendaftaran, persetujuan, hingga pemindaian QR di setiap titik acara seperti bandara, hotel, konsumsi, dan pengambilan barang.",
+    "BlackWhite Event membantu penyelenggara mengelola kegiatan secara profesional: pendaftaran peserta, pembayaran tiket online, persetujuan panitia, hingga pemindaian barcode QR di setiap pos acara seperti registrasi ulang, konsumsi, dan pengambilan fasilitas.",
   heroImage: "",
   aboutImage: "",
   loginImage: "",
   logoImage: "/logo.png",
   services: [
-    { title: "Pendaftaran & persetujuan", body: "Peserta mendaftar dengan akun Google, panitia menyetujui dari satu dasbor." },
-    { title: "QR per checkpoint", body: "Satu QR per peserta dipindai di setiap titik acara, berurutan sesuai jadwal." },
-    { title: "Laporan langsung", body: "Lihat siapa yang sudah dan belum hadir di tiap checkpoint, lalu ekspor ke CSV." },
+    { title: "Pendaftaran & Tiket Barcode", body: "Peserta mendaftar mandiri atau via Google, tiket QR resmi diterbitkan instan dan aman." },
+    { title: "Scan QR Checkpoint Cepat", body: "Satu barcode QR per peserta dipindai di tiap pos titik acara secara akurat dan anti-duplikasi." },
+    { title: "Laporan & Absensi Real-Time", body: "Pantau kehadiran peserta secara langsung di setiap sesi acara dan ekspor rekapitulasi data lengkap." },
   ],
   steps: [
     "Buat akun atau masuk dengan Google, lalu daftar event",

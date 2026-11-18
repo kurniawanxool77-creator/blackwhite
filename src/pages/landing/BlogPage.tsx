@@ -2,8 +2,14 @@ import type { Article } from "@prisma/client";
 import { ArticleCard } from "@/components/ui/ArticleCard";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 export function BlogPage() {
+  useSeo({
+    title: "Blog, Kabar & Berita Event",
+    description: "Kumpulan artikel edukasi, kabar terbaru seputar event, tips manajemen kegiatan, dan panduan check-in barcode QR.",
+    url: "/blog",
+  });
   const state = useApiData<{ articles: Article[] }>("/api/public/blog");
 
   return (

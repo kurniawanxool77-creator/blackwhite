@@ -5,8 +5,14 @@ import { OrDivider } from "@/components/auth/OrDivider";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { PageLoader } from "@/src/components/RouteState";
 import { useAuth } from "@/src/lib/auth-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 export function RegisterPage() {
+  useSeo({
+    title: "Daftar Akun Peserta Event",
+    description: "Buat akun peserta di BlackWhite Event. Satu akun untuk pendaftaran event, akses tiket barcode QR resmi, dan sertifikat kegiatan.",
+    url: "/daftar",
+  });
   const { loading, user, site, googleEnabled } = useAuth();
   const [searchParams] = useSearchParams();
   const savedEvent = typeof window !== "undefined" ? sessionStorage.getItem("bw_last_event") : null;

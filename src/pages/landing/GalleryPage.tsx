@@ -2,8 +2,14 @@ import { GalleryGrid, type GalleryPhoto } from "@/components/landing/GalleryGrid
 import type { Site } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 export function GalleryPage() {
+  useSeo({
+    title: "Galeri Foto & Dokumentasi Acara",
+    description: "Dokumentasi visual kemeriahan pelaksanaan kegiatan event, registrasi barcode peserta, dan suasana pos checkpoint.",
+    url: "/galeri",
+  });
   const state = useApiData<{ site: Site; photos: GalleryPhoto[]; categories: string[] }>("/api/public/gallery");
 
   return (

@@ -2,6 +2,7 @@ import { ContactForm } from "@/components/landing/ContactForm";
 import { FaqAccordion, type FaqItem } from "@/components/landing/FaqAccordion";
 import { ClockIcon, MapPinIcon } from "@/components/ui/icons";
 import { useAuth } from "@/src/lib/auth-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 const FAQS: FaqItem[] = [
   {
@@ -24,6 +25,11 @@ const FAQS: FaqItem[] = [
 
 export function ContactPage() {
   const { site } = useAuth();
+  useSeo({
+    title: "Hubungi Penyelenggara & Layanan Bantuan",
+    description: `Hubungi tim panitia ${site.name} untuk pertanyaan seputar tiket event, kendala barcode scanner, dan pendaftaran peserta.`,
+    url: "/kontak",
+  });
   const { contact, name } = site;
   const digits = contact.phone.replace(/\D/g, "");
   const waNum = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;

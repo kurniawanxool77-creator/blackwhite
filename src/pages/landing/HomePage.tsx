@@ -12,6 +12,7 @@ import type { ReadyEvent } from "@/lib/event-filters";
 import type { Site } from "@/lib/site-defaults";
 import { DataGate } from "@/src/components/RouteState";
 import { useApiData } from "@/src/lib/api-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 type HomePayload = {
   site: Site;
@@ -26,6 +27,11 @@ type HomePayload = {
 const HOME_LIMIT = 6;
 
 export function HomePage() {
+  useSeo({
+    title: "BlackWhite Event — Platform Pendaftaran Event & Tiket Barcode QR",
+    description: "Platform resmi pendaftaran berbagai event, seminar, olahraga, dan pelatihan di Indonesia. Dapatkan tiket QR barcode resmi dan check-in cepat di lokasi acara.",
+    url: "/",
+  });
   const state = useApiData<HomePayload>("/api/public/home");
 
   return (

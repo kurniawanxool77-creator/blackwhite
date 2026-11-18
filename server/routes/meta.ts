@@ -242,12 +242,23 @@ export async function handleMeta(req: IncomingMessage, res: ServerResponse, path
     const base = siteUrl() || parseUrl(req).origin;
     const [events, articles] = await Promise.all([
       db.event.findMany({ where: { status: { not: "draft" } }, select: { slug: true, createdAt: true } }),
-      db.article.findMany({ where: { published: true }, select: { slug: true, publishedAt: true } }),
+      db.article.findMany({ where: { published: true }, select: { slug: true, publishedAt: true, updatedAt: true } }),
     ]);
+    const staticPages = [
+      { path: "", changefreq: "daily", priority: "1.0" },
+      { path: "/event", changefreq: "daily", priority: "0.9" },
+      { path: "/blog", changefreq: "weekly", priority: "0.8" },
+      { path: "/tentang", changefreq: "monthly", priority: "0.6" },
+      { path: "/galeri", changefreq: "monthly", priority: "0.6" },
+      { path: "/kontak", changefreq: "monthly", priority: "0.6" },
+    ];
     const urls = [
-      ...["", "/event", "/tentang", "/galeri", "/blog", "/kontak"].map((p) => `<url><loc>${base}${p}</loc></url>`),
-      ...events.map((e) => `<url><loc>${base}/event/${e.slug}</loc><lastmod>${e.createdAt.toISOString()}</lastmod></url>`),
-      ...articles.map((a) => `<url><loc>${base}/blog/${a.slug}</loc>${a.publishedAt ? `<lastmod>${a.publishedAt.toISOString()}</lastmod>` : ""}</url>`),
+      ...staticPages.map((p) => `<url><loc>${base}${p.path}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority></url>`),
+      ...events.map((e) => `<url><loc>${base}/event/${e.slug}</loc><lastmod>${e.createdAt.toISOString()}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`),
+      ...articles.map((a) => {
+        const lastmod = (a.updatedAt || a.publishedAt)?.toISOString();
+        return `<url><loc>${base}/blog/${a.slug}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}<changefreq>weekly</changefreq><priority>0.7</priority></url>`;
+      }),
     ].join("");
     sendText(res, `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`, 200, "application/xml; charset=utf-8");
     return true;

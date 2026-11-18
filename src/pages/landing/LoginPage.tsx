@@ -5,6 +5,7 @@ import { OrDivider } from "@/components/auth/OrDivider";
 import { UserLoginForm } from "@/components/auth/UserLoginForm";
 import { PageLoader } from "@/src/components/RouteState";
 import { useAuth } from "@/src/lib/auth-client";
+import { useSeo } from "@/src/lib/use-seo";
 
 const OAUTH_ERRORS: Record<string, string> = {
   GoogleNotConfigured: "Login Google belum dikonfigurasi di server.",
@@ -16,6 +17,11 @@ const OAUTH_ERRORS: Record<string, string> = {
 };
 
 export function LoginPage() {
+  useSeo({
+    title: "Masuk ke Akun Peserta",
+    description: "Masuk ke akun BlackWhite Event untuk mengakses tiket barcode QR, sertifikat pelatihan, dan jadwal kegiatan Anda.",
+    url: "/masuk",
+  });
   const { loading, user, site, googleEnabled } = useAuth();
   const [searchParams] = useSearchParams();
   const savedEvent = typeof window !== "undefined" ? sessionStorage.getItem("bw_last_event") : null;

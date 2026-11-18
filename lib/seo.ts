@@ -9,7 +9,7 @@ export const siteUrl = () => {
     nextAuth ||
     (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
-    "http://localhost:5173";
+    "https://www.e-blackwhite.site";
   return url.replace(/\/$/, "");
 };
 

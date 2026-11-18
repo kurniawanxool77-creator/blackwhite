@@ -27,6 +27,7 @@
     { "source": "/api/:path*", "destination": "/api/index?__path=/api/:path*" },
     { "source": "/media/:id", "destination": "/api/index?__path=/media/:id" },
     { "source": "/robots.txt", "destination": "/api/index?__path=/robots.txt" },
+    { "source": "/googleaf0ca5850bb8213e.html", "destination": "/api/index?__path=/googleaf0ca5850bb8213e.html" },
     { "source": "/sitemap.xml", "destination": "/api/index?__path=/sitemap.xml" },
     { "source": "/manifest.webmanifest", "destination": "/api/index?__path=/manifest.webmanifest" },
     { "source": "/icon/:size", "destination": "/api/index?__path=/icon/:size" },

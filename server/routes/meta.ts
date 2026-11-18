@@ -227,6 +227,11 @@ export async function handleMeta(req: IncomingMessage, res: ServerResponse, path
     return true;
   }
 
+  if (method === "GET" && pathname === "/googleaf0ca5850bb8213e.html") {
+    sendText(res, "google-site-verification: googleaf0ca5850bb8213e.html", 200, "text/html; charset=utf-8");
+    return true;
+  }
+
   if (method === "GET" && pathname === "/robots.txt") {
     const base = siteUrl() || parseUrl(req).origin;
     sendText(res, `User-Agent: *\nAllow: /\nDisallow: /admin\nDisallow: /dashboard\nDisallow: /tiket\nDisallow: /akun\nDisallow: /sertifikat\nDisallow: /api\n\nSitemap: ${base}/sitemap.xml\n`);
